@@ -1,5 +1,4 @@
-# novnc-proxy-django
-a simple novnc-django demo
+# ForensicVM
 
 ### requirements
 
@@ -8,13 +7,11 @@ a simple novnc-django demo
 
 ### How to use
 
-- chdir /path/to/novnc-proxy-django
+- chdir /path/to/ForensicVM
 - python manage.py migrate
 - python manage.py createsuperuser
 - python manage.py runserver
 
-- websockify 127.0.0.1:6080 --target-config=/path/to/config_path/vnc_tokens
+- websockify 127.0.0.1:5091 
 
-### More Details
-[novnc远程控制的简单实现](http://www.missuor.com/blog/2016/9/novnc-in-django-demo)
 

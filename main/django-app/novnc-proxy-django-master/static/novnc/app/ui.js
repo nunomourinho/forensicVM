@@ -171,7 +171,8 @@ const UI = {
 
         /* Populate the controls if defaults are provided in the URL */
         UI.initSetting('host', window.location.hostname);
-        UI.initSetting('port', port);
+        /* NGAM: UI.initSetting('port', port); */
+        UI.initSetting('port', 5901);
         UI.initSetting('encrypt', (window.location.protocol === "https:"));
         UI.initSetting('view_clip', false);
         UI.initSetting('resize', 'off');
@@ -754,6 +755,7 @@ const UI = {
         UI.disableSetting(name);
     },
 
+    
     // Update cookie and form control setting. If value is not set, then
     // updates from control to current cookie setting.
     updateSetting(name) {

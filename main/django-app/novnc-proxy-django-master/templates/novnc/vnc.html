@@ -1,6 +1,6 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="en" class="noVNC_loading">
+<html lang="pt_PT" class="noVNC_loading">
 <head>
 
     <!--
@@ -147,6 +147,9 @@
             </div>
             </div>
 
+
+            
+
             <!-- Toggle fullscreen -->
             <input type="image" alt="Full Screen" src="{% static 'novnc/' %}app/images/fullscreen.svg"
                 id="noVNC_fullscreen_button" class="noVNC_button noVNC_hidden"
@@ -174,10 +177,10 @@
                     </li>
                     <li>
                         <label for="noVNC_setting_resize">Scaling Mode:</label>
-                        <select id="noVNC_setting_resize" name="vncResize">
-                            <option value="off">None</option>
+                        <select id="noVNC_setting_resize" name="vncResize">                            
                             <option value="scale">Local Scaling</option>
                             <option value="remote">Remote Resizing</option>
+                            <option value="off">None</option>
                         </select>
                     </li>
                     <li><hr></li>
@@ -247,6 +250,19 @@
                 </ul>
             </div>
             </div>
+            
+            <!-- NGAM:Extra button -->
+            <input type="image" alt="configureVM" src="{% static 'novnc/' %}app/images/configurevm.svg"
+            id="noVNC_ngam_button" class="noVNC_button"
+            title="Configure Forensic VM">
+            <div class="noVNC_vcenter">
+            <div id="noVNC_ngam" class="noVNC_panel">
+            <div class="noVNC_heading">
+                <img alt="" src="{% static 'novnc/' %}app/images/configurevm.svg"> Configure VM
+            </div>                
+            </div>
+            </div>
+            <!-- NGAM:Extra button -->
 
             <!-- Connection Controls -->
             <input type="image" alt="Disconnect" src="{% static 'novnc/' %}app/images/disconnect.svg"

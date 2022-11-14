@@ -444,7 +444,7 @@ const UI = {
             UI.closeControlbarTimeout = setTimeout(UI.closeControlbar, 2000);
         } else {
             UI.enableSetting('encrypt');
-            UI.enableSetting('shared');
+            UI.enableSetting('shared');            
             UI.enableSetting('host');
             UI.enableSetting('port');
             UI.enableSetting('path');
@@ -1738,7 +1738,7 @@ const UI = {
 };
 
 // Set up translations
-const LINGUAS = ["cs", "de", "el", "es", "fr", "it", "ja", "ko", "nl", "pl", "pt_BR", "ru", "sv", "tr", "zh_CN", "zh_TW"];
+const LINGUAS = ["cs", "de", "el", "es", "fr", "it", "ja", "ko", "nl", "pl", "pt_BR", "pt", "pt_PT", "ru", "sv", "tr", "zh_CN", "zh_TW"];
 l10n.setup(LINGUAS);
 if (l10n.language === "en" || l10n.dictionary !== undefined) {
     UI.prime();

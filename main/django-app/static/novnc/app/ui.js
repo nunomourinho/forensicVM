@@ -17,7 +17,10 @@ import Keyboard from "../core/input/keyboard.js";
 import RFB from "../core/rfb.js";
 import * as WebUtil from "./webutil.js";
 
-const PAGE_TITLE = "noVNC";
+/***
+ * NGAM: Change title
+ */
+const PAGE_TITLE = "ForensicVM";
 
 const UI = {
 
@@ -1702,7 +1705,7 @@ const UI = {
     updateDesktopName(e) {
         UI.desktopName = e.detail.name;
         // Display the desktop name in the document title
-        document.title = e.detail.name + " - " + PAGE_TITLE;
+        // NGAM: document.title = e.detail.name + " - " + PAGE_TITLE;
     },
 
     bell(e) {

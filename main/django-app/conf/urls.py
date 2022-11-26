@@ -28,4 +28,6 @@ urlpatterns = [
                           settings.STATICFILES_DIRS or 
                           settings.STATIC_ROOT)
     }),
+    # Generic path
+    path('', app.views.vnc_proxy_http),
 ]

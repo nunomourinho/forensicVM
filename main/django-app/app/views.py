@@ -62,3 +62,4 @@ def vnc_proxy_http(request):
     #}
     #return HttpResponse(template.render())
     return HttpResponse(template.render(context))
+

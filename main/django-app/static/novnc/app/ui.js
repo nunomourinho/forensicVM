@@ -311,6 +311,7 @@ const UI = {
     },
 
     addMachineHandlers() {
+        
         document.getElementById("noVNC_shutdown_button")
             .addEventListener('click', () => UI.rfb.machineShutdown());
         document.getElementById("noVNC_reboot_button")
@@ -890,8 +891,57 @@ const UI = {
 /* ------^-------
  *   /SETTINGS
  * ==============
+ *     NGAM TEST
+ * ------v------*/
+
+
+    openNgamTestPanel() {
+        UI.closeAllPanels();
+        UI.openControlbar();
+
+        document.getElementById('ngam_power')
+            .classList.add("noVNC_open");
+        document.getElementById('ngam_power_button')
+            .classList.add("noVNC_selected");
+    },
+    closengamTestPanel() {
+        document.getElementById('noVNC_power')
+            .classList.remove("noVNC_open");
+        document.getElementById('noVNC_power_button')
+            .classList.remove("noVNC_selected");
+    },
+
+    togglengamTestPanel() {
+        if (document.getElementById('noVNC_power')
+            .classList.contains("noVNC_open")) {
+            UI.closePowerPanel();
+        } else {
+            UI.openPowerPanel();
+        }
+    },
+
+    // Disable/enable power button
+    updatePngamTestButton() {
+        if (UI.connected &&
+            !UI.rfb.viewOnly) {
+            document.getElementById('ngam_power_button')
+                .classList.remove("noVNC_hidden");
+        } else {
+            document.getElementById('ngam_power_button')
+                // NGAM: Always show power button when connected
+                //.classList.add("noVNC_hidden");
+                .classList.remove("ngam_hidden");
+            // Close power panel if open
+            UI.closengamTestPanel();
+        }
+    },
+
+/* ------^-------
+ *   /NGAM TEST
+ * ==============
  *     POWER
  * ------v------*/
+
 
     openPowerPanel() {
         UI.closeAllPanels();
@@ -928,7 +978,9 @@ const UI = {
                 .classList.remove("noVNC_hidden");
         } else {
             document.getElementById('noVNC_power_button')
-                .classList.add("noVNC_hidden");
+                // NGAM: Always show power button when connected
+                //.classList.add("noVNC_hidden");
+                .classList.remove("noVNC_hidden");
             // Close power panel if open
             UI.closePowerPanel();
         }

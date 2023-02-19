@@ -120,22 +120,6 @@
             </div>
             </div>
 
-            <!-- Shutdown/Reboot -->
-            <input type="image" alt="Shutdown/Reboot" src="{% static 'novnc/' %}app/images/power.svg"
-                id="noVNC_power_button" class="noVNC_button"
-                title="Shutdown/Reboot...">
-            <div class="noVNC_vcenter">
-            <div id="noVNC_power" class="noVNC_panel">
-                <div class="noVNC_heading">
-                    <img alt="" src="{% static 'novnc/' %}app/images/power.svg"> Power
-                </div>
-                <input type="button" id="noVNC_shutdown_button" value="Shutdown">
-                <input type="button" id="noVNC_reboot_button" value="Reboot">
-                <input type="button" id="noVNC_reset_button" value="Reset">
-            </div>
-            </div>
-
-
      
             <!-- Clipboard -->
             <input type="image" alt="Clipboard" src="{% static 'novnc/' %}app/images/clipboard.svg"
@@ -267,6 +251,36 @@
             </div>
             <!-- NGAM:Extra button -->
 
+            <!-- Shutdown/Reboot -->
+            <input type="image" alt="Shutdown/Reboot" src="{% static 'novnc/' %}app/images/power.svg"
+                id="noVNC_power_button" class="noVNC_button"
+                title="Shutdown/Reboot...">
+            <div class="noVNC_vcenter">
+            <div id="noVNC_power" class="noVNC_panel">
+                <div class="noVNC_heading">
+                    <img alt="" src="{% static 'novnc/' %}app/images/power.svg"> Power
+                </div>
+                <input type="button" id="noVNC_shutdown_button" value="Shutdown" onclick="shutdown()">
+                <input type="button" id="ngam_shutdown_button" value="Arrembentar com tudo" onclick="mensagem()">
+                <input type="button" id="noVNC_reboot_button" value="Reboot" onclick="reboot()">
+                <input type="button" id="noVNC_reset_button" value="Reset" onclick="reset()">                
+            </div>
+            </div>
+
+            <!-- NGAM:Test -->
+            <input type="image" alt="Test" src="{% static 'novnc/' %}app/images/power.svg"
+                id="ngam_test_button" class="noVNC_button"
+                title="Test...">
+            <div class="noVNC_vcenter">
+            <div id="noVNC_test" class="noVNC_panel">
+                <div class="noVNC_heading">
+                    <img alt="" src="{% static 'novnc/' %}app/images/power.svg"> Test
+                </div>                
+                <input type="button" id="ngam_shutdown_button" value="Arrembentar com tudo" onclick="mensagem()">                
+            </div>
+            </div>
+
+
             <!-- Connection Controls -->
             <input type="image" alt="Disconnect" src="{% static 'novnc/' %}app/images/disconnect.svg"
                 id="noVNC_disconnect_button" class="noVNC_button"
@@ -362,4 +376,20 @@
         <source src="{% static 'novnc/' %}app/sounds/bell.mp3" type="audio/mpeg">
     </audio>
  </body>
+ 
+ <!-- NGAM: Scripts to automate actions -->
+ <script>
+    function mensagem() {
+        alert("Desligar o computador")
+    }
+    function shutdown() {
+        alert("shutdown the pc")
+    }
+    function reboot() {
+        alert("Reboot the pc")
+    }
+    function reset() {
+        alert("Reset the pc")
+    }
+</script>
 </html>

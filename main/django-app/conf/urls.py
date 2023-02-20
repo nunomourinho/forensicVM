@@ -19,6 +19,7 @@ from django.urls import path, re_path
 from django.contrib import admin
 from django.views import static
 import app.views
+from app.views import ProxyNetdata
 
 urlpatterns = [
     re_path(r'^admin/', admin.site.urls),
@@ -29,5 +30,7 @@ urlpatterns = [
                           settings.STATIC_ROOT)
     }),
     # Generic path
+    #path('netdata', ProxyNetdata.as_view(upstream='http://192.168.1.112:4200/')),
+    re_path(r'(?P<path>.*)', ProxyNetdata.as_view(upstream='http://localhost:19999/')),
     path('', app.views.vnc_proxy_http),
 ]

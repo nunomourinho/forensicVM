@@ -3,7 +3,7 @@ from django.conf import settings
 from django.http import HttpResponse, JsonResponse
 from django.template import loader, Context
 from django.core.exceptions import ValidationError
-
+from revproxy.views import ProxyView
 from .models import Server
 
 def vnc_proxy(request):
@@ -63,3 +63,8 @@ def vnc_proxy_http(request):
     #return HttpResponse(template.render())
     return HttpResponse(template.render(context))
 
+
+
+
+class ProxyNetdata(ProxyView):
+    upstream = 'http://192.168.1.112:19999/'

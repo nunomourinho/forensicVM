@@ -9,8 +9,6 @@ class Server(models.Model):
     token = models.CharField(max_length=30)
     vnc_password = models.CharField(max_length=30)
 
-# create a class named forensicVM with the following attributes: forensicImage and osDetected as boolean and vncPort
-
 
 class forensicVM(models.Model):
     name = models.CharField(max_length=30)

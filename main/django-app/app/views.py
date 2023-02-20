@@ -67,4 +67,4 @@ def vnc_proxy_http(request):
 
 
 class ProxyNetdata(ProxyView):
-    upstream = 'http://192.168.1.112:19999/'
+    upstream = 'http://localhost:19999'

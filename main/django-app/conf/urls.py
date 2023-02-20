@@ -15,7 +15,7 @@ Including another URLconf
     3. Add a URL to urlpatterns:  url(r'^blog/', include(blog_urls))
 """
 from django.conf import settings
-from django.urls import path, re_path
+from django.urls import  path, re_path, include
 from django.contrib import admin
 from django.views import static
 import app.views
@@ -30,7 +30,6 @@ urlpatterns = [
                           settings.STATIC_ROOT)
     }),
     # Generic path
-    #path('netdata', ProxyNetdata.as_view(upstream='http://192.168.1.112:4200/')),
-    re_path(r'(?P<path>.*)', ProxyNetdata.as_view(upstream='http://localhost:19999/')),
+    re_path(r'^netdata/(?P<path>.*)$', ProxyNetdata.as_view()),
     path('', app.views.vnc_proxy_http),
 ]

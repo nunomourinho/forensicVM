@@ -68,3 +68,6 @@ def vnc_proxy_http(request):
 
 class ProxyNetdata(ProxyView):
     upstream = 'http://localhost:19999'
+
+class ProxyShellbox(ProxyView):
+    upstream = 'http://localhost:4200'

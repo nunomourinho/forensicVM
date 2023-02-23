@@ -20,6 +20,7 @@ from django.contrib import admin
 from django.views import static
 import app.views
 from app.views import ProxyNetdata, ProxyShellbox
+#, ProxyMeo
 
 urlpatterns = [
     re_path(r'^admin/', admin.site.urls),
@@ -32,5 +33,6 @@ urlpatterns = [
     # Generic path
     re_path(r'^netdata/(?P<path>.*)$', ProxyNetdata.as_view()),
     re_path(r'^shell/(?P<path>.*)$', ProxyShellbox.as_view()),
+    #re_path(r'^meo/(?P<path>.*)$', ProxyMeo.as_view()),
     path('', app.views.vnc_proxy_http),
 ]

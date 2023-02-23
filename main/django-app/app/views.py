@@ -71,3 +71,6 @@ class ProxyNetdata(ProxyView):
 
 class ProxyShellbox(ProxyView):
     upstream = 'http://localhost:4200'
+
+#class ProxyMeo(ProxyView):
+#    upstream = 'https://192.168.1.254'

@@ -1,12 +1,13 @@
 image=$1
 name=$2
-image_ewf_mnt=/forensicVM/mnt/image
-tmp_mount=/forensicVM/tmp
+image_ewf_mnt=/forensicVM/mnt/vm/$name/ewf
 win_mount=/forensicVM/mnt/win
 vm_mount=/forensicVM/mnt/vm
+tmp_mount=$vm_mount
 vm_name=/forensicVM/mnt/vm/$name
 
 mkdir $vm_name
+mkdir $image_ewf_mnt
 tput bold
 tput setaf 2
 echo "1) Access forensic image location"
@@ -21,24 +22,24 @@ tput bold
 tput setaf 2
 echo "3) Get image information"
 tput sgr0
-virt-inspector $image_ewf_mnt/ewf1 | tee $tmp_mount/soinfo-$name.txt
+virt-inspector $image_ewf_mnt/ewf1 | tee $vm_mount/info-$name.txt
 tput bold
 tput setaf 2
 echo "4) Create backing file snapshot"
 tput sgr0
-cd $tmp_mount
-qemu-img create -f qcow2 -b $image_ewf_mnt/ewf1 -F raw snapshot-temp-$name.qcow2.snap
+cd $vm_name
+qemu-img create -f qcow2 -b $image_ewf_mnt/ewf1 -F raw S0001-P0000-$name.qcow2-sda
 tput bold
 tput setaf 2
 echo "5) Activate nbd block device"
 tput sgr0
-modprobe nbd max_parts=25
-qemu-nbd --connect=/dev/nbd0 snapshot-temp-$name.qcow2.snap
+/sbin/modprobe nbd max_parts=25
+qemu-nbd --connect=/dev/nbd0 S0001-P0000-$name.qcow2-sda
 tput bold
 tput setaf 2
 echo "6) Remove hibernate file"
 tput sgr0
-xmllint --xpath '//mountpoint' $tmp_mount/soinfo-$name.txt | awk -F'"' '{print $2}' | while read line ; do
+xmllint --xpath '//mountpoint' $vm_mount/info-$name.txt | awk -F'"' '{print $2}' | while read line ; do
    NUMBER=$(echo $line | tr -dc '0-9')
    tput bold
    tput setaf 2
@@ -60,15 +61,15 @@ tput bold
 tput setaf 2
 echo "7) Add virtio drivers and qemu guest"
 tput sgr0
-virt-v2v -i disk $tmp_mount/snapshot-temp-$name.qcow2.snap  -o qemu -of qcow2 -os $vm_name -on $name.qcow2
+virt-v2v -i disk $vm_name/S0001-P0000-$name.qcow2-sda  -o qemu -of qcow2 -os $vm_name -on S0002-P0001-$name.qcow2
 tput bold
 tput setaf 2
 echo "8) Umounting paths"
 tput sgr0
 cd ..
-umount  $image_ewf_mnt
+#umount  $image_ewf_mnt
 tput bold
 tput setaf 2
 echo "9) Delete temp snapshot"
 tput sgr0
-rm $tmp_mount/snapshot-temp-$name.qcow2.snap
+#rm $tmp_mount/snapshot-temp-$name.qcow2.snap

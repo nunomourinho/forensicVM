@@ -1,10 +1,23 @@
+# Image is the complete path for the forensic image or directory (in case aff directory)
 image=$1
+
+# Name: Name
 name=$2
+if [ ! -z "$3"]; then
+	mode=$3
+else
+	mode="copy"
+fi
+
 image_ewf_mnt=/forensicVM/mnt/vm/$name/ewf
 win_mount=/forensicVM/mnt/win
 vm_mount=/forensicVM/mnt/vm
 tmp_mount=$vm_mount
 vm_name=/forensicVM/mnt/vm/$name
+
+if [ mode == "snap]; then
+   touch /tmp/qemu-img-cp-now
+fi
 
 mkdir $vm_name
 mkdir $image_ewf_mnt
@@ -62,14 +75,16 @@ tput setaf 2
 echo "7) Add virtio drivers and qemu guest"
 tput sgr0
 virt-v2v -i disk $vm_name/S0001-P0000-$name.qcow2-sda  -o qemu -of qcow2 -os $vm_name -on S0002-P0001-$name.qcow2
-tput bold
-tput setaf 2
-echo "8) Umounting paths"
-tput sgr0
-cd ..
-#umount  $image_ewf_mnt
-tput bold
-tput setaf 2
-echo "9) Delete temp snapshot"
-tput sgr0
-#rm $tmp_mount/snapshot-temp-$name.qcow2.snap
+if [ mode != "snap]; then
+  tput bold
+  tput setaf 2
+  echo "8) Umounting paths"
+  tput sgr0
+  cd ..
+  umount  $image_ewf_mnt
+  tput bold
+  tput setaf 2
+  echo "9) Delete temp snapshot"
+  tput sgr0
+  rm $tmp_mount/snapshot-temp-$name.qcow2.snap
+fi

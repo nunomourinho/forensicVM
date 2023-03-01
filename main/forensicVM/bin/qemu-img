@@ -5,6 +5,7 @@ if [[ $1 == "convert" ]] && [[ ${10} == *"tmp"* ]] && [[ ${11} == *"forensicVM"*
 
     mv ${10} ${11}
     touch ${10}
+    rm /tmp/qemu-img-cp-now
     exit 0
 else
     /usr/bin/qemu-img.forensicVM $@

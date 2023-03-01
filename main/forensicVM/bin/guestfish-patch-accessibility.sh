@@ -1,4 +1,5 @@
 #!/bin/bash -
+/forensicVM/bin/remove-hibernation.sh $1
 set -e
 guestfile="$1"
 

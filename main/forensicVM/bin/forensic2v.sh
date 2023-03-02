@@ -15,7 +15,7 @@ vm_mount=/forensicVM/mnt/vm
 tmp_mount=$vm_mount
 vm_name=/forensicVM/mnt/vm/$name
 
-if [ mode == "snap]; then
+if [ mode == "snap" ]; then
    touch /tmp/qemu-img-cp-now
 fi
 
@@ -75,7 +75,7 @@ tput setaf 2
 echo "7) Add virtio drivers and qemu guest"
 tput sgr0
 virt-v2v -i disk $vm_name/S0001-P0000-$name.qcow2-sda  -o qemu -of qcow2 -os $vm_name -on S0002-P0001-$name.qcow2
-if [ mode != "snap]; then
+if [ mode != "snap" ]; then
   tput bold
   tput setaf 2
   echo "8) Umounting paths"

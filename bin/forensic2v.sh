@@ -11,26 +11,31 @@ fi
 # Detect what image manager should be used to open the forensic image
 imagemanager=""
 if [[ -n $1 ]]; then
-    ewfinfo "$1"
+    qemu-img info "$1" | grep "file format" | grep qcow2
     if [[ $? -eq 0 ]]; then
-        imagemanager="ewf"
+        imagemanager="qemu"
     else
-        affinfo "$1"
-        if [[ $? -eq 0 ]]; then
-           imagemanager="aff"
-        else
-            qemu-img info "$1"
-            if [[ $? -eq 0 ]]; then
-               imagemanager="qemu"
-            else
-               echo "Image format not detected. Aborting"
-               exit 1
-            fi
-        fi
-    fi
-else
-    echo "The image parameter (1) is missing"
-    exit 1
+      ewfinfo "$1"
+      if [[ $? -eq 0 ]]; then
+          imagemanager="ewf"
+      else
+          affinfo "$1"
+          if [[ $? -eq 0 ]]; then
+             imagemanager="aff"
+          else
+              qemu-img info "$1"
+              if [[ $? -eq 0 ]]; then
+                 imagemanager="qemu"
+              else
+                 echo "Image format not detected. Aborting"
+                 exit 1
+              fi
+          fi
+      fi
+  fi
+  else
+      echo "The image parameter (1) is missing"
+      exit 1
 fi
 
 echo "Converting using utility: $imagemanager"
@@ -123,6 +128,10 @@ if [ $imagemanager == "aff" ]; then
    virt-inspector "$affrawmnt" | tee $vm_mount/info-"$name".txt
 fi
 
+if [ $imagemanager == "qemu" ]; then
+   virt-inspector "$1" | tee $vm_mount/info-"$name".txt
+fi
+
 
 tput bold
 tput setaf 2
@@ -136,6 +145,10 @@ fi
 
 if [ $imagemanager == "aff" ]; then
    qemu-img create -f qcow2 -b "$affrawmnt" -F raw S0001-P0000-"$name".qcow2-sda
+fi
+
+if [ $imagemanager == "qemu" ]; then
+   qemu-img create -f qcow2 -b "$1" -F qcow2 S0001-P0000-"$name".qcow2-sda
 fi
 
 tput bold
@@ -186,6 +199,7 @@ if [ $mode != "snap" ]; then
   if [ $imagemanager == "ewf" ]; then
      umount "$image_ewf_mnt"
   fi
+
   if [ $imagemanager == "aff" ]; then
      umount "$image_aff_mnt"
   fi

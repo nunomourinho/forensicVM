@@ -1,5 +1,6 @@
 #!/bin/bash
 
+
 # Image is the complete path for the forensic image
 
 if [[ -z $1 ]] || [[ -z $2 ]]; then
@@ -7,17 +8,19 @@ if [[ -z $1 ]] || [[ -z $2 ]]; then
     exit 1
 fi
 
+# Detect what image manager should be used to open the forensic image
 imagemanager=""
 if [[ -n $1 ]]; then
-    # shellcheck disable=SC1073
-    # shellcheck disable=SC1072
-    if [[ ewfinfo "$1" -eq 0 ]]; then
+    ewfinfo "$1"
+    if [[ $? -eq 0 ]]; then
         imagemanager="ewf"
     else
-        if [[ affinfo "$1" -eq 0 ]]; then
+        affinfo "$1"
+        if [[ $? -eq 0 ]]; then
            imagemanager="aff"
         else
-            if [[ qemu-img info "$1" -eq 0 ]]; then
+            qemu-img info "$1"
+            if [[ $? -eq 0 ]]; then
                imagemanager="qemu"
             else
                echo "Image format not detected. Aborting"
@@ -44,6 +47,7 @@ else
 fi
 
 image_ewf_mnt=/forensicVM/mnt/vm/$name/ewf
+image_aff_mnt=/forensicVM/mnt/vm/$name/aff
 win_mount=/forensicVM/mnt/vm/$name/win
 vm_mount=/forensicVM/mnt/vm
 tmp_mount=$vm_mount
@@ -55,7 +59,33 @@ fi
 
 mkdir "$vm_name"
 mkdir "$image_ewf_mnt"
+mkdir "$image_aff_mnt"
 mkdir "$win_mount"
+
+
+function CleanUpINT {
+     echo "CleanUp on errors"
+     qemu-nbd --disconnect "/dev/nbd0"
+     if [ $imagemanager == "ewf" ]; then
+        umount "$image_ewf_mnt"
+     fi
+     if [ $imagemanager == "aff" ]; then
+        umount "$image_aff_mnt"
+     fi
+     rm "${vm_name}/S0001-P0000-${name}.qcow2-sda"
+     exit 1
+}
+
+function CleanUpEXIT {
+     echo "Normal CleanUp"
+     exit 0
+}
+
+# Call the CleanUp function on exit
+
+trap CleanUpINT INT
+trap CleanUpEXIT EXIT
+
 
 tput bold
 tput setaf 2
@@ -65,25 +95,54 @@ tput bold
 tput setaf 2
 echo "2) Mount forensic image"
 tput sgr0
-# run command if mode == "snap"
+
 if [ $imagemanager == "ewf" ]; then
    ewfmount "$image" "$image_ewf_mnt"/
+fi
+
+if [ $imagemanager == "aff" ]; then
+   affuse -o direct_io "$image" "$image_aff_mnt"/
+   if [[ $? -eq 0 ]]; then
+       affrawmnt="${image_aff_mnt}/`ls $image_aff_mnt`"
+       echo "Image mounted on: $affrawmnt"
+   else
+       echo "Error: could not mount $image"
+       exit 1
+   fi
 fi
 
 tput bold
 tput setaf 2
 echo "3) Get image information"
 tput sgr0
-virt-inspector "$image_ewf_mnt"/ewf1 | tee $vm_mount/info-"$name".txt
+if [ $imagemanager == "ewf" ]; then
+   virt-inspector "$image_ewf_mnt"/ewf1 | tee $vm_mount/info-"$name".txt
+fi
+
+if [ $imagemanager == "aff" ]; then
+   virt-inspector "$affrawmnt" | tee $vm_mount/info-"$name".txt
+fi
+
+
 tput bold
 tput setaf 2
 echo "4) Create backing file snapshot"
 tput sgr0
 # shellcheck disable=SC2164
 cd "$vm_name"
-qemu-img create -f qcow2 -b "$image_ewf_mnt"/ewf1 -F raw S0001-P0000-"$name".qcow2-sda
+if [ $imagemanager == "ewf" ]; then
+   qemu-img create -f qcow2 -b "$image_ewf_mnt"/ewf1 -F raw S0001-P0000-"$name".qcow2-sda
+fi
+
+if [ $imagemanager == "aff" ]; then
+   qemu-img create -f qcow2 -b "$affrawmnt" -F raw S0001-P0000-"$name".qcow2-sda
+fi
+
 tput bold
 tput setaf 2
+
+
+
 echo "5) Activate nbd block device"
 tput sgr0
 /sbin/modprobe nbd max_parts=25
@@ -111,6 +170,8 @@ xmllint --xpath '//mountpoint' $vm_mount/info-"$name".txt | awk -F'"' '{print $2
 done
 qemu-nbd --disconnect "/dev/nbd0"
 sync
+
+
 tput bold
 tput setaf 2
 echo "7) Add virtio drivers and qemu guest"
@@ -122,10 +183,19 @@ if [ $mode != "snap" ]; then
   echo "8) Umounting paths"
   tput sgr0
   cd ..
-  umount  "$image_ewf_mnt"
+  if [ $imagemanager == "ewf" ]; then
+     umount "$image_ewf_mnt"
+  fi
+  if [ $imagemanager == "aff" ]; then
+     umount "$image_aff_mnt"
+  fi
+
   tput bold
   tput setaf 2
   echo "9) Delete temp snapshot"
   tput sgr0
-  rm "$tmp_mount/snapshot-temp-$name.qcow2.snap"
+  rm "${vm_name}/S0001-P0000-${name}.qcow2-sda"
 fi
+
+
+

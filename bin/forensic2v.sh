@@ -1,6 +1,21 @@
 #!/bin/bash
 
 
+# Helper function: Change qemu startup script.
+function change_qemu_vm {
+   vmconfig=`cat $1 | grep -v net0 | grep -v display | grep -v qxl | grep -v balloon | grep -v viosock`
+   extra_parameters="   -display vnc=0.0.0.0:0,websocket=5901 \\
+       -chardev socket,id=mon0,host=localhost,port=4444,server=on,wait=off \\
+       -mon chardev=mon0,mode=control,pretty=on \\
+       -usb -device usb-tablet -device usb-kbd \\
+       -vga virtio "
+
+    echo "$vmconfig
+    $extra_parameters" >$2
+    chmod 700 $2
+}
+
+
 # Image is the complete path for the forensic image
 
 if [[ -z $1 ]] || [[ -z $2 ]]; then
@@ -50,6 +65,7 @@ if [ ! -z "$3" ]; then
 else
 	mode="copy"
 fi
+echo $mode
 
 image_ewf_mnt=/forensicVM/mnt/vm/$name/ewf
 image_aff_mnt=/forensicVM/mnt/vm/$name/aff
@@ -190,6 +206,9 @@ tput setaf 2
 echo "7) Add virtio drivers and qemu guest"
 tput sgr0
 virt-v2v -i disk "$vm_name/S0001-P0000-$name.qcow2-sda"  -o qemu -of qcow2 -os "$vm_name" -on "S0002-P0001-$name.qcow2"
+change_qemu_vm "$vm_name/S0002-P0001-$name.qcow2.sh" "$vm_name/S0002-P0001-$name.qcow2-vnc.sh"
+
+
 if [ $mode != "snap" ]; then
   tput bold
   tput setaf 2
@@ -210,6 +229,5 @@ if [ $mode != "snap" ]; then
   tput sgr0
   rm "${vm_name}/S0001-P0000-${name}.qcow2-sda"
 fi
-
 
 

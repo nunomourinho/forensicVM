@@ -8,7 +8,8 @@ function change_qemu_vm {
        -chardev socket,id=mon0,host=localhost,port=4444,server=on,wait=off \\
        -mon chardev=mon0,mode=control,pretty=on \\
        -usb -device usb-tablet -device usb-kbd \\
-       -vga virtio "
+       -vga virtio \\
+       -boot menu=on,strict=on,reboot-timeout=10000,splash-time=20000,splash=/forensicVM/branding/bootsplash.jpg"
 
     echo "$vmconfig
     $extra_parameters" >$2
@@ -73,6 +74,7 @@ win_mount=/forensicVM/mnt/vm/$name/win
 vm_mount=/forensicVM/mnt/vm
 tmp_mount=$vm_mount
 vm_name=/forensicVM/mnt/vm/$name
+info_name=/forensicVM/mnt/vm/$name/${name}.info
 
 if [ $mode == "snap" ]; then
    touch /tmp/qemu-img-cp-now
@@ -137,15 +139,15 @@ tput setaf 2
 echo "3) Get image information"
 tput sgr0
 if [ $imagemanager == "ewf" ]; then
-   virt-inspector "$image_ewf_mnt"/ewf1 | tee $vm_mount/info-"$name".txt
+   virt-inspector "$image_ewf_mnt"/ewf1 | tee ${info_name}
 fi
 
 if [ $imagemanager == "aff" ]; then
-   virt-inspector "$affrawmnt" | tee $vm_mount/info-"$name".txt
+   virt-inspector "$affrawmnt" | tee ${info_name}
 fi
 
 if [ $imagemanager == "qemu" ]; then
-   virt-inspector "$1" | tee $vm_mount/info-"$name".txt
+   virt-inspector "$1" | tee ${info_name}
 fi
 
 
@@ -172,6 +174,7 @@ tput setaf 2
 
 
 
+
 echo "5) Activate nbd block device"
 tput sgr0
 /sbin/modprobe nbd max_parts=25
@@ -181,7 +184,7 @@ tput setaf 2
 echo "6) Remove hibernate file"
 tput sgr0
 # shellcheck disable=SC2162
-xmllint --xpath '//mountpoint' $vm_mount/info-"$name".txt | awk -F'"' '{print $2}' | while read line ; do
+xmllint --xpath '//mountpoint' ${info_name} | awk -F'"' '{print $2}' | while read line ; do
    NUMBER=$(echo "$line" | tr -dc '0-9')
    tput bold
    tput setaf 2

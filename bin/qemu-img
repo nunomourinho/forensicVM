@@ -2,7 +2,7 @@
 echo "interceptado" >> /tmp/qemu-forensicVM.txt
 echo $@ >> /tmp/qemu-forensicVM.txt
 if [[ $1 == "convert" ]] && [[ ${10} == *"tmp"* ]] && [[ ${11} == *"forensicVM"* ]] && [[ -f "/tmp/qemu-img-cp-now" ]]; then
-
+    rm /tmp/qemu-img-cp-now
     mv ${10} ${11}
     touch ${10}
     exit 0

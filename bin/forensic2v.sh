@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# Record the start time
+
+start_time=$(date +%s)
+
 
 # Helper function: Change qemu startup script.
 function change_qemu_vm {
@@ -101,6 +105,24 @@ function CleanUpINT {
 
 function CleanUpEXIT {
      echo "Normal CleanUp"
+     # Record the end time
+     end_time=$(date +%s)
+
+
+     # Calculate the elapsed time in seconds
+     elapsed_time=$(($end_time - $start_time))
+
+
+     # Convert the elapsed time to days, hours, minutes, and seconds
+     days=$(($elapsed_time / 86400))
+     hours=$(($elapsed_time / 3600 % 24))
+     minutes=$(($elapsed_time / 60 % 60))
+     seconds=$(($elapsed_time % 60))
+
+
+     # Print the elapsed time in days, hours, minutes, and seconds
+     echo "Elapsed time: $days days, $hours hours, $minutes minutes, $seconds seconds"
+
      exit 0
 }
 
@@ -139,15 +161,15 @@ tput setaf 2
 echo "3) Get image information"
 tput sgr0
 if [ $imagemanager == "ewf" ]; then
-   virt-inspector "$image_ewf_mnt"/ewf1 | tee ${info_name}
+   virt-inspector "$image_ewf_mnt"/ewf1 > ${info_name}
 fi
 
 if [ $imagemanager == "aff" ]; then
-   virt-inspector "$affrawmnt" | tee ${info_name}
+   virt-inspector "$affrawmnt" > ${info_name}
 fi
 
 if [ $imagemanager == "qemu" ]; then
-   virt-inspector "$1" | tee ${info_name}
+   virt-inspector "$1" > ${info_name}
 fi
 
 
@@ -232,5 +254,8 @@ if [ $mode != "snap" ]; then
   tput sgr0
   rm "${vm_name}/S0001-P0000-${name}.qcow2-sda"
 fi
+
+
+
 
 

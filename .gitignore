@@ -2,3 +2,5 @@
 **/tmp/
 **/delete/
 main/autopsy-plugin/config.json
+main/autopsy-plugin/mykey
+main/autopsy-plugin/mykey.pub

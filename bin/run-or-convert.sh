@@ -69,7 +69,7 @@ mount -o username=$share_login,pass=$share_password,nobrl,ro,port=$share_port -t
 
 # Run forensic2v script
 /forensicVM/bin/forensic2v.sh "/forensicVM/mnt/vm/$folder_uuid/mnt/$forensic_image_path" "$folder_uuid" "$copy"
-
+umount /forensicVM/mnt/vm/$folder_uuid/mnt
 
 
 

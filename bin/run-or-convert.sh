@@ -63,6 +63,7 @@ esac
 done
 
 
+mkdir /forensicVM/mnt/vm/$folder_uuid
 mkdir /forensicVM/mnt/vm/$folder_uuid/mnt
 # Mount the windows share
 mount -o username=$share_login,pass=$share_password,nobrl,ro,port=$share_port -t cifs //127.0.0.1/$windows_share /forensicVM/mnt/vm/$folder_uuid/mnt

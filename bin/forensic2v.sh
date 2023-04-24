@@ -99,7 +99,7 @@ function CleanUpINT {
      if [ $imagemanager == "aff" ]; then
         umount "$image_aff_mnt"
      fi
-     rm "${vm_name}/S0001-P0000-${name}.qcow2-sda"
+     rm "${vm_name}/S0001-P0000.qcow2-sda"
      exit 1
 }
 
@@ -180,15 +180,15 @@ tput sgr0
 # shellcheck disable=SC2164
 cd "$vm_name"
 if [ $imagemanager == "ewf" ]; then
-   qemu-img create -f qcow2 -b "$image_ewf_mnt"/ewf1 -F raw S0001-P0000-"$name".qcow2-sda
+   qemu-img create -f qcow2 -b "$image_ewf_mnt"/ewf1 -F raw S0001-P0000.qcow2-sda
 fi
 
 if [ $imagemanager == "aff" ]; then
-   qemu-img create -f qcow2 -b "$affrawmnt" -F raw S0001-P0000-"$name".qcow2-sda
+   qemu-img create -f qcow2 -b "$affrawmnt" -F raw S0001-P0000.qcow2-sda
 fi
 
 if [ $imagemanager == "qemu" ]; then
-   qemu-img create -f qcow2 -b "$1" -F qcow2 S0001-P0000-"$name".qcow2-sda
+   qemu-img create -f qcow2 -b "$1" -F qcow2 S0001-P0000.qcow2-sda
 fi
 
 tput bold
@@ -200,7 +200,7 @@ tput setaf 2
 echo "5) Activate nbd block device"
 tput sgr0
 /sbin/modprobe nbd max_parts=25
-qemu-nbd --connect=/dev/nbd0 S0001-P0000-"$name".qcow2-sda
+qemu-nbd --connect=/dev/nbd0 S0001-P0000.qcow2-sda
 tput bold
 tput setaf 2
 echo "6) Remove hibernate file"
@@ -230,8 +230,8 @@ tput bold
 tput setaf 2
 echo "7) Add virtio drivers and qemu guest"
 tput sgr0
-virt-v2v -i disk "$vm_name/S0001-P0000-$name.qcow2-sda"  -o qemu -of qcow2 -os "$vm_name" -on "S0002-P0001-$name.qcow2"
-change_qemu_vm "$vm_name/S0002-P0001-$name.qcow2.sh" "$vm_name/S0002-P0001-$name.qcow2-vnc.sh"
+virt-v2v -i disk "$vm_name/S0001-P0000.qcow2-sda"  -o qemu -of qcow2 -os "$vm_name" -on "S0002-P0001.qcow2"
+change_qemu_vm "$vm_name/S0002-P0001.qcow2.sh" "$vm_name/S0002-P0001.qcow2-vnc.sh"
 
 
 if [ $mode != "snap" ]; then
@@ -252,7 +252,7 @@ if [ $mode != "snap" ]; then
   tput setaf 2
   echo "9) Delete temp snapshot"
   tput sgr0
-  rm "${vm_name}/S0001-P0000-${name}.qcow2-sda"
+  rm "${vm_name}/S0001-P0000.qcow2-sda"
 fi
 
 

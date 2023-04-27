@@ -62,30 +62,14 @@ case $key in
 esac
 done
 
+if ! [ -e "/forensicVM/mnt/vm/$folder_uuid/mode" ]
+then
+   mkdir /forensicVM/mnt/vm/$folder_uuid
+   mkdir /forensicVM/mnt/vm/$folder_uuid/mnt
+   # Mount the windows share
+   mount -o username=$share_login,pass=$share_password,nobrl,ro,port=$share_port -t cifs //127.0.0.1/$windows_share /forensicVM/mnt/vm/$folder_uuid/mnt
 
-mkdir /forensicVM/mnt/vm/$folder_uuid
-mkdir /forensicVM/mnt/vm/$folder_uuid/mnt
-# Mount the windows share
-mount -o username=$share_login,pass=$share_password,nobrl,ro,port=$share_port -t cifs //127.0.0.1/$windows_share /forensicVM/mnt/vm/$folder_uuid/mnt
-
-# Run forensic2v script
-/forensicVM/bin/forensic2v.sh "/forensicVM/mnt/vm/$folder_uuid/mnt/$forensic_image_path" "$folder_uuid" "$copy"
-umount /forensicVM/mnt/vm/$folder_uuid/mnt
-
-
-
-# Test if file exists
-#if ! [ -e "/forensicVM/bin/forensic2v.sh" ]
-#then
-#  echo "File does not exist. Running commands..."
-# Run your commands here
-#  echo "Done."
-#else
-#  sudo ./forensic2v.sh
-#  echo "The forensicVM already exists. Mounting folder if necessary"
-#  if mount | grep -q "/forensicVM/mnt/vm/directory/mnt"; then
-#    echo "/forensicVM/mnt/vm/directory/mnt is mounted"
-#  else
-#    echo "/forensicVM/mnt/vm/directory/mnt is not mounted"
-#  fi
-#fi
+   # Run forensic2v script
+   /forensicVM/bin/forensic2v.sh "/forensicVM/mnt/vm/$folder_uuid/mnt/$forensic_image_path" "$folder_uuid" "$copy"
+   umount /forensicVM/mnt/vm/$folder_uuid/mnt
+fi

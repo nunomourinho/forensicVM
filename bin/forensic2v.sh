@@ -97,6 +97,14 @@ mkdir "$image_aff_mnt"
 mkdir "$win_mount"
 mkdir "$run_mount"
 
+function DismountImage {
+     if [ $imagemanager == "ewf" ]; then
+        umount "$image_ewf_mnt"
+     fi
+     if [ $imagemanager == "aff" ]; then
+        umount "$image_aff_mnt"
+     fi
+}
 
 function CleanUpINT {
      echo "CleanUp on errors"
@@ -263,6 +271,7 @@ if [ $mode != "snap" ]; then
   rm "${vm_name}/S0001-P0000.qcow2-sda"
   echo "copy" > "${vm_name}/mode"
 else
+  DismountImage
   echo "snap" > "${vm_name}/mode"
 fi
 

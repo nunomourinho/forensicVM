@@ -58,12 +58,13 @@
     <link rel="preload" as="image" href="{% static 'novnc/' %}app/images/error.svg">
     <link rel="preload" as="image" href="{% static 'novnc/' %}app/images/warning.svg">
 
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+
     <script type="module" crossorigin="anonymous" src="{% static 'novnc/' %}app/error-handler.js"></script>
     <script type="module" crossorigin="anonymous" src="{% static 'novnc/' %}app/ui.js"></script>
 </head>
 
 <body>
-
     <div id="noVNC_fallback_error" class="noVNC_center">
         <div>
             <div>noVNC encountered an error:</div>
@@ -261,9 +262,10 @@
                     <img alt="" src="{% static 'novnc/' %}app/images/power.svg"> Power
                 </div>
                 <input type="button" id="noVNC_shutdown_button" value="Shutdown" onclick="shutdown()">
-                <input type="button" id="ngam_shutdown_button" value="Arrembentar com tudo" onclick="mensagem()">
                 <input type="button" id="noVNC_reboot_button" value="Reboot" onclick="reboot()">
                 <input type="button" id="noVNC_reset_button" value="Reset" onclick="reset()">                
+                <input type="button" id="ngam_shutdown_button" value="Quit" onclick="mensagem()">
+
             </div>
             </div>
 
@@ -276,7 +278,7 @@
                 <div class="noVNC_heading">
                     <img alt="" src="{% static 'novnc/' %}app/images/power.svg"> Test
                 </div>                
-                <input type="button" id="ngam_shutdown_button" value="Arrembentar com tudo" onclick="mensagem()">                
+                <input type="button" id="ngam_shutdown_button" value="Test" onclick="mensagem()">                
             </div>
             </div>
 
@@ -393,3 +395,5 @@
     }
 </script>
 </html>
+
+

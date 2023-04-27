@@ -7,11 +7,10 @@ start_time=$(date +%s)
 
 # Helper function: Change qemu startup script.
 function change_qemu_vm {
-   vmconfig=`cat $1 | grep -v net0 | grep -v display | grep -v qxl | grep -v balloon | grep -v viosock`
+   vmconfig=`cat $1 | grep -v net0 | grep -v display | grep -v qxl | grep -v balloon | grep -v viosock| sed 's|/usr/share/OVMF/|/forensicVM/usr/share/qemu/|g'`
    extra_parameters="   -display vnc=0.0.0.0:0,websocket=5901 \\
-#       -chardev socket,id=mon0,host=localhost,port=4444,server=on,wait=off \\
-#       -mon chardev=mon0,mode=control,pretty=on \\
        -qmp unix:$3,server,nowait \\
+       -pidfile $4 \\
        -usb -device usb-tablet -device usb-kbd \\
        -vga virtio \\
        -boot menu=on,strict=on,reboot-timeout=10000,splash-time=20000,splash=/forensicVM/branding/bootsplash.jpg"
@@ -19,6 +18,10 @@ function change_qemu_vm {
     echo "$vmconfig
     $extra_parameters" >$2
     chmod 700 $2
+
+#       -chardev socket,id=mon0,host=localhost,port=4444,server=on,wait=off \\
+#       -mon chardev=mon0,mode=control,pretty=on \\
+
 }
 
 
@@ -78,6 +81,7 @@ image_aff_mnt=/forensicVM/mnt/vm/$name/aff
 win_mount=/forensicVM/mnt/vm/$name/win
 run_mount=/forensicVM/mnt/vm/$name/run
 qmp_socket=$run_mount/qmp.sock
+run_pid=$run_mount/run.pid
 vm_mount=/forensicVM/mnt/vm
 tmp_mount=$vm_mount
 vm_name=/forensicVM/mnt/vm/$name
@@ -235,7 +239,7 @@ tput setaf 2
 echo "7) Add virtio drivers and qemu guest"
 tput sgr0
 virt-v2v -i disk "$vm_name/S0001-P0000.qcow2-sda"  -o qemu -of qcow2 -os "$vm_name" -on "S0002-P0001.qcow2"
-change_qemu_vm "$vm_name/S0002-P0001.qcow2.sh" "$vm_name/S0002-P0001.qcow2-vnc.sh" "$qmp_socket"
+change_qemu_vm "$vm_name/S0002-P0001.qcow2.sh" "$vm_name/S0002-P0001.qcow2-vnc.sh" "$qmp_socket" "$run_pid"
 
 
 if [ $mode != "snap" ]; then
@@ -257,6 +261,9 @@ if [ $mode != "snap" ]; then
   echo "9) Delete temp snapshot"
   tput sgr0
   rm "${vm_name}/S0001-P0000.qcow2-sda"
+  echo "copy" > "${vm_name}/mode"
+else
+  echo "snap" > "${vm_name}/mode"
 fi
 
 

@@ -98,12 +98,17 @@ mkdir "$win_mount"
 mkdir "$run_mount"
 
 function DismountImage {
+     qemu-nbd --disconnect "/dev/nbd0"
      if [ $imagemanager == "ewf" ]; then
         umount "$image_ewf_mnt"
+        echo "Dismounted $image_ewf_mnt"
      fi
      if [ $imagemanager == "aff" ]; then
         umount "$image_aff_mnt"
+        echo "Dismounted $image_aff_mnt"
+
      fi
+     sleep 5
 }
 
 function CleanUpINT {

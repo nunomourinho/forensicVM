@@ -1,9 +1,11 @@
 from django import forms
 from django.contrib import admin
+from django.utils.html import format_html
+from django.contrib import messages
 from .models import ApiKey
 
 class MaskedInput(forms.TextInput):
-    def __init__(self, attrs=None, mask_char='*', mask_length=8):
+    def __init__(self, attrs=None, mask_char='*', mask_length=4):
         self.mask_char = mask_char
         self.mask_length = mask_length
         super().__init__(attrs)
@@ -16,11 +18,13 @@ class MaskedInput(forms.TextInput):
         return masked_value
 
 class ApiKeyForm(forms.ModelForm):
-    key = forms.CharField(widget=MaskedInput(attrs={'readonly': 'readonly'}))
-
+    #key = forms.CharField(widget=MaskedInput(attrs={'readonly': 'readonly'}))
+    #key = forms.CharField(disabled=False)
     class Meta:
         model = ApiKey
-        fields = ['user', 'key']
+        fields = ['user']
+        exclude = ['key']
+
 
 @admin.register(ApiKey)
 class ApiKeyAdmin(admin.ModelAdmin):
@@ -28,10 +32,13 @@ class ApiKeyAdmin(admin.ModelAdmin):
     list_display = ('masked_key', 'created_at')
 
     def masked_key(self, obj):
-        masked_key_length = 8
-        masked_key = '*' * (len(obj.key) - masked_key_length)
-        masked_key += obj.key[-masked_key_length:]
-        return masked_key
+        masked_key_length = 4
+        if obj.key:
+            key = str(obj.key)
+            return f'{key[:masked_key_length]}{"*" * (len(key) - masked_key_length)}'
+        else:
+            return ""
+
     masked_key.short_description = 'Key'
 
     def get_queryset(self, request):
@@ -43,4 +50,8 @@ class ApiKeyAdmin(admin.ModelAdmin):
     def save_model(self, request, obj, form, change):
         obj.user = request.user
         super().save_model(request, obj, form, change)
+
+        message = format_html('New API key generated: <strong><h2>{}</h2></strong>   Please copy it to the clipboard. This is the only time that this key is visible', obj.key)
+        messages.success(request, message)
+
 

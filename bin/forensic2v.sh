@@ -205,6 +205,8 @@ if [ $imagemanager == "ewf" ]; then
 fi
 
 if [ $imagemanager == "aff" ]; then
+   echo "$affrawmnt"
+   ls "$affrawmnt"
    qemu-img create -f qcow2 -b "$affrawmnt" -F raw S0001-P0000.qcow2-sda
 fi
 

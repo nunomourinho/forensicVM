@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'revproxy',
     # Application
     'app',
+    'rest_framework',
     'apikeys',
 ]
 

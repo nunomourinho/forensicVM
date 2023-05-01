@@ -34,5 +34,6 @@ urlpatterns = [
     re_path(r'^netdata/(?P<path>.*)$', ProxyNetdata.as_view()),
     re_path(r'^shell/(?P<path>.*)$', ProxyShellbox.as_view()),
     #re_path(r'^meo/(?P<path>.*)$', ProxyMeo.as_view()),
+    path('api/', include('apikeys.urls')),
     path('', app.views.vnc_proxy_http),
 ]

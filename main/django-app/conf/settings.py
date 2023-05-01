@@ -40,8 +40,9 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django_extensions',
     'revproxy',
-    # Application    
+    # Application
     'app',
+    'apikeys',
 ]
 
 MIDDLEWARE = [

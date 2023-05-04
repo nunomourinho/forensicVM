@@ -30,7 +30,7 @@ class ForensicImageVMStatus(APIView):
         mode_file = os.path.join(run_path, "mode")
 
         if not os.path.exists(vm_path):
-            return Response({'PATH': 'does not exist'}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'PATH': 'not_exist'}, status=status.HTTP_404_NOT_FOUND)
         else:
             result = {'PATH': 'exists'}
 
@@ -64,9 +64,9 @@ class ForensicImageVMStatus(APIView):
                         result['qmp_file'] = qmp_file.group(1)
 
                 else:
-                    result['vm_status'] = 'not running'
+                    result['vm_status'] = 'stopped'
             else:
-                result['vm_status'] = 'not running'
+                result['vm_status'] = 'stopped'
 
             return Response(result, status=status.HTTP_200_OK)
 

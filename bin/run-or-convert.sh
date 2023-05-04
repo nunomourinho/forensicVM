@@ -8,6 +8,7 @@ if [[ $# -eq 0 ]] || [[ "$1" == "-h" ]] || [[ "$1" == "--help" ]]; then
     exit 0
 fi
 
+echo "1)"
 
 # Parse command-line arguments
 while [[ $# -gt 0 ]]
@@ -62,8 +63,11 @@ case $key in
 esac
 done
 
+echo "2)"
+
 if ! [ -e "/forensicVM/mnt/vm/$folder_uuid/mode" ]
 then
+   echo "3)"
    mkdir /forensicVM/mnt/vm/$folder_uuid
    mkdir /forensicVM/mnt/vm/$folder_uuid/mnt
    # Mount the windows share

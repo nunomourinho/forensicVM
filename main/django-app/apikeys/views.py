@@ -1,3 +1,5 @@
+import os
+import re
 import subprocess
 from django.shortcuts import render
 from rest_framework.views import APIView
@@ -5,8 +7,69 @@ from rest_framework.response import Response
 from rest_framework import status
 from .models import ApiKey
 
+class ForensicImageVMStatus(APIView):
+    authentication_classes = []
+    permission_classes = []
 
-# Create your views here.
+    def get(self, request, uuid):
+        api_key = request.META.get('HTTP_X_API_KEY')
+        if api_key:
+            try:
+                api_key = ApiKey.objects.get(key=api_key)
+                user = api_key.user
+                if not user.is_active:
+                    return Response({'error': 'User account is disabled.'}, status=status.HTTP_401_UNAUTHORIZED)
+            except ApiKey.DoesNotExist:
+                return Response({'error': 'Invalid API key'}, status=status.HTTP_401_UNAUTHORIZED)
+        else:
+            return Response({'error': 'API key required'}, status=status.HTTP_401_UNAUTHORIZED)
+
+        vm_path = f"/forensicVM/mnt/vm/{uuid}"
+        run_path = os.path.join(vm_path, "run")
+        pid_file = os.path.join(run_path, "run.pid")
+        mode_file = os.path.join(run_path, "mode")
+
+        if not os.path.exists(vm_path):
+            return Response({'PATH': 'does not exist'}, status=status.HTTP_404_NOT_FOUND)
+        else:
+            result = {'PATH': 'exists'}
+
+            if os.path.exists(pid_file):
+                with open(pid_file, 'r') as f:
+                    pid = f.read().strip()
+
+                cmd = f"ps -ef | grep {pid} | grep {uuid}"
+                process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+                output, _ = process.communicate()
+
+                if output:
+                    result['vm_status'] = 'running'
+
+                    mode = None
+                    if os.path.exists(mode_file):
+                        with open(mode_file, 'r') as f:
+                            mode = f.read().strip()
+                    result['running_mode'] = mode
+
+                    qemu_cmd = output.decode("utf-8").strip()
+                    vnc_port = re.search(r'-display vnc=0.0.0.0:(\d+)', qemu_cmd)
+                    websocket_port = re.search(r',websocket=(\d+)', qemu_cmd)
+                    qmp_file = re.search(r'-qmp unix:([^,]+)', qemu_cmd)
+
+                    if vnc_port:
+                        result['vnc_port'] = int(vnc_port.group(1))
+                    if websocket_port:
+                        result['websocket_port'] = int(websocket_port.group(1))
+                    if qmp_file:
+                        result['qmp_file'] = qmp_file.group(1)
+
+                else:
+                    result['vm_status'] = 'not running'
+            else:
+                result['vm_status'] = 'not running'
+
+            return Response(result, status=status.HTTP_200_OK)
+
 class CreateSshKeysView(APIView):
     authentication_classes = []
     permission_classes = []

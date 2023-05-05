@@ -3,6 +3,7 @@ import re
 import subprocess
 import socket
 import glob
+import time
 from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -51,6 +52,8 @@ class StartVMView(APIView):
 
         cmd = f"screen -d -m -S {uuid} bash {recent_vnc_script} {vnc_port} {websocket_port}"
         subprocess.run(cmd, shell=True, check=True, cwd=vm_path)
+
+        time.sleep(3)
 
         run_path = os.path.join(vm_path, "run")
         pid_file = os.path.join(run_path, "run.pid")

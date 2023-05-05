@@ -1,11 +1,68 @@
 import os
 import re
 import subprocess
+import socket
+import glob
 from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from .models import ApiKey
+
+def find_available_port(start_port):
+    port = start_port
+    while True:
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+            sock.settimeout(1)
+            result = sock.connect_ex(('localhost', port))
+            if result != 0:
+                return port
+            port += 1
+
+class StartVMView(APIView):
+    authentication_classes = []
+    permission_classes = []
+
+    def post(self, request, uuid):
+        api_key = request.META.get('HTTP_X_API_KEY')
+        if api_key:
+            try:
+                api_key = ApiKey.objects.get(key=api_key)
+                user = api_key.user
+                if not user.is_active:
+                    return Response({'error': 'User account is disabled.'}, status=status.HTTP_401_UNAUTHORIZED)
+            except ApiKey.DoesNotExist:
+                return Response({'error': 'Invalid API key'}, status=status.HTTP_401_UNAUTHORIZED)
+        else:
+            return Response({'error': 'API key required'}, status=status.HTTP_401_UNAUTHORIZED)
+
+        vm_path = f"/forensicVM/mnt/vm/{uuid}"
+        if not os.path.exists(vm_path):
+            return Response({'error': f'Path for UUID {uuid} not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        vnc_scripts = glob.glob(os.path.join(vm_path, '*-vnc.sh'))
+        if not vnc_scripts:
+            return Response({'error': f'No VNC script found for UUID {uuid}'}, status=status.HTTP_404_NOT_FOUND)
+
+        recent_vnc_script = max(vnc_scripts, key=os.path.getctime)
+
+        vnc_port = find_available_port(5900)
+        websocket_port = find_available_port(vnc_port + 1)
+
+        cmd = f"screen -d -m -S {uuid} bash {recent_vnc_script} {vnc_port} {websocket_port}"
+        subprocess.run(cmd, shell=True, check=True, cwd=vm_path)
+
+        run_path = os.path.join(vm_path, "run")
+        pid_file = os.path.join(run_path, "run.pid")
+        vm_running = os.path.exists(pid_file) and subprocess.run(f"ps -ef | grep {uuid}", shell=True, check=True).returncode == 0
+
+        result = {
+            'vm_running': vm_running,
+            'vnc_port': vnc_port,
+            'websocket_port': websocket_port
+        }
+
+        return Response(result, status=status.HTTP_200_OK)
 
 class ForensicImageVMStatus(APIView):
     authentication_classes = []

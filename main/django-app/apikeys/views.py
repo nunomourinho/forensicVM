@@ -11,6 +11,37 @@ from rest_framework import status
 from .models import ApiKey
 from subprocess import CalledProcessError
 
+from django.shortcuts import render
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from .models import ApiKey
+import os
+
+class CheckVMExistsView(APIView):
+    authentication_classes = []
+    permission_classes = []
+
+    def get(self, request, uuid):
+        api_key = request.META.get('HTTP_X_API_KEY')
+        if api_key:
+            try:
+                api_key = ApiKey.objects.get(key=api_key)
+                user = api_key.user
+                if not user.is_active:
+                    return Response({'error': 'User account is disabled.'}, status=status.HTTP_401_UNAUTHORIZED)
+            except ApiKey.DoesNotExist:
+                return Response({'error': 'Invalid API key'}, status=status.HTTP_401_UNAUTHORIZED)
+        else:
+            return Response({'error': 'API key required'}, status=status.HTTP_401_UNAUTHORIZED)
+
+        vm_path = f"/forensicVM/mnt/vm/{uuid}"
+        vm_exists = os.path.exists(vm_path)
+
+        result = {'vm_exists': vm_exists}
+
+        return Response(result, status=status.HTTP_200_OK)
+
 
 def find_available_port(start_port):
     port = start_port

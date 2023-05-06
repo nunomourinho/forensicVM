@@ -20,6 +20,36 @@ def find_available_port(start_port):
                 return port
             port += 1
 
+class StopVMView(APIView):
+    authentication_classes = []
+    permission_classes = []
+
+    def post(self, request, uuid):
+        # Authenticate user using API key
+        api_key = request.META.get('HTTP_X_API_KEY')
+        if api_key:
+            try:
+                api_key = ApiKey.objects.get(key=api_key)
+                user = api_key.user
+                if not user.is_active:
+                    return Response({'error': 'User account is disabled.'}, status=status.HTTP_401_UNAUTHORIZED)
+            except ApiKey.DoesNotExist:
+                return Response({'error': 'Invalid API key'}, status=status.HTTP_401_UNAUTHORIZED)
+        else:
+            return Response({'error': 'API key required'}, status=status.HTTP_401_UNAUTHORIZED)
+
+        # Stop the screen session
+        cmd = f"screen -S {uuid} -X quit"
+        subprocess.run(cmd, shell=True, check=True)
+
+        # Check if the screen session was terminated
+        screen_status = subprocess.run(f"screen -list | grep {uuid}", shell=True, capture_output=True).stdout.decode('utf-8')
+        vm_stopped = uuid not in screen_status
+
+        result = {'vm_stopped': vm_stopped}
+        return Response(result, status=status.HTTP_200_OK)
+
+
 class StartVMView(APIView):
     authentication_classes = []
     permission_classes = []

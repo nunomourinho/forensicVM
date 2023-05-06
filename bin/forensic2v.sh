@@ -1,17 +1,38 @@
 #!/bin/bash
 
-# Record the start time
+# This script is a shell script written in Bash that is designed to convert forensic images into virtual machine images that can be run with QEMU, a virtualization software. The script starts by checking the command-line arguments passed to it, namely the path to the forensic image and the name of the virtual machine to be created. If any of these arguments is missing, the script displays an error message and exits.
+# The script then proceeds to detect the image format of the forensic image, which could be in either qcow2, ewf, or aff format. It does this by using the 'qemu-img info' command to detect if the image is in qcow2 format, or by using the 'ewfinfo' and 'affinfo' commands to detect if it is in ewf or aff format respectively. If the format is not detected, the script displays an error message and exits.
+# Next, the script mounts the forensic image using the appropriate command for the detected image format, and extracts information about the image using the 'virt-inspector' command. It then creates a snapshot of the image using the 'qemu-img create' command and sets up a block device using the 'qemu-nbd' command.
+# The script then removes hibernate files from any mounted NTFS partitions in the snapshot using the 'ntfsfix' command, adds virtio drivers and QEMU guest agent to the snapshot using the 'virt-v2v' command, and modifies the QEMU startup script to include necessary parameters.
+# If the script is run in 'copy' mode, it unmounts the mounted directories and deletes the temporary snapshot. If the script is run in 'snap' mode, it leaves the mounted directories and the temporary snapshot intact for later use. Finally, the script records the time it started and the time it ended, and calculates and displays the elapsed time.
 
+
+# Record the start time
 start_time=$(date +%s)
 
 
 # Helper function: Change qemu startup script.
+# This is a Bash function that generates a modified QEMU virtual machine configuration file based on the input parameters.
+
+# The function takes four arguments:
+
+# $1 - the path to the original QEMU virtual machine configuration file
+# $2 - the path to the output file where the modified configuration will be saved
+# $3 - the path to the QEMU monitor socket
+# $4 - the path to the PID file for the QEMU process
+# The function first reads the original configuration file and filters out certain lines using grep. It # then replaces a path string using sed.
+
+# The modified QEMU configuration includes additional parameters for the display, QEMU monitor, USB devices, VGA, and boot options. It also adds a read-only CD-ROM drive to the virtual machine.
+
+# The modified configuration is then saved to the output file specified by $2. The file permissions are set to 700 to ensure that only the owner can execute it.
 function change_qemu_vm {
    vmconfig=`cat $1 | grep -v net0 | grep -v display | grep -v qxl | grep -v balloon | grep -v viosock| sed 's|/usr/share/OVMF/|/forensicVM/usr/share/qemu/|g'`
-   extra_parameters="   -display vnc=0.0.0.0:0,websocket=5901 \\
+   extra_parameters="   -display vnc=0.0.0.0:\$1,websocket=\$2 \\
        -qmp unix:$3,server,nowait \\
        -pidfile $4 \\
        -usb -device usb-tablet -device usb-kbd \\
+	   -drive if=none,id=drive-ide0-0-0,readonly=on \\
+       -device ide-cd,bus=ide.0,unit=0,drive=drive-ide0-0-0,id=ide0-0-0 \\
        -vga virtio \\
        -boot menu=on,strict=on,reboot-timeout=10000,splash-time=20000,splash=/forensicVM/branding/bootsplash.jpg"
 

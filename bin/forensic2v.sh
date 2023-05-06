@@ -60,21 +60,20 @@ function create_and_format_vmdk {
     # Create a new NTFS partition with guestfish
     guestfish --rw -a $vmdk_file <<EOF
     launch
-    part-init /dev/sda mbr
-    part-add /dev/sda p 2048 -1
+    part-init /dev/sda gpt
+    part-add /dev/sda p 2048 -1024
+    part-set-gpt-type /dev/sda 1 EBD0A0A2-B9E5-4433-87C0-68B6B72699C7
     mkfs ntfs /dev/sda1
-EOF
-
-    # Set the partition label with guestfish
-    guestfish --rw -a $vmdk_file <<EOF
-    launch
-    mount /dev/sda1 /
-    mkdir /important
-    umount /
     set-label /dev/sda1 "$label_name"
+    mount /dev/sda1 /
+    mkdir /important001
+    mkdir /important002
+    mkdir /important003
+    write /readme.txt "Forensic VM: This drive was automaticaly created. Please put the probable evidence inside the sub-folders with the same tag of autopsy software for the easyest classification"
+    write /leiame.txt "Forensic VM: Este disco foi criado automáticamente. Para facilitar a classificação, por favor coloque as evidências recolhidas nas subpastas que têm o mesmo nome que a etiqueta no software autopsy"
+    umount /
 EOF
 }
-
 
 # Image is the complete path for the forensic image
 

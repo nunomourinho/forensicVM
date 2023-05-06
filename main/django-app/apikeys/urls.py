@@ -9,6 +9,6 @@ urlpatterns = [
     path('forensic-image-vm-status/<str:uuid>/', ForensicImageVMStatus.as_view(), name='forensic-image-vm-status'),
     path('start-vm/<str:uuid>/', StartVMView.as_view(), name='start-vm'),
     path('stop-vm/<str:uuid>/', StopVMView.as_view(), name='stop-vm'),
-    path('api/check-vm-exists/<uuid>/', CheckVMExistsView.as_view(), name='check-vm-exists'),
+    path('check-vm-exists/<uuid>/', CheckVMExistsView.as_view(), name='check-vm-exists'),
 ]
 

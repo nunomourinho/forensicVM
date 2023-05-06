@@ -34,6 +34,8 @@ function change_qemu_vm {
 	   -drive if=none,id=drive-ide0-0-0,readonly=on \\
        -device ide-cd,bus=ide.0,unit=0,drive=drive-ide0-0-0,id=ide0-0-0 \\
        -vga virtio \\
+       -drive file=evidence.vmdk,if=none,id=drive-virtio-disk1,format=vmdk \\
+       -device virtio-blk-pci,drive=drive-virtio-disk1,id=virtio-disk1,bootindex=1 \\
        -boot menu=on,strict=on,reboot-timeout=10000,splash-time=20000,splash=/forensicVM/branding/bootsplash.jpg"
 
     echo "$vmconfig
@@ -44,6 +46,34 @@ function change_qemu_vm {
 #       -mon chardev=mon0,mode=control,pretty=on \\
 
 }
+
+#!/bin/bash
+
+function create_and_format_vmdk {
+    # Path to the new VMDK file
+    vmdk_file="$1"
+
+    # Create a new VMDK file with 20GB of space
+    qemu-img create -f vmdk $vmdk_file 20G
+
+    # Name for the label
+    label_name="possible evidence"
+
+    # Create a new NTFS partition with guestfish
+    guestfish --rw -a $vmdk_file <<EOF
+    part-init /dev/sda mbr
+    part-add /dev/sda p 2048 -1
+    mkfs ntfs /dev/sda1
+EOF
+
+    # Set the partition label with guestfish
+    guestfish --rw -a $vmdk_file <<EOF
+    mount /dev/sda1 /
+    fs-label /dev/sda1 "$label_name"
+    umount /
+EOF
+}
+
 
 
 # Image is the complete path for the forensic image
@@ -101,6 +131,8 @@ image_ewf_mnt=/forensicVM/mnt/vm/$name/ewf
 image_aff_mnt=/forensicVM/mnt/vm/$name/aff
 win_mount=/forensicVM/mnt/vm/$name/win
 run_mount=/forensicVM/mnt/vm/$name/run
+evidence_disk=/forensicVM/mnt/vm/$name/evidence.vmdk
+
 qmp_socket=$run_mount/qmp.sock
 run_pid=$run_mount/run.pid
 vm_mount=/forensicVM/mnt/vm
@@ -277,11 +309,18 @@ tput sgr0
 virt-v2v -i disk "$vm_name/S0001-P0000.qcow2-sda"  -o qemu -of qcow2 -os "$vm_name" -on "S0002-P0001.qcow2"
 change_qemu_vm "$vm_name/S0002-P0001.qcow2.sh" "$vm_name/S0002-P0001.qcow2-vnc.sh" "$qmp_socket" "$run_pid"
 
+tput bold
+tput setaf 2
+echo "8) Create a evidence disk"
+tput sgr0
+# Create a evidence disk
+create_and_format_vmdk "${evidence_disk}"
+
 
 if [ $mode != "snap" ]; then
   tput bold
   tput setaf 2
-  echo "8) Umounting paths"
+  echo "9) Umounting paths"
   tput sgr0
   cd ..
   if [ $imagemanager == "ewf" ]; then
@@ -294,7 +333,7 @@ if [ $mode != "snap" ]; then
 
   tput bold
   tput setaf 2
-  echo "9) Delete temp snapshot"
+  echo "10) Delete temp snapshot"
   tput sgr0
   rm "${vm_name}/S0001-P0000.qcow2-sda"
   echo "copy" > "${vm_name}/mode"

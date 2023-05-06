@@ -8,6 +8,6 @@ urlpatterns = [
     path('create-ssh-keys/', CreateSshKeysView.as_view(), name='create-ssh-keys'),
     path('forensic-image-vm-status/<str:uuid>/', ForensicImageVMStatus.as_view(), name='forensic-image-vm-status'),
     path('start-vm/<str:uuid>/', StartVMView.as_view(), name='start-vm'),
-    path('stop/<uuid:uuid>/', StopVMView.as_view(), name='stop_vm'),
+    path('stop-vm/<str:uuid>/', StopVMView.as_view(), name='stop-vm'),
 ]
 

@@ -9,6 +9,8 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from .models import ApiKey
+from subprocess import CalledProcessError
+
 
 def find_available_port(start_port):
     port = start_port
@@ -40,7 +42,11 @@ class StopVMView(APIView):
 
         # Stop the screen session
         cmd = f"screen -S {uuid} -X quit"
-        subprocess.run(cmd, shell=True, check=True)
+
+        try:
+            subprocess.run(cmd, shell=True, check=True)
+        except CalledProcessError:
+            return Response({'error': f'No screen session found for UUID {uuid}'}, status=status.HTTP_404_NOT_FOUND)
 
         # Check if the screen session was terminated
         screen_status = subprocess.run(f"screen -list | grep {uuid}", shell=True, capture_output=True).stdout.decode('utf-8')

@@ -16,6 +16,37 @@ from rest_framework.response import Response
 from rest_framework import status
 from .models import ApiKey
 import os
+import shutil
+
+class DeleteVMView(APIView):
+    authentication_classes = []
+    permission_classes = []
+
+    def post(self, request, uuid):
+        api_key = request.META.get('HTTP_X_API_KEY')
+        if api_key:
+            try:
+                api_key = ApiKey.objects.get(key=api_key)
+                user = api_key.user
+                if not user.is_active:
+                    return Response({'error': 'User account is disabled.'}, status=status.HTTP_401_UNAUTHORIZED)
+            except ApiKey.DoesNotExist:
+                return Response({'error': 'Invalid API key'}, status=status.HTTP_401_UNAUTHORIZED)
+        else:
+            return Response({'error': 'API key required'}, status=status.HTTP_401_UNAUTHORIZED)
+
+        vm_path = f"/forensicVM/mnt/vm/{uuid}"
+        if not os.path.exists(vm_path):
+            return Response({'error': f'Path for UUID {uuid} not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        # Delete the VM directory
+        try:
+            shutil.rmtree(vm_path)
+            result = {'vm_deleted': True}
+        except Exception as e:
+            result = {'vm_deleted': False, 'error': str(e)}
+
+        return Response(result, status=status.HTTP_200_OK)
 
 class CheckVMExistsView(APIView):
     authentication_classes = []

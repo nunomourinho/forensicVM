@@ -59,9 +59,11 @@ function create_and_format_vmdk {
     # Create a new NTFS partition with guestfish
     guestfish --rw -a $vmdk_file <<EOF
     launch
-    part-init /dev/sda gpt
+#   part-init /dev/sda gpt
+    part-init /dev/sda mbr
     part-add /dev/sda p 2048 -1024
-    part-set-gpt-type /dev/sda 1 EBD0A0A2-B9E5-4433-87C0-68B6B72699C7
+    part-set-mbr-id /dev/sda 1 0x07 
+#   part-set-gpt-type /dev/sda 1 EBD0A0A2-B9E5-4433-87C0-68B6B72699C7
     mkfs ntfs /dev/sda1
     set-label /dev/sda1 "$label_name"
     mount /dev/sda1 /

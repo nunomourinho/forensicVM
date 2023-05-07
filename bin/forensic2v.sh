@@ -34,8 +34,7 @@ function change_qemu_vm {
 	   -drive if=none,id=drive-ide0-0-0,readonly=on \\
        -device ide-cd,bus=ide.0,unit=0,drive=drive-ide0-0-0,id=ide0-0-0 \\
        -vga virtio \\
-       -drive file=evidence.vmdk,if=none,id=drive-virtio-disk1,format=vmdk,index=1 \\
-       -device virtio-blk-pci,drive=drive-virtio-disk1,id=virtio-disk1 \\
+       -drive file=evidence.vmdk,format=vmdk,if=virtio,index=1,media=disk \
        -boot menu=on,strict=on,reboot-timeout=10000,splash-time=20000,splash=/forensicVM/branding/bootsplash.jpg"
 
     echo "$vmconfig

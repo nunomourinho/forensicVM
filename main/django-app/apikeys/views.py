@@ -41,16 +41,19 @@ class CheckVMExistsView(APIView):
 
         return Response(result, status=status.HTTP_200_OK)
 
-
 def find_available_port(start_port):
     port = start_port
     while True:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
             sock.settimeout(1)
-            result = sock.connect_ex(('localhost', port))
-            if result != 0:
-                return port
-            port += 1
+            try:
+                sock.bind(('localhost', port + 1))
+                return (port, port + 1)
+            except OSError as e:
+                if e.errno == 98:  # "Address already in use"
+                    port += 2
+                else:
+                    raise e
 
 class StopVMView(APIView):
     authentication_classes = []
@@ -113,8 +116,7 @@ class StartVMView(APIView):
 
         recent_vnc_script = max(vnc_scripts, key=os.path.getctime)
 
-        vnc_port = find_available_port(5900)
-        websocket_port = find_available_port(vnc_port + 1)
+        vnc_port, websocket_port = find_available_port(5900)
 
         cmd = f"screen -d -m -S {uuid} bash {recent_vnc_script} {vnc_port} {websocket_port}"
         subprocess.run(cmd, shell=True, check=True, cwd=vm_path)

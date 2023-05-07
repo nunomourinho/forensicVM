@@ -71,7 +71,7 @@ then
    mkdir /forensicVM/mnt/vm/$folder_uuid
    mkdir /forensicVM/mnt/vm/$folder_uuid/mnt
    # Mount the windows share
-   mount -o username=$share_login,pass=$share_password,nobrl,ro,port=$share_port -t cifs //127.0.0.1/$windows_share /forensicVM/mnt/vm/$folder_uuid/mnt
+   mount -o username="$share_login",pass="$share_password",nobrl,ro,port=$share_port -t cifs "//127.0.0.1/$windows_share" "/forensicVM/mnt/vm/$folder_uuid/mnt"
 
    # Run forensic2v script
    /forensicVM/bin/forensic2v.sh "/forensicVM/mnt/vm/$folder_uuid/mnt/$forensic_image_path" "$folder_uuid" "$copy"

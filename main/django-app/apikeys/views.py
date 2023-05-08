@@ -18,6 +18,38 @@ from .models import ApiKey
 import os
 import shutil
 
+class MountFolderView(APIView):
+    authentication_classes = []
+    permission_classes = []
+
+    def post(self, request, uuid):
+        api_key = request.META.get('HTTP_X_API_KEY')
+        if api_key:
+            try:
+                api_key = ApiKey.objects.get(key=api_key)
+                user = api_key.user
+                if not user.is_active:
+                    return Response({'error': 'User account is disabled.'}, status=status.HTTP_401_UNAUTHORIZED)
+            except ApiKey.DoesNotExist:
+                return Response({'error': 'Invalid API key'}, status=status.HTTP_401_UNAUTHORIZED)
+        else:
+            return Response({'error': 'API key required'}, status=status.HTTP_401_UNAUTHORIZED)
+
+        folder_to_mount = request.data.get('folder')
+        if not folder_to_mount:
+            return Response({'error': 'No folder specified to mount'}, status=status.HTTP_400_BAD_REQUEST)
+
+        mount_path = f"/forensicVM/mnt/vm/{uuid}/mnt"
+        os.makedirs(mount_path, exist_ok=True)
+
+        cmd = f"mount --bind {folder_to_mount} {mount_path}"
+        try:
+            subprocess.run(cmd, shell=True, check=True)
+            result = {'folder_mounted': True}
+            return Response(result, status=status.HTTP_200_OK)
+        except subprocess.CalledProcessError as e:
+            return Response({'error': f"Error mounting folder: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 class DeleteVMView(APIView):
     authentication_classes = []
     permission_classes = []

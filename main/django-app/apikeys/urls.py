@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import ProtectedView, RunScriptView, DeleteVMView, MountFolderView, ResetVMView
+from .views import ProtectedView, RunScriptView, DeleteVMView, MountFolderView, ResetVMView, ShutdownVMView
 from .views import CreateSshKeysView, ForensicImageVMStatus, StartVMView, StopVMView, CheckVMExistsView
 
 urlpatterns = [
@@ -13,5 +13,6 @@ urlpatterns = [
     path('delete-vm/<uuid>/', DeleteVMView.as_view(), name='delete-vm'),
     path('mount-folder/<uuid>/', MountFolderView.as_view(), name='mount-folder'),
     path('reset-vm/<uuid>/', ResetVMView.as_view(), name='reset-vm'),
+    path('shutdown-vm/<uuid>/', ShutdownVMView.as_view(), name='shutdown_vm'),
 ]
 

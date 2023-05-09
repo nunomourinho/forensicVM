@@ -27,6 +27,53 @@ from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from django.views import View
 
+async def system_shutdown(uuid):
+    qmp = QMPClient('forensicVM')
+    socket_path = f"/forensicVM/mnt/vm/{uuid}/run/qmp.sock"
+    try:
+        await qmp.connect(socket_path)
+        res = await qmp.execute('query-status')
+        print(f"VM status: {res['status']}")
+    except Exception as e:
+        print(e)
+
+    res = await qmp.execute('system_powerdown')
+    print(res)
+
+    await qmp.disconnect()
+
+@method_decorator(csrf_exempt, name='dispatch')
+class ShutdownVMView(View):
+    authentication_classes = []
+    permission_classes = []
+
+    async def post(self, request, uuid):
+        api_key = request.META.get('HTTP_X_API_KEY')
+        if api_key:
+            try:
+                api_key = await sync_to_async(ApiKey.objects.get)(key=api_key)
+                user = await sync_to_async(getattr)(api_key, 'user')
+                if not user.is_active:
+                    return JsonResponse({'error': 'User account is disabled.'}, status=status.HTTP_401_UNAUTHORIZED)
+            except ApiKey.DoesNotExist:
+                return JsonResponse({'error': 'Invalid API key'}, status=status.HTTP_401_UNAUTHORIZED)
+        else:
+            return JsonResponse({'error': 'API key required'}, status=status.HTTP_401_UNAUTHORIZED)
+
+        vm_path = f"/forensicVM/mnt/vm/{uuid}"
+        vm_exists = os.path.exists(vm_path)
+
+        if not vm_exists:
+            return JsonResponse({'error': f'VM with UUID {uuid} not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        await system_shutdown(uuid)
+
+        result = {'vm_shutdown': True, 'message': f'Shutdown command sent to VM with UUID {uuid}'}
+
+        return JsonResponse(result, status=status.HTTP_200_OK)
+
+
+
 async def system_reset(uuid):
     qmp = QMPClient('forensicVM')
     socket_path = f"/forensicVM/mnt/vm/{uuid}/run/qmp.sock"

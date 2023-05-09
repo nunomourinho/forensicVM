@@ -17,6 +17,47 @@ from rest_framework import status
 from .models import ApiKey
 import os
 import shutil
+import asyncio
+from qemu.qmp import QMPClient
+
+async def reset_vm_qmp(socket_path):
+    qmp = QMPClient('forensicVM')
+    try:
+        await qmp.connect(socket_path)
+        await qmp.execute('system_reset')
+        await qmp.disconnect()
+        return True
+    except Exception as e:
+        print(e)
+        return False
+
+class ResetVMView(APIView):
+    authentication_classes = []
+    permission_classes = []
+
+    async def post(self, request, uuid):
+        api_key = request.META.get('HTTP_X_API_KEY')
+        if api_key:
+            try:
+                api_key = ApiKey.objects.get(key=api_key)
+                user = api_key.user
+                if not user.is_active:
+                    return Response({'error': 'User account is disabled.'}, status=status.HTTP_401_UNAUTHORIZED)
+            except ApiKey.DoesNotExist:
+                return Response({'error': 'Invalid API key'}, status=status.HTTP_401_UNAUTHORIZED)
+        else:
+            return Response({'error': 'API key required'}, status=status.HTTP_401_UNAUTHORIZED)
+
+        vm_path = f"/forensicVM/mnt/vm/{uuid}"
+        socket_path = os.path.join(vm_path, "run/qmp.sock")
+
+        if not os.path.exists(socket_path):
+            return Response({'error': f'QMP socket not found for UUID {uuid}'}, status=status.HTTP_404_NOT_FOUND)
+
+        reset_result = await reset_vm_qmp(socket_path)
+
+        result = {'vm_reset': reset_result}
+        return Response(result, status=status.HTTP_200_OK)
 
 class MountFolderView(APIView):
     authentication_classes = []

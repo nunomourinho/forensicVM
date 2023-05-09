@@ -27,6 +27,59 @@ from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from django.views import View
 
+async def screendump(uuid):
+    qmp = QMPClient('forensicVM')
+    socket_path = f"/forensicVM/mnt/vm/{uuid}/run/qmp.sock"
+    screenshots_path = f"/forensicVM/mnt/vm/{uuid}/screenshots/"
+
+    if not os.path.exists(screenshots_path):
+        os.makedirs(screenshots_path)
+
+    existing_screenshots = sorted(glob.glob(f"{screenshots_path}/sc*.png"))
+    next_screenshot_number = len(existing_screenshots) + 1
+    next_screenshot_filename = f"sc{next_screenshot_number:05d}.png"
+    next_screenshot_path = os.path.join(screenshots_path, next_screenshot_filename)
+
+    try:
+        await qmp.connect(socket_path)
+        res = await qmp.execute('screendump', {"filename": next_screenshot_path})
+        print(f"Screenshot saved: {next_screenshot_path}")
+    except Exception as e:
+        print(e)
+    finally:
+        await qmp.disconnect()
+
+@method_decorator(csrf_exempt, name='dispatch')
+class ScreenshotVMView(View):
+    authentication_classes = []
+    permission_classes = []
+
+    async def post(self, request, uuid):
+        api_key = request.META.get('HTTP_X_API_KEY')
+        if api_key:
+            try:
+                api_key = await sync_to_async(ApiKey.objects.get)(key=api_key)
+                user = await sync_to_async(getattr)(api_key, 'user')
+                if not user.is_active:
+                    return JsonResponse({'error': 'User account is disabled.'}, status=status.HTTP_401_UNAUTHORIZED)
+            except ApiKey.DoesNotExist:
+                return JsonResponse({'error': 'Invalid API key'}, status=status.HTTP_401_UNAUTHORIZED)
+        else:
+            return JsonResponse({'error': 'API key required'}, status=status.HTTP_401_UNAUTHORIZED)
+
+        vm_path = f"/forensicVM/mnt/vm/{uuid}"
+        vm_exists = os.path.exists(vm_path)
+
+        if not vm_exists:
+            return JsonResponse({'error': f'VM with UUID {uuid} not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        await screendump(uuid)
+
+        result = {'screenshot_taken': True, 'message': f'Screenshot taken for VM with UUID {uuid}'}
+
+        return JsonResponse(result, status=status.HTTP_200_OK)
+
+
 async def system_shutdown(uuid):
     qmp = QMPClient('forensicVM')
     socket_path = f"/forensicVM/mnt/vm/{uuid}/run/qmp.sock"

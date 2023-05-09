@@ -249,11 +249,16 @@ class ForensicImageVMStatus(APIView):
 
                     if vnc_port:
                         result['vnc_port'] = int(vnc_port.group(1))
+                    else:
+                        result['vm_status'] = 'stopped'
                     if websocket_port:
                         result['websocket_port'] = int(websocket_port.group(1))
+                    else:
+                        result['vm_status'] = 'stopped'
                     if qmp_file:
                         result['qmp_file'] = qmp_file.group(1)
-
+                    else:
+                        result['vm_status'] = 'stopped'
                 else:
                     result['vm_status'] = 'stopped'
             else:

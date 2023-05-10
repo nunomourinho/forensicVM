@@ -30,6 +30,41 @@ from django.http import FileResponse
 import zipfile
 from PIL import Image
 
+@method_decorator(csrf_exempt, name='dispatch')
+class DownloadEvidenceView(View):
+    authentication_classes = []
+    permission_classes = []
+
+    async def get(self, request, uuid):
+        api_key = request.META.get('HTTP_X_API_KEY')
+        if api_key:
+            try:
+                api_key = await sync_to_async(ApiKey.objects.get)(key=api_key)
+                user = await sync_to_async(getattr)(api_key, 'user')
+                if not user.is_active:
+                    return JsonResponse({'error': 'User account is disabled.'}, status=status.HTTP_401_UNAUTHORIZED)
+            except ApiKey.DoesNotExist:
+                return JsonResponse({'error': 'Invalid API key'}, status=status.HTTP_401_UNAUTHORIZED)
+        else:
+            return JsonResponse({'error': 'API key required'}, status=status.HTTP_401_UNAUTHORIZED)
+
+        vm_path = f"/forensicVM/mnt/vm/{uuid}"
+        vm_exists = os.path.exists(vm_path)
+
+        if not vm_exists:
+            return JsonResponse({'error': f'VM with UUID {uuid} not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        evidence_path = f"/forensicVM/mnt/vm/{uuid}/evidence.vmdk"
+        evidence_exists = os.path.exists(evidence_path)
+
+        if not evidence_exists:
+            return JsonResponse({'error': f'Evidence file not found for VM with UUID {uuid}'}, status=status.HTTP_404_NOT_FOUND)
+
+        # Return the evidence file as a FileResponse
+        response = FileResponse(open(evidence_path, 'rb'), content_type='application/octet-stream')
+        response['Content-Disposition'] = f'attachment; filename="{os.path.basename(evidence_path)}"'
+        return response
+
 async def memory_snapshot(uuid):
     qmp = QMPClient('forensicVM')
     socket_path = f"/forensicVM/mnt/vm/{uuid}/run/qmp.sock"

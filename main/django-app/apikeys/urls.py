@@ -1,6 +1,8 @@
 from django.urls import path
 from .views import ProtectedView, RunScriptView, DeleteVMView, MountFolderView, ResetVMView, ShutdownVMView, DownloadScreenshotsView
 from .views import CreateSshKeysView, ForensicImageVMStatus, StartVMView, StopVMView, CheckVMExistsView, ScreenshotVMView, MemorySnapshotView
+from .views import DownloadEvidenceView
+
 
 urlpatterns = [
     path('test/', ProtectedView.as_view(), name='test'),
@@ -17,5 +19,6 @@ urlpatterns = [
     path('screenshot-vm/<str:uuid>/', ScreenshotVMView.as_view(), name='screenshot_vm'),
     path('download-screenshots/<str:uuid>/', DownloadScreenshotsView.as_view(), name='download_screenshots'),
     path('download-memory-dump/<uuid>/', MemorySnapshotView.as_view(), name='download_memory_dump'),
+    path('download-evidence/<uuid>/', DownloadEvidenceView.as_view(), name='download_evidence'),
 ]
 

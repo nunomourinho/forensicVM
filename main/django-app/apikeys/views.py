@@ -26,6 +26,54 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from django.views import View
+from django.http import FileResponse
+import zipfile
+from PIL import Image
+
+@method_decorator(csrf_exempt, name='dispatch')
+class DownloadScreenshotsView(View):
+    authentication_classes = []
+    permission_classes = []
+
+    async def get(self, request, uuid):
+        api_key = request.META.get('HTTP_X_API_KEY')
+        if api_key:
+            try:
+                api_key = await sync_to_async(ApiKey.objects.get)(key=api_key)
+                user = await sync_to_async(getattr)(api_key, 'user')
+                if not user.is_active:
+                    return JsonResponse({'error': 'User account is disabled.'}, status=status.HTTP_401_UNAUTHORIZED)
+            except ApiKey.DoesNotExist:
+                return JsonResponse({'error': 'Invalid API key'}, status=status.HTTP_401_UNAUTHORIZED)
+        else:
+            return JsonResponse({'error': 'API key required'}, status=status.HTTP_401_UNAUTHORIZED)
+
+        vm_path = f"/forensicVM/mnt/vm/{uuid}"
+        vm_exists = os.path.exists(vm_path)
+
+        if not vm_exists:
+            return JsonResponse({'error': f'VM with UUID {uuid} not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        screenshots_path = f"/forensicVM/mnt/vm/{uuid}/screenshots/"
+
+        # Convert PNG files to JPG
+        for png_file in glob.glob(f"{screenshots_path}/*.png"):
+            jpg_file = os.path.splitext(png_file)[0] + ".jpg"
+            img = Image.open(png_file)
+            img.convert("RGB").save(jpg_file)
+
+        # Create a zip file containing all JPG files
+        zip_file_path = f"/forensicVM/mnt/vm/{uuid}/screenshots.zip"
+        with zipfile.ZipFile(zip_file_path, 'w') as zipf:
+            for jpg_file in glob.glob(f"{screenshots_path}/*.jpg"):
+                zipf.write(jpg_file, os.path.basename(jpg_file))
+
+        # Return the zip file as a FileResponse
+        response = FileResponse(open(zip_file_path, 'rb'), content_type='application/zip')
+        response['Content-Disposition'] = f'attachment; filename="{os.path.basename(zip_file_path)}"'
+        return response
+
+
 
 async def screendump(uuid):
     qmp = QMPClient('forensicVM')

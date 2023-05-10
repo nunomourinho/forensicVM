@@ -30,6 +30,53 @@ from django.http import FileResponse
 import zipfile
 from PIL import Image
 
+async def memory_snapshot(uuid):
+    qmp = QMPClient('forensicVM')
+    socket_path = f"/forensicVM/mnt/vm/{uuid}/run/qmp.sock"
+    memory_snapshots_path = f"/forensicVM/mnt/vm/{uuid}/memory/"
+
+    if not os.path.exists(memory_snapshots_path):
+        os.makedirs(memory_snapshots_path)
+
+    existing_snapshots = sorted(glob.glob(f"{memory_snapshots_path}/memory_snapshot*.dmp"))
+    next_snapshot_number = len(existing_snapshots) + 1
+    next_snapshot_filename = f"memory_snapshot{next_snapshot_number:03d}.dmp"
+    next_snapshot_path = os.path.join(memory_snapshots_path, next_snapshot_filename)
+
+    try:
+        await qmp.connect(socket_path)
+        res = await qmp.execute('dump-guest-memory', { "paging": False, "protocol": f"file:{next_snapshot_path}", "detach": False})
+        print(f"Memory snapshot saved: {next_snapshot_path}")
+    except Exception as e:
+        print(e)
+    finally:
+        await qmp.disconnect()
+
+    return next_snapshot_path
+
+@method_decorator(csrf_exempt, name='dispatch')
+class MemorySnapshotView(View):
+    authentication_classes = []
+    permission_classes = []
+
+    async def get(self, request, uuid):
+        api_key = request.META.get('HTTP_X_API_KEY')
+        if api_key:
+            try:
+                api_key = await sync_to_async(ApiKey.objects.get)(key=api_key)
+                user = await sync_to_async(getattr)(api_key, 'user')
+                if not user.is_active:
+                    return JsonResponse({'error': 'User account is disabled.'}, status=status.HTTP_401_UNAUTHORIZED)
+            except ApiKey.DoesNotExist:
+                return JsonResponse({'error': 'Invalid API key'}, status=status.HTTP_401_UNAUTHORIZED)
+        else:
+            return JsonResponse({'error': 'API key required'}, status=status.HTTP_401_UNAUTHORIZED)
+
+        #snapshot_file = async_to_sync(memory_snapshot)(uuid)
+        snapshot_file = await memory_snapshot(uuid)
+        response = FileResponse(open(snapshot_file, 'rb'), content_type='application/octet-stream', as_attachment=True, filename=os.path.basename(snapshot_file))
+        return response
+
 @method_decorator(csrf_exempt, name='dispatch')
 class DownloadScreenshotsView(View):
     authentication_classes = []

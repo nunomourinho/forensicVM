@@ -67,9 +67,9 @@ function create_and_format_vmdk {
     mkfs ntfs /dev/sda1
     set-label /dev/sda1 "$label_name"
     mount /dev/sda1 /
-    mkdir /important001
-    mkdir /important002
-    mkdir /important003
+#    mkdir /important001
+#    mkdir /important002
+#    mkdir /important003
     write /readme.txt "Forensic VM: This drive was automaticaly created. Please put the probable evidence inside the sub-folders with the same tag of autopsy software for the easyest classification"
     write /leiame.txt "Forensic VM: Este disco foi criado automáticamente. Para facilitar a classificação, por favor coloque as evidências recolhidas nas subpastas que têm o mesmo nome que a etiqueta no software autopsy"
     umount /

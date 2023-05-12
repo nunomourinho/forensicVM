@@ -61,20 +61,22 @@ class CreateFoldersView(View):
             # Create the folders using guestfish
 #           guestfish_commands = '\n'.join([f'mkdir /{folder}' for folder in folders])
 #           subprocess.run(f'guestfish --rw -a {vmdk_file} <<EOF\nlaunch\nmount /dev/sda1 /\n{guestfish_commands}\numount /\nEOF', shell=True, check=True)
-            guestfish_commands = '\n'.join([f'mkdir /{folder}' for folder in folders])
+            guestfish_commands = '\n'.join([f'! mkdir /{folder} || true' for folder in folders])
             command = f"""
             guestfish --rw -a {vmdk_file} <<EOF
-            launch
+            run
+            ntfsfix /dev/sda1
             mount /dev/sda1 /
             {guestfish_commands}
             umount /
             EOF
             """
+            os.system(command)
             subprocess.run(command, shell=True, check=True)
 
 
             return JsonResponse({'message': f'Folders {", ".join(folders)} created successfully in {vmdk_file}'}, status=status.HTTP_200_OK)
-        except subprocess.CalledProcessError as e:
+        except Exception as e:
             return JsonResponse({'error': f'Error executing guestfish: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 

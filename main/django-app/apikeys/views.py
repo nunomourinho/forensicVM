@@ -30,6 +30,36 @@ from django.http import FileResponse
 import zipfile
 from PIL import Image
 
+class DeleteISOFileView(View):
+    authentication_classes = []
+    permission_classes = []
+
+    def post(self, request, filename):
+        api_key = request.META.get('HTTP_X_API_KEY')
+        if api_key:
+            try:
+                api_key = ApiKey.objects.get(key=api_key)
+                user = api_key.user
+                if not user.is_active:
+                    return JsonResponse({'error': 'User account is disabled.'}, status=status.HTTP_401_UNAUTHORIZED)
+            except ApiKey.DoesNotExist:
+                return JsonResponse({'error': 'Invalid API key'}, status=status.HTTP_401_UNAUTHORIZED)
+        else:
+            return JsonResponse({'error': 'API key required'}, status=status.HTTP_401_UNAUTHORIZED)
+
+        iso_dir = '/forensicVM/mnt/iso'
+        if not os.path.exists(iso_dir):
+            return JsonResponse({'error': 'ISO directory not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        iso_file_path = os.path.join(iso_dir, filename)
+        if not os.path.isfile(iso_file_path):
+            return JsonResponse({'error': f'ISO file {filename} not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        os.remove(iso_file_path)
+
+        return JsonResponse({'message': f'ISO file {filename} deleted successfully'}, status=status.HTTP_200_OK)
+
+
 @method_decorator(csrf_exempt, name='dispatch')
 class UploadISOView(View):
     authentication_classes = []

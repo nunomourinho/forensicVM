@@ -31,6 +31,66 @@ import zipfile
 from PIL import Image
 
 @method_decorator(csrf_exempt, name='dispatch')
+class UploadISOView(View):
+    authentication_classes = []
+    permission_classes = []
+
+    def post(self, request):
+        api_key = request.META.get('HTTP_X_API_KEY')
+        if api_key:
+            try:
+                api_key = ApiKey.objects.get(key=api_key)
+                user = api_key.user
+                if not user.is_active:
+                    return JsonResponse({'error': 'User account is disabled.'}, status=status.HTTP_401_UNAUTHORIZED)
+            except ApiKey.DoesNotExist:
+                return JsonResponse({'error': 'Invalid API key'}, status=status.HTTP_401_UNAUTHORIZED)
+        else:
+            return JsonResponse({'error': 'API key required'}, status=status.HTTP_401_UNAUTHORIZED)
+
+        iso_file = request.FILES.get('iso_file')
+        if not iso_file:
+            return JsonResponse({'error': 'Missing ISO file'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Save the ISO file to the target directory
+        upload_dir = '/forensicVM/mnt/iso'
+        iso_file_path = os.path.join(upload_dir, iso_file.name)
+        with open(iso_file_path, 'wb') as f:
+            for chunk in iso_file.chunks():
+                f.write(chunk)
+
+        return JsonResponse({'message': 'ISO file uploaded successfully'}, status=status.HTTP_200_OK)
+
+
+class ListISOFilesView(APIView):
+    authentication_classes = []
+    permission_classes = []
+
+    def get(self, request):
+        api_key = request.META.get('HTTP_X_API_KEY')
+        if api_key:
+            try:
+                api_key = ApiKey.objects.get(key=api_key)
+                user = api_key.user
+                if not user.is_active:
+                    return JsonResponse({'error': 'User account is disabled.'}, status=status.HTTP_401_UNAUTHORIZED)
+            except ApiKey.DoesNotExist:
+                return JsonResponse({'error': 'Invalid API key'}, status=status.HTTP_401_UNAUTHORIZED)
+        else:
+            return JsonResponse({'error': 'API key required'}, status=status.HTTP_401_UNAUTHORIZED)
+
+        iso_dir = '/forensicVM/mnt/iso'
+        if not os.path.exists(iso_dir):
+            return JsonResponse({'error': 'ISO directory not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        iso_files = []
+        for file in os.listdir(iso_dir):
+            if file.endswith('.iso'):
+                iso_files.append(file)
+
+        return JsonResponse({'iso_files': iso_files}, status=status.HTTP_200_OK)
+
+@method_decorator(csrf_exempt, name='dispatch')
 class CreateFoldersView(View):
     authentication_classes = []
     permission_classes = []

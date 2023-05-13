@@ -1,7 +1,7 @@
 from django.urls import path
 from .views import ProtectedView, RunScriptView, DeleteVMView, MountFolderView, ResetVMView, ShutdownVMView, DownloadScreenshotsView
 from .views import CreateSshKeysView, ForensicImageVMStatus, StartVMView, StopVMView, CheckVMExistsView, ScreenshotVMView, MemorySnapshotView
-from .views import DownloadEvidenceView, CreateFoldersView
+from .views import DownloadEvidenceView, CreateFoldersView, ListISOFilesView, UploadISOView
 
 
 urlpatterns = [
@@ -21,5 +21,7 @@ urlpatterns = [
     path('download-memory-dump/<uuid>/', MemorySnapshotView.as_view(), name='download_memory_dump'),
     path('download-evidence/<uuid>/', DownloadEvidenceView.as_view(), name='download_evidence'),
     path('create-folders/', CreateFoldersView.as_view(), name='create_folders'),
+    path('list-iso-files/', ListISOFilesView.as_view(), name='list_iso_files'),
+    path('upload-iso/', UploadISOView.as_view(), name='upload_iso'),
 ]
 

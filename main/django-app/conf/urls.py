@@ -37,7 +37,7 @@ urlpatterns = [
     #path('logout/', app.views.LogoutView.as_view(), name='logout'),
     path('login/', auth_views.LoginView.as_view(), name='login'),
     path('logout/', auth_views.LogoutView.as_view(), name='logout'),
-    path('register/', app.views.register, name='register'),
+    #path('register/', app.views.register, name='register'),
     re_path(r'^netdata/(?P<path>.*)$', ProxyNetdata.as_view()),
     re_path(r'^shell/(?P<path>.*)$', ProxyShellbox.as_view()),
     #re_path(r'^meo/(?P<path>.*)$', ProxyMeo.as_view()),

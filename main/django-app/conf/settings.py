@@ -146,6 +146,10 @@ STATICFILES_DIRS = [(os.path.join(BASE_DIR, 'static'))]
 #    STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 
+LOGIN_URL = '/login/'
+LOGOUT_URL = '/logout/'
+
+
 
 VNC_PROXY_HOST = '127.0.0.1'
 VNC_PROXY_PORT = '5900'

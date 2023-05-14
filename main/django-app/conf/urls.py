@@ -20,6 +20,8 @@ from django.contrib import admin
 from django.views import static
 import app.views
 from app.views import ProxyNetdata, ProxyShellbox
+from django.contrib.auth import views as auth_views
+
 #, ProxyMeo
 
 urlpatterns = [
@@ -31,6 +33,8 @@ urlpatterns = [
                           settings.STATIC_ROOT)
     }),
     # Generic path
+    #path('login/', app.views.LoginView.as_view(), name='login'),
+    #path('logout/', app.views.LogoutView.as_view(), name='logout'),
     path('login/', auth_views.LoginView.as_view(), name='login'),
     path('logout/', auth_views.LogoutView.as_view(), name='logout'),
     path('register/', app.views.register, name='register'),

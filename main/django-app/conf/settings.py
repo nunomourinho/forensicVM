@@ -49,6 +49,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'django_session_timeout.middleware.SessionTimeoutMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -154,5 +155,9 @@ LOGIN_REDIRECT_URL = '/'
 VNC_PROXY_HOST = '127.0.0.1'
 VNC_PROXY_PORT = '5900'
 
-SESSION_COOKIE_AGE = 60
+#SESSION_COOKIE_AGE = 60
+#SESSION_EXPIRE_AT_BROWSER_CLOSE=True # Invalid session
+SESSION_EXPIRE_SECONDS = 60
+SESSION_EXPIRE_AFTER_LAST_ACTIVITY = True
+SESSION_TIMEOUT_REDIRECT = '/'
 

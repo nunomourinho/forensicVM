@@ -237,7 +237,20 @@
                     </li>
                 </ul>
             </div>
-            </div>                        
+            </div>
+            
+            <!-- NGAM:Extra button -->
+            <input type="image" alt="configureVM" src="{% static 'novnc/' %}app/images/configurevm.svg"
+            id="noVNC_ngam_button" class="noVNC_button"
+            title="Configure Forensic VM">
+            <div class="noVNC_vcenter">
+            <div id="noVNC_ngam" class="noVNC_panel">
+            <div class="noVNC_heading">
+                <img alt="" src="{% static 'novnc/' %}app/images/configurevm.svg"> Configure VM
+            </div>                
+            </div>
+            </div>
+            <!-- NGAM:Extra button -->
 
             <!-- Shutdown/Reboot -->
             <input type="image" alt="Shutdown/Reboot" src="{% static 'novnc/' %}app/images/power.svg"
@@ -255,7 +268,21 @@
 
             </div>
             </div>
-            
+
+            <!-- NGAM:Test -->
+            <input type="image" alt="Test" src="{% static 'novnc/' %}app/images/power.svg"
+                id="ngam_test_button" class="noVNC_button"
+                title="Test...">
+            <div class="noVNC_vcenter">
+            <div id="noVNC_test" class="noVNC_panel">
+                <div class="noVNC_heading">
+                    <img alt="" src="{% static 'novnc/' %}app/images/power.svg"> Test
+                </div>                
+                <input type="button" id="ngam_shutdown_button" value="Test" onclick="mensagem()">                
+            </div>
+            </div>
+
+
             <!-- Connection Controls -->
             <input type="image" alt="Disconnect" src="{% static 'novnc/' %}app/images/disconnect.svg"
                 id="noVNC_disconnect_button" class="noVNC_button"

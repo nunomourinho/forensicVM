@@ -1,7 +1,8 @@
 from django.urls import path
 from .views import ProtectedView, RunScriptView, DeleteVMView, MountFolderView, ResetVMView, ShutdownVMView, DownloadScreenshotsView
 from .views import CreateSshKeysView, ForensicImageVMStatus, StartVMView, StopVMView, CheckVMExistsView, ScreenshotVMView, MemorySnapshotView
-from .views import DownloadEvidenceView, CreateFoldersView, ListISOFilesView, UploadISOView, DeleteISOFileView
+from .views import DownloadEvidenceView, CreateFoldersView, ListISOFilesView, UploadISOView, DeleteISOFileView\
+from .views import EjectCDROMView
 
 
 urlpatterns = [
@@ -24,5 +25,6 @@ urlpatterns = [
     path('list-iso-files/', ListISOFilesView.as_view(), name='list_iso_files'),
     path('upload-iso/', UploadISOView.as_view(), name='upload_iso'),
     path('delete-iso/<str:filename>/', DeleteISOFileView.as_view(), name='delete_iso'),
+    path('eject-cdrom/<str:uuid>/', EjectCDROMView.as_view(), name='eject_cdrom'),
 ]
 

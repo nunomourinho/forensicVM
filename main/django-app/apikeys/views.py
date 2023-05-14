@@ -30,6 +30,44 @@ from django.http import FileResponse
 import zipfile
 from PIL import Image
 
+async def eject_cdrom(uuid):
+    qmp = QMPClient('forensicVM')
+    socket_path = f"/forensicVM/mnt/vm/{uuid}/run/qmp.sock"
+
+    try:
+        await qmp.connect(socket_path)
+        res = await qmp.execute("human-monitor-command",
+                                { "command-line": "eject ide2-cd0" })
+        print(f"CD-ROM ejected.")
+    except Exception as e:
+        print(e)
+    finally:
+        await qmp.disconnect()
+
+    return "CD-ROM ejected."
+
+@method_decorator(csrf_exempt, name='dispatch')
+class EjectCDROMView(View):
+    authentication_classes = []
+    permission_classes = []
+
+    async def get(self, request, uuid):
+        api_key = request.META.get('HTTP_X_API_KEY')
+        if api_key:
+            try:
+                api_key = await sync_to_async(ApiKey.objects.get)(key=api_key)
+                user = await sync_to_async(getattr)(api_key, 'user')
+                if not user.is_active:
+                    return JsonResponse({'error': 'User account is disabled.'}, status=status.HTTP_401_UNAUTHORIZED)
+            except ApiKey.DoesNotExist:
+                return JsonResponse({'error': 'Invalid API key'}, status=status.HTTP_401_UNAUTHORIZED)
+        else:
+            return JsonResponse({'error': 'API key required'}, status=status.HTTP_401_UNAUTHORIZED)
+
+        cdrom_status = await eject_cdrom(uuid)
+        return JsonResponse({'message': cdrom_status}, status=status.HTTP_200_OK)
+
+
 @method_decorator(csrf_exempt, name='dispatch')
 class DeleteISOFileView(View):
     authentication_classes = []

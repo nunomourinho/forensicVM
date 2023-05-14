@@ -30,6 +30,7 @@ from django.http import FileResponse
 import zipfile
 from PIL import Image
 
+@method_decorator(csrf_exempt, name='dispatch')
 class DeleteISOFileView(View):
     authentication_classes = []
     permission_classes = []

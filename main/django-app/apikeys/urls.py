@@ -1,7 +1,7 @@
 from django.urls import path
 from .views import ProtectedView, RunScriptView, DeleteVMView, MountFolderView, ResetVMView, ShutdownVMView, DownloadScreenshotsView
 from .views import CreateSshKeysView, ForensicImageVMStatus, StartVMView, StopVMView, CheckVMExistsView, ScreenshotVMView, MemorySnapshotView
-from .views import DownloadEvidenceView, CreateFoldersView, ListISOFilesView, UploadISOView, DeleteISOFileView\
+from .views import DownloadEvidenceView, CreateFoldersView, ListISOFilesView, UploadISOView, DeleteISOFileView
 from .views import EjectCDROMView
 
 

@@ -37,7 +37,7 @@ async def eject_cdrom(uuid):
     try:
         await qmp.connect(socket_path)
         res = await qmp.execute("human-monitor-command",
-                                { "command-line": "eject ide2-cd0" })
+                                { "command-line": "eject ide0-0-0" })
         print(f"CD-ROM ejected.")
     except Exception as e:
         print(e)

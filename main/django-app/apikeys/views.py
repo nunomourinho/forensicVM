@@ -37,7 +37,7 @@ async def insert_cdrom(uuid, filename):
     try:
         await qmp.connect(socket_path)
         res = await qmp.execute("blockdev-change-medium",
-                                { "id": "ide0-1-0",
+                                { "id": "ide0-0-0",
                                   "filename": f"/forensicVM/mnt/{filename}",
                                   "format": "raw" })
         print(f"CD-ROM inserted.")

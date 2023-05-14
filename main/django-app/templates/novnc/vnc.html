@@ -243,17 +243,15 @@
 			
             <input type="image" alt="Shutdown/Reboot" src="{% static 'novnc/' %}app/images/power.svg"
                 id="noVNC_power_button" class="noVNC_button"
-                title="Shutdown/Reboot...">
+                title="Shutdown/Reboot..." style="display: none;">
             <div class="noVNC_vcenter">
-            <div id="noVNC_power" class="noVNC_panel">
-                <div class="noVNC_heading">
-                    <img alt="" src="{% static 'novnc/' %}app/images/power.svg"> Power
-                </div>
-				<!--
-                <input type="button" id="noVNC_shutdown_button" value="Shutdown" onclick="shutdown()">
-                <input type="button" id="noVNC_reboot_button" value="Reboot" onclick="reboot()">
-                <input type="button" id="noVNC_reset_button" value="Reset" onclick="reset()">                                
-				-->
+            <div id="noVNC_power" class="noVNC_panel" style="display: none;">
+                <div class="noVNC_heading" style="display: none;">
+                    <img alt="" src="{% static 'novnc/' %}app/images/power.svg" style="display: none;"> Power
+                </div>				
+                <input type="button" id="noVNC_shutdown_button" value="Shutdown" onclick="shutdown()" style="display: none;">
+                <input type="button" id="noVNC_reboot_button" value="Reboot" onclick="reboot()" style="display: none;">
+                <input type="button" id="noVNC_reset_button" value="Reset" onclick="reset()" style="display: none;">                                				
             </div>
             </div>
             

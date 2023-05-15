@@ -1,13 +1,14 @@
+from django.views.generic import View
 from django.urls import path
 from .views import ProtectedView, RunScriptView, DeleteVMView, MountFolderView, ResetVMView, ShutdownVMView, DownloadScreenshotsView
 from .views import CreateSshKeysView, ForensicImageVMStatus, StartVMView, StopVMView, CheckVMExistsView, ScreenshotVMView, MemorySnapshotView
 from .views import DownloadEvidenceView, CreateFoldersView, ListISOFilesView, UploadISOView, DeleteISOFileView
-from .views import EjectCDROMView, InsertCDROMView
+from .views import EjectCDROMView, InsertCDROMView, InsertNetworkCardView
 
 
 urlpatterns = [
+    #path('run-script/', RunScriptView.as_view(), name='run_script'),
     path('test/', ProtectedView.as_view(), name='test'),
-    path('run-script/', RunScriptView.as_view(), name='run_script'),
     path('create-ssh-keys/', CreateSshKeysView.as_view(), name='create-ssh-keys'),
     path('forensic-image-vm-status/<str:uuid>/', ForensicImageVMStatus.as_view(), name='forensic-image-vm-status'),
     path('start-vm/<str:uuid>/', StartVMView.as_view(), name='start-vm'),
@@ -27,5 +28,6 @@ urlpatterns = [
     path('delete-iso/<str:filename>/', DeleteISOFileView.as_view(), name='delete_iso'),
     path('eject-cdrom/<str:uuid>/', EjectCDROMView.as_view(), name='eject_cdrom'),
     path('insert-cdrom/<uuid>/<filename>/', InsertCDROMView.as_view(), name='insert-cdrom'),
+    path('insert-network-card/<str:uuid>/', InsertNetworkCardView.as_view(), name='insert_network_card'),
 ]
 

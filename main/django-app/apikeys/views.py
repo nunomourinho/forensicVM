@@ -30,6 +30,90 @@ from django.http import FileResponse
 import zipfile
 from PIL import Image
 
+async def insert_network_card(uuid, mac_address=None):
+    if not mac_address:
+        # Generate a random MAC address if not supplied
+        mac_address = generate_random_mac_address()
+
+    qmp = QMPClient('forensicVM')
+    socket_path = f"/forensicVM/mnt/vm/{uuid}/run/qmp.sock"
+
+    try:
+        await qmp.connect(socket_path)
+#        res = await qmp.execute("human-monitor-command",
+#                                {"command-line": f"device_add virtio-net-pci,netdev=net0,mac={mac_address}"})
+#        res = await qmp.execute("device_add",{"driver=e100 id=net1"})
+#        res = await qmp.execute("device_add",
+#                                { "driver": "virtio-net-pci",
+#                                  "id": "net0",
+#                                  "bus": "pci0.1",
+#                                  "mac": f"{mac_address}"})
+        res = await qmp.execute("netdev_add",
+                                { "type": "tap",
+                                  "id": "netdev1"})
+
+#{ "execute": "netdev_add", "arguments": { "type": "user", "id": "netdev1" } }
+
+        print(f"Network card inserted with MAC address: {mac_address}")
+    except Exception as e:
+        print(e)
+    finally:
+        await qmp.disconnect()
+
+    return "Network card inserted."
+
+def generate_random_mac_address():
+    # Generate a random MAC address using your preferred logic
+    # Example implementation:
+    import random
+
+    mac = [0x52, 0x54, 0x00,
+           random.randint(0x00, 0x7f),
+           random.randint(0x00, 0xff),
+           random.randint(0x00, 0xff)]
+
+    mac_address = ':'.join(map(lambda x: "%02x" % x, mac))
+    return mac_address
+
+@method_decorator(csrf_exempt, name='dispatch')
+class InsertNetworkCardView(View):
+    authentication_classes = []
+    permission_classes = []
+
+    async def get(self, request, uuid):
+        api_key = request.META.get('HTTP_X_API_KEY')
+        if api_key:
+            try:
+                #api_key = ApiKey.objects.get(key=api_key)
+                api_key = await sync_to_async(ApiKey.objects.get)(key=api_key)
+                user = await sync_to_async(getattr)(api_key, 'user')
+                if not user.is_active:
+                    print('User account disabled')
+                    return JsonResponse({'error': 'User account is disabled.'}, status=status.HTTP_401_UNAUTHORIZED)
+            except ApiKey.DoesNotExist:
+                print('Invalid key')
+                return JsonResponse({'error': 'Invalid API key'}, status=status.HTTP_401_UNAUTHORIZED)
+        else:
+            print('api required')
+            return JsonResponse({'error': 'API key required'}, status=status.HTTP_401_UNAUTHORIZED)
+
+        #uuid = request.GET.get('uuid')
+        #uuid = self.kwargs.get('uuid')
+
+        if not uuid:
+            print('uuid required')
+            return JsonResponse({'error': 'UUID is required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            print('inserting network card')
+            await insert_network_card(uuid)
+            print('inserted')
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        return JsonResponse({'message': 'Network card inserted.'}, status=status.HTTP_200_OK)
+
+
 async def insert_cdrom(uuid, filename):
     qmp = QMPClient('forensicVM')
     socket_path = f"/forensicVM/mnt/vm/{uuid}/run/qmp.sock"

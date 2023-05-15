@@ -21,20 +21,20 @@ from django.views import static
 import app.views
 from app.views import ProxyNetdata, ProxyShellbox
 from django.contrib.auth import views as auth_views
-from django_otp.admin import OTPAdminSite
-from django_otp.plugins.otp_totp.models import TOTPDevice
-from django_otp.plugins.otp_totp.admin import TOTPDeviceAdmin
+#from django_otp.admin import OTPAdminSite
+#from django_otp.plugins.otp_totp.models import TOTPDevice
+#from django_otp.plugins.otp_totp.admin import TOTPDeviceAdmin
 from django.contrib.auth.models import User
 from django.contrib.auth.views import LoginView
-from django_otp.forms import OTPAuthenticationForm
+#from django_otp.forms import OTPAuthenticationForm
 
 
-class OTPAdmin(OTPAdminSite):
-   pass
+#class OTPAdmin(OTPAdminSite):
+#   pass
 
-admin_site = OTPAdmin(name='ForensicVmOTPadmin')
-admin_site.register(User)
-admin_site.register(TOTPDevice, TOTPDeviceAdmin)
+#admin_site = OTPAdmin(name='ForensicVmOTPadmin')
+#admin_site.register(User)
+#admin_site.register(TOTPDevice, TOTPDeviceAdmin)
 
 urlpatterns = [
     #re_path(r'^admin/', admin_site.urls),

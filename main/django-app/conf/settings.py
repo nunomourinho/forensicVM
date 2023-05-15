@@ -40,8 +40,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django_extensions',
     'revproxy',
-    'django_otp',
-    'django_otp.plugins.otp_totp',
+#    'django_otp',
+#    'django_otp.plugins.otp_totp',
     # Application
     'app',
     'rest_framework',
@@ -57,7 +57,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'django_otp.middleware.OTPMiddleware',
+#    'django_otp.middleware.OTPMiddleware',
 ]
 
 ROOT_URLCONF = 'conf.urls'
@@ -161,7 +161,7 @@ VNC_PROXY_PORT = '5900'
 # Session timeout control
 #SESSION_COOKIE_AGE = 60
 #SESSION_EXPIRE_AT_BROWSER_CLOSE=True # Invalid session
-SESSION_EXPIRE_SECONDS = 600 # 5 minutes
-SESSION_EXPIRE_AFTER_LAST_ACTIVITY = True
-SESSION_TIMEOUT_REDIRECT = '/'
+#SESSION_EXPIRE_SECONDS = 600 # 5 minutes
+#SESSION_EXPIRE_AFTER_LAST_ACTIVITY = True
+#SESSION_TIMEOUT_REDIRECT = '/'
 

@@ -24,6 +24,7 @@
        <form method="post">
             {% csrf_token %}
             {{ form.as_p }}
+            <input type="hidden" name="next" value="{{ next }}">
           <button class="w3-button w3-block w3-dark-gray" type="submit">Login</button>
       </form>
   </div>

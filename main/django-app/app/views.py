@@ -9,6 +9,8 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import login
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required, permission_required
+from django.contrib.auth.mixins import LoginRequiredMixin
+
 
 def register(request):
     if request.method == 'POST':
@@ -83,12 +85,23 @@ def vnc_proxy_http(request):
 
 
 
-
-class ProxyNetdata(ProxyView):
+class ProxyNetdata(LoginRequiredMixin, ProxyView):
+    login_url = '/login/'  # Replace with your login URL
+    redirect_field_name = 'next'
     upstream = 'http://localhost:19999'
 
-class ProxyShellbox(ProxyView):
+class ProxyShellbox(LoginRequiredMixin, ProxyView):
+    login_url = '/login/'  # Replace with your login URL
+    redirect_field_name = 'next'
     upstream = 'http://localhost:4200'
+
+#@login_required
+#class ProxyNetdata(ProxyView):
+#    upstream = 'http://localhost:19999'
+
+#@login_required
+#class ProxyShellbox(ProxyView):
+#    upstream = 'http://localhost:4200'
 
 #class ProxyMeo(ProxyView):
 #    upstream = 'https://192.168.1.254'

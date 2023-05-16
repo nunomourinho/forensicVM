@@ -16,6 +16,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from .models import ApiKey
 import os
+import json
 import shutil
 import asyncio
 from asgiref.sync import async_to_sync
@@ -29,6 +30,52 @@ from django.views import View
 from django.http import FileResponse
 import zipfile
 from PIL import Image
+
+class ListPluginsView(APIView):
+    authentication_classes = []
+    permission_classes = []
+
+    def get(self, request):
+        api_key = request.META.get('HTTP_X_API_KEY')
+        if api_key:
+            try:
+                api_key = ApiKey.objects.get(key=api_key)
+                user = api_key.user
+                if not user.is_active:
+                    return JsonResponse({'error': 'User account is disabled.'}, status=401)
+            except ApiKey.DoesNotExist:
+                return JsonResponse({'error': 'Invalid API key'}, status=401)
+        else:
+            return JsonResponse({'error': 'API key required'}, status=401)
+
+        plugins_dir = '/forensicVM/plugins'
+        if not os.path.exists(plugins_dir):
+            return JsonResponse({'error': 'Plugins directory not found'}, status=404)
+
+        plugin_files = []
+        for root, dirs, files in os.walk(plugins_dir):
+            for file in files:
+                if file == 'run.sh':
+                    plugin_dir = os.path.basename(os.path.dirname(os.path.join(root, file)))
+                    plugin_files.append({
+                        'plugin_name': get_plugin_info(plugin_dir, 'plugin_name'),
+                        'plugin_description': get_plugin_info(plugin_dir, 'plugin_description')
+                    })
+
+        return JsonResponse({'plugins': plugin_files}, status=200)
+
+
+def get_plugin_info(plugin_dir, info):
+    run_script_path = os.path.join('/forensicVM/plugins', plugin_dir, 'run.sh')
+    result = subprocess.run(['bash', run_script_path, 'info'], capture_output=True, text=True)
+    output = result.stdout.strip()
+
+    try:
+        info_dict = json.loads(output)
+    except json.JSONDecodeError:
+        info_dict = {}
+
+    return info_dict.get(info, '')
 
 async def insert_network_card(uuid, mac_address=None):
     if not mac_address:

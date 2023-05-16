@@ -3,7 +3,7 @@ from django.urls import path
 from .views import ProtectedView, RunScriptView, DeleteVMView, MountFolderView, ResetVMView, ShutdownVMView, DownloadScreenshotsView
 from .views import CreateSshKeysView, ForensicImageVMStatus, StartVMView, StopVMView, CheckVMExistsView, ScreenshotVMView, MemorySnapshotView
 from .views import DownloadEvidenceView, CreateFoldersView, ListISOFilesView, UploadISOView, DeleteISOFileView
-from .views import EjectCDROMView, InsertCDROMView, InsertNetworkCardView, ListPluginsView
+from .views import EjectCDROMView, InsertCDROMView, InsertNetworkCardView, ListPluginsView, RunPluginView
 
 
 urlpatterns = [
@@ -30,5 +30,6 @@ urlpatterns = [
     path('insert-cdrom/<uuid>/<filename>/', InsertCDROMView.as_view(), name='insert-cdrom'),
     path('insert-network-card/<str:uuid>/', InsertNetworkCardView.as_view(), name='insert_network_card'),
     path('list-plugins/', ListPluginsView.as_view(), name='list-plugins'),
+    path('run-plugin/', RunPluginView.as_view(), name='run-plugin'),
 ]
 

@@ -31,6 +31,57 @@ from django.http import FileResponse
 import zipfile
 from PIL import Image
 
+
+
+class RunPluginView(APIView):
+    authentication_classes = []
+    permission_classes = []
+
+    def get(self, request):
+        api_key = request.META.get('HTTP_X_API_KEY')
+        if api_key:
+            try:
+                api_key = ApiKey.objects.get(key=api_key)
+                user = api_key.user
+                if not user.is_active:
+                    return JsonResponse({'error': 'User account is disabled.'}, status=status.HTTP_401_UNAUTHORIZED)
+            except ApiKey.DoesNotExist:
+                return JsonResponse({'error': 'Invalid API key'}, status=status.HTTP_401_UNAUTHORIZED)
+        else:
+            return JsonResponse({'error': 'API key required'}, status=status.HTTP_401_UNAUTHORIZED)
+
+        plugin_directory = request.GET.get('plugin_directory')
+        image_uuid = request.GET.get('image_uuid')
+
+        if not plugin_directory or not image_uuid:
+            return JsonResponse({'error': 'Missing plugin_directory or image_uuid'}, status=status.HTTP_400_BAD_REQUEST)
+
+        plugin_script_path = f'/forensicVM/plugins/{plugin_directory}/run.sh'
+        image_path = f'/forensicVM/mnt/vm/{image_uuid}'
+
+        if not os.path.exists(plugin_script_path):
+            return JsonResponse({'error': 'Plugin script not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        if not os.path.exists(image_path):
+            return JsonResponse({'error': 'Image path not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        file_list = os.listdir(image_path)
+        file_list.sort(reverse=True)
+        for file in file_list:
+            if file.endswith('.qcow2-sda'):
+                image_file = os.path.join(image_path, file)
+                break
+        else:
+            return JsonResponse({'error': 'Image file not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        try:
+            result = subprocess.run(['bash', plugin_script_path, 'run', image_file], capture_output=True, text=True)
+            output = result.stdout.strip()
+            return JsonResponse({'output': output}, status=status.HTTP_200_OK)
+        except subprocess.CalledProcessError as e:
+            return JsonResponse({'error': f'Plugin execution failed: {e.stderr}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
 class ListPluginsView(APIView):
     authentication_classes = []
     permission_classes = []

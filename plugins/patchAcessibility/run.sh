@@ -1,7 +1,7 @@
 #!/bin/bash -
 
 PLUGIN_NAME="Patch accessibility"
-PLUGIN_DESCRIPTION="If the forensic investigator presses shit five times, it gets a command shell"
+PLUGIN_DESCRIPTION="If the forensic investigator presses shift five times, it gets a command shell"
 OS_NAME="windows"
 OS_VERSION=("xp" "7" "8" "8.1" "10" "11")
 AUTHOR="Nuno Mourinho"

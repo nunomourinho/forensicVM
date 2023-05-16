@@ -59,7 +59,8 @@ class ListPluginsView(APIView):
                     plugin_dir = os.path.basename(os.path.dirname(os.path.join(root, file)))
                     plugin_files.append({
                         'plugin_name': get_plugin_info(plugin_dir, 'plugin_name'),
-                        'plugin_description': get_plugin_info(plugin_dir, 'plugin_description')
+                        'plugin_description': get_plugin_info(plugin_dir, 'plugin_description'),
+                        'plugin_dir': plugin_dir
                     })
 
         return JsonResponse({'plugins': plugin_files}, status=200)

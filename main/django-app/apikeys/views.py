@@ -49,9 +49,15 @@ async def insert_network_card(uuid, mac_address=None):
 #                                  "bus": "pci0.1",
 #                                  "mac": f"{mac_address}"})
         res = await qmp.execute("netdev_add",
-                                { "type": "tap",
-                                  "id": "netdev1"})
+                                { "type": "user",
+                                  "id": "net1"})
+        res = await qmp.execute("device_add",
+                                { "driver": "usb-net",
+                                  "netdev": "net1"})
+        res = await qmp.execute("query-pci", {})
+        print(res)
 
+#-netdev user,id=net0 -device virtio-net-pci,netdev=net0
 #{ "execute": "netdev_add", "arguments": { "type": "user", "id": "netdev1" } }
 
         print(f"Network card inserted with MAC address: {mac_address}")

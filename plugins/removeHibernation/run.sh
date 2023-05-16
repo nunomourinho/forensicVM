@@ -1,6 +1,6 @@
 #!/bin/bash -
 
-PLUGIN_NAME="Remve hibernation"
+PLUGIN_NAME="Remove hibernation file"
 PLUGIN_DESCRIPTION="Delete the hibernation file"
 OS_NAME="windows"
 OS_VERSION=("xp" "7" "8" "8.1" "10" "11")

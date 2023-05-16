@@ -48,12 +48,17 @@ async def insert_network_card(uuid, mac_address=None):
 #                                  "id": "net0",
 #                                  "bus": "pci0.1",
 #                                  "mac": f"{mac_address}"})
+
+#        res = await qmp.execute("guest-exec",
+#                                { "path": "c:/windows/cmd.exe",
+#                                  "arg": "/p"})
+
         res = await qmp.execute("netdev_add",
                                 { "type": "user",
-                                  "id": "net1"})
+                                  "id": "net0"})
         res = await qmp.execute("device_add",
-                                { "driver": "usb-net",
-                                  "netdev": "net1"})
+                                { "driver": "virtio-net-pci",
+                                  "netdev": "net0"})
         res = await qmp.execute("query-pci", {})
         print(res)
 

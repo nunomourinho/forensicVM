@@ -4,7 +4,7 @@ from .views import ProtectedView, RunScriptView, DeleteVMView, MountFolderView, 
 from .views import CreateSshKeysView, ForensicImageVMStatus, StartVMView, StopVMView, CheckVMExistsView, ScreenshotVMView, MemorySnapshotView
 from .views import DownloadEvidenceView, CreateFoldersView, ListISOFilesView, UploadISOView, DeleteISOFileView
 from .views import EjectCDROMView, InsertCDROMView, InsertNetworkCardView, ListPluginsView, RunPluginView
-
+from .views import RecreateFoldersView
 
 urlpatterns = [
     #path('run-script/', RunScriptView.as_view(), name='run_script'),
@@ -31,5 +31,6 @@ urlpatterns = [
     path('insert-network-card/<str:uuid>/', InsertNetworkCardView.as_view(), name='insert_network_card'),
     path('list-plugins/', ListPluginsView.as_view(), name='list-plugins'),
     path('run-plugin/', RunPluginView.as_view(), name='run-plugin'),
+    path('recreate-folders/', RecreateFoldersView.as_view(), name='recreate-folders'),
 ]
 

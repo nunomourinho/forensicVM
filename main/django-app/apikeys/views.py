@@ -425,8 +425,6 @@ class CreateFoldersView(View):
 
         try:
             # Create the folders using guestfish
-#           guestfish_commands = '\n'.join([f'mkdir /{folder}' for folder in folders])
-#           subprocess.run(f'guestfish --rw -a {vmdk_file} <<EOF\nlaunch\nmount /dev/sda1 /\n{guestfish_commands}\numount /\nEOF', shell=True, check=True)
             guestfish_commands = '\n'.join([f'! mkdir /{folder} || true' for folder in folders])
             command = f"""
             guestfish --rw -a {vmdk_file} <<EOF
@@ -444,6 +442,75 @@ class CreateFoldersView(View):
             return JsonResponse({'message': f'Folders {", ".join(folders)} created successfully in {vmdk_file}'}, status=status.HTTP_200_OK)
         except Exception as e:
             return JsonResponse({'error': f'Error executing guestfish: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@method_decorator(csrf_exempt, name='dispatch')
+class RecreateFoldersView(View):
+    authentication_classes = []
+    permission_classes = []
+
+    async def post(self, request):
+        api_key = request.META.get('HTTP_X_API_KEY')
+        if api_key:
+            try:
+                api_key = await sync_to_async(ApiKey.objects.get)(key=api_key)
+                user = await sync_to_async(getattr)(api_key, 'user')
+                if not user.is_active:
+                    return JsonResponse({'error': 'User account is disabled.'}, status=status.HTTP_401_UNAUTHORIZED)
+            except ApiKey.DoesNotExist:
+                return JsonResponse({'error': 'Invalid API key'}, status=status.HTTP_401_UNAUTHORIZED)
+        else:
+            return JsonResponse({'error': 'API key required'}, status=status.HTTP_401_UNAUTHORIZED)
+
+        # Get the list of folders from the POST data
+        folders = request.POST.getlist('folders')
+        uuid_path = request.POST.get('uuid_path')
+        vmdk_file = f"/forensicVM/mnt/vm/{uuid_path}/evidence.vmdk"
+
+        # Check if vmdk_file exists
+        if not os.path.exists(vmdk_file):
+            return JsonResponse({'error': f'VMDK file {vmdk_file} not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        try:
+            # Remove existing vmdk_file if it exists
+            if os.path.exists(vmdk_file):
+                os.remove(vmdk_file)
+
+            # Create and format the VMDK file
+            create_and_format_vmdk(vmdk_file, folders)
+
+            return JsonResponse({'message': f'Folders {", ".join(folders)} created successfully in {vmdk_file}'}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return JsonResponse({'error': f'Error executing guestfish: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+def create_and_format_vmdk(vmdk_file, folders):
+    # Create a new VMDK file with 20GB of space
+    subprocess.run(['qemu-img', 'create', '-f', 'vmdk', vmdk_file, '20G'], check=True)
+
+    # Name for the label
+    label_name = "possible evidence"
+
+    # Create a new NTFS partition with guestfish
+    guestfish_commands = f"""
+    launch
+    part-init /dev/sda mbr
+    part-add /dev/sda p 2048 -1024
+    part-set-mbr-id /dev/sda 1 0x07
+    mkfs ntfs /dev/sda1
+    set-label /dev/sda1 "{label_name}"
+    mount /dev/sda1 /
+    """
+
+    # Create folders using guestfish
+    for folder in folders:
+        guestfish_commands += f"mkdir /{folder}\n"
+
+    guestfish_commands += """
+    umount /
+    """
+
+    command = f"guestfish --rw -a {vmdk_file} <<EOF\n{guestfish_commands}\nEOF\n"
+    subprocess.run(command, shell=True, check=True)
 
 
 @method_decorator(csrf_exempt, name='dispatch')

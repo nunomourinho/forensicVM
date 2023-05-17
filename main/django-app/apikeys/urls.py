@@ -31,6 +31,7 @@ urlpatterns = [
     path('insert-network-card/<str:uuid>/', InsertNetworkCardView.as_view(), name='insert_network_card'),
     path('list-plugins/', ListPluginsView.as_view(), name='list-plugins'),
     path('run-plugin/', RunPluginView.as_view(), name='run-plugin'),
+    path('api/recreate-folders/', RecreateFoldersView.as_view(), name='recreate-folders'),
     path('recreate-folders/', RecreateFoldersView.as_view(), name='recreate-folders'),
 ]
 

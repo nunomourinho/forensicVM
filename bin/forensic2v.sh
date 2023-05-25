@@ -342,7 +342,4 @@ else
   echo "snap" > "${vm_name}/mode"
 fi
 
-
-
-
-
+read -p "Verify if the are any errors. Press any key to continue..."

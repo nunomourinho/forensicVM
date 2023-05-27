@@ -47,7 +47,7 @@ pywin32-ctypes==0.2.0
 qemu==0.0.0a1
 qemu.qmp==0.0.2
 qmp==0.0.1
-requests==2.28.2
+requests==2.31.0
 shiboken2==5.15.2.1
 six==1.16.0
 sqlparse==0.4.4

@@ -4,7 +4,7 @@ from .views import ProtectedView, RunScriptView, DeleteVMView, MountFolderView, 
 from .views import CreateSshKeysView, ForensicImageVMStatus, StartVMView, StopVMView, CheckVMExistsView, ScreenshotVMView, MemorySnapshotView
 from .views import DownloadEvidenceView, CreateFoldersView, ListISOFilesView, UploadISOView, DeleteISOFileView
 from .views import EjectCDROMView, InsertCDROMView, InsertNetworkCardView, ListPluginsView, RunPluginView
-from .views import RecreateFoldersView, SnapshotListView, CreateSnapshotView, RollbackSnapshotView
+from .views import RecreateFoldersView, SnapshotListView, CreateSnapshotView, RollbackSnapshotView, DeleteSnapshotView
 
 urlpatterns = [
     #path('run-script/', RunScriptView.as_view(), name='run_script'),
@@ -36,5 +36,6 @@ urlpatterns = [
     path('snapshots-list/<uuid>/', SnapshotListView.as_view(), name='snapshot-list'),
     path('create-snapshot/<uuid>/', CreateSnapshotView.as_view(), name='create-snapshot'),
     path('rollback-snapshot/<uuid>/', RollbackSnapshotView.as_view(), name='rollback-snapshot'),
+    path('delete-snapshot/<uuid:uuid>/', DeleteSnapshotView.as_view(), name='delete-snapshot'),
 ]
 

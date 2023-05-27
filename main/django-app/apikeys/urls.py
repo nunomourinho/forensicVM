@@ -33,6 +33,6 @@ urlpatterns = [
     path('run-plugin/', RunPluginView.as_view(), name='run-plugin'),
     path('api/recreate-folders/', RecreateFoldersView.as_view(), name='recreate-folders'),
     path('recreate-folders/', RecreateFoldersView.as_view(), name='recreate-folders'),
-    path('snapshots-list/<uuid:uuid>/', SnapshotListView.as_view(), name='snapshot-list'),
+    path('snapshots-list/<uuid>/', SnapshotListView.as_view(), name='snapshot-list'),
 ]
 

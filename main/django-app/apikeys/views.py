@@ -41,8 +41,12 @@ async def get_snapshots(uuid):
         result = await qmp.execute("human-monitor-command", {
             "command-line": "info snapshots"
         })
-        snapshot_lines = result.get('return').split('\n')
+        
+        # Assuming that result is a string with a table-like structure
+        snapshot_lines = result.split('\n')
         for line in snapshot_lines:
+            # DEBUG
+            print(line)
             if line.startswith('--'):
                 snapshot_info = line.split()
                 snapshot_id = snapshot_info[0]

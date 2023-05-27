@@ -34,7 +34,7 @@ function change_qemu_vm {
 	   -drive if=none,id=drive-ide0-0-0,readonly=on \\
        -device ide-cd,bus=ide.0,unit=0,drive=drive-ide0-0-0,id=ide0-0-0 \\
        -vga virtio \\
-       -drive file=evidence.vmdk,format=vmdk,if=virtio,index=1,media=disk \
+       -drive file=evidence.qcow2,format=qcow2,if=virtio,index=1,media=disk \\
        -boot menu=on,strict=on,reboot-timeout=10000,splash-time=20000,splash=/forensicVM/branding/bootsplash.jpg"
 
     echo "$vmconfig
@@ -46,23 +46,23 @@ function change_qemu_vm {
 
 }
 
-function create_and_format_vmdk {
-    # Path to the new VMDK file
-    vmdk_file="$1"
+function create_and_format_qcow2 {
+    # Path to the new QCOW2 file
+    qcow2_file="$1"
 
-    # Create a new VMDK file with 20GB of space
-    qemu-img create -f vmdk $vmdk_file 20G
+    # Create a new QCOW2 file with 20GB of space
+    qemu-img create -f qcow2 $qcow2_file 20G
 
     # Name for the label
     label_name="possible evidence"
 
     # Create a new NTFS partition with guestfish
-    guestfish --rw -a $vmdk_file <<EOF
+    guestfish --rw -a $qcow2_file <<EOF
     launch
 #   part-init /dev/sda gpt
     part-init /dev/sda mbr
     part-add /dev/sda p 2048 -1024
-    part-set-mbr-id /dev/sda 1 0x07 
+    part-set-mbr-id /dev/sda 1 0x07
 #   part-set-gpt-type /dev/sda 1 EBD0A0A2-B9E5-4433-87C0-68B6B72699C7
     mkfs ntfs /dev/sda1
     set-label /dev/sda1 "$label_name"
@@ -131,7 +131,7 @@ image_ewf_mnt=/forensicVM/mnt/vm/$name/ewf
 image_aff_mnt=/forensicVM/mnt/vm/$name/aff
 win_mount=/forensicVM/mnt/vm/$name/win
 run_mount=/forensicVM/mnt/vm/$name/run
-evidence_disk=/forensicVM/mnt/vm/$name/evidence.vmdk
+evidence_disk=/forensicVM/mnt/vm/$name/evidence.qcow2
 
 qmp_socket=$run_mount/qmp.sock
 run_pid=$run_mount/run.pid
@@ -174,6 +174,7 @@ function CleanUpINT {
         umount "$image_aff_mnt"
      fi
      rm "${vm_name}/S0001-P0000.qcow2-sda"
+     read -p "Verify if the are any errors. Press any key to continue..."
      exit 1
 }
 
@@ -196,7 +197,7 @@ function CleanUpEXIT {
 
      # Print the elapsed time in days, hours, minutes, and seconds
      echo "Elapsed time: $days days, $hours hours, $minutes minutes, $seconds seconds"
-
+     read -p "Verify if the are any errors. Press any key to continue..."
      exit 0
 }
 
@@ -314,7 +315,7 @@ tput setaf 2
 echo "8) Create a evidence disk"
 tput sgr0
 # Create a evidence disk
-create_and_format_vmdk "${evidence_disk}"
+create_and_format_qcow2 "${evidence_disk}"
 
 
 if [ $mode != "snap" ]; then
@@ -342,4 +343,3 @@ else
   echo "snap" > "${vm_name}/mode"
 fi
 
-read -p "Verify if the are any errors. Press any key to continue..."

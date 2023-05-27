@@ -483,6 +483,43 @@ class ListISOFilesView(APIView):
                 iso_files.append(file)
         return JsonResponse({'iso_files': iso_files}, status=status.HTTP_200_OK)
 
+
+def change_qcow2(qcow2_file, folders):
+
+    # Create a new NTFS partition with guestfish
+    guestfish_commands = f"""
+    launch
+    mount /dev/sda1 /
+    """
+
+    # Create folders using guestfish
+    for folder in folders:
+        guestfish_commands += f"-mkdir /{folder} \n"
+        print(folder)
+
+    guestfish_commands += """
+    umount /
+    """
+
+
+
+    command = f"guestfish --rw -a {qcow2_file} <<EOF\n{guestfish_commands}\nEOF\n"
+    subprocess.run(command, shell=True, check=True)
+
+    guestfish_commands = """
+    launch
+    mount /dev/sda1 /
+    write /readme.txt \"Forensic VM: This drive was automaticaly created. Please put the probable evidence inside the sub-folders with the same tag of autopsy software for the easiest classification\"
+    write /leiame.txt \"Forensic VM: Este disco foi criado automáticamente. Para facilitar a classificação, por favor coloque as evidências recolhidas nas subpastas que têm o mesmo nome que a etiqueta no software autopsy\"
+    umount /
+    """
+
+    command = f"guestfish -x --rw -a {qcow2_file} <<EOF\n{guestfish_commands}\nEOF\n"
+    subprocess.run(command, shell=True, check=True)
+
+    print("END guestfish")
+
+
 @method_decorator(csrf_exempt, name='dispatch')
 class CreateFoldersView(View):
     authentication_classes = []
@@ -504,31 +541,34 @@ class CreateFoldersView(View):
         # Get the list of folders from the POST data
         folders = request.POST.getlist('folders')
         uuid_path = request.POST.get('uuid_path')
-        vmdk_file = f"/forensicVM/mnt/vm/{uuid_path}/evidence.vmdk"
+        qcow2_file = f"/forensicVM/mnt/vm/{uuid_path}/evidence.qcow2"
 
         # Check if vmdk_file exists
-        if not os.path.exists(vmdk_file):
-            return JsonResponse({'error': f'VMDK file {vmdk_file} not found'}, status=status.HTTP_404_NOT_FOUND)
+        if not os.path.exists(qcow2_file):
+            return JsonResponse({'error': f'QCOW2 file {qcow2_file} not found'}, status=status.HTTP_404_NOT_FOUND)
 
         try:
             # Create the folders using guestfish
-            guestfish_commands = '\n'.join([f'! mkdir /{folder} || true' for folder in folders])
-            command = f"""
-            guestfish --rw -a {vmdk_file} <<EOF
-            run
-            ntfsfix /dev/sda1
-            mount /dev/sda1 /
-            {guestfish_commands}
-            umount /
-            EOF
-            """
-            os.system(command)
-            subprocess.run(command, shell=True, check=True)
+            #guestfish_commands = '\n'.join([f'! mkdir /{folder} || true' for folder in folders])
+            ##command = f"""
+            #guestfish --rw -a {qcow2_file} <<EOF
+            #run
+            #ntfsfix /dev/sda1
+            #mount /dev/sda1 /
+            #{guestfish_commands}
+            #umount /
+            #EOF
+            #"""
+            #os.system(command)
+            #subprocess.run(command, shell=True, check=True)
+            change_qcow2(qcow2_file, folders)
 
-
-            return JsonResponse({'message': f'Folders {", ".join(folders)} created successfully in {vmdk_file}'}, status=status.HTTP_200_OK)
+            return JsonResponse({'message': f'Folders {", ".join(folders)} created successfully in {qcow2_file}'}, status=status.HTTP_200_OK)
         except Exception as e:
             return JsonResponse({'error': f'Error executing guestfish: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+
 
 
 
@@ -557,6 +597,14 @@ class DownloadEvidenceView(View):
             return JsonResponse({'error': f'VM with UUID {uuid} not found'}, status=status.HTTP_404_NOT_FOUND)
 
         evidence_path = f"/forensicVM/mnt/vm/{uuid}/evidence.vmdk"
+        qcow2_path = f"/forensicVM/mnt/vm/{uuid}/evidence.qcow2"
+        cmd = f"qemu-img convert {qcow2_path} -f qcow2 -O vmdk {evidence_path}"
+        try:
+            subprocess.run(cmd, shell=True, check=True)
+            result = {'folder_mounted': True}
+        except subprocess.CalledProcessError as e:
+            return Response({'error': f"Error converting evidence disk: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
         evidence_exists = os.path.exists(evidence_path)
 
         if not evidence_exists:

@@ -4,7 +4,7 @@ from .views import ProtectedView, RunScriptView, DeleteVMView, MountFolderView, 
 from .views import CreateSshKeysView, ForensicImageVMStatus, StartVMView, StopVMView, CheckVMExistsView, ScreenshotVMView, MemorySnapshotView
 from .views import DownloadEvidenceView, CreateFoldersView, ListISOFilesView, UploadISOView, DeleteISOFileView
 from .views import EjectCDROMView, InsertCDROMView, InsertNetworkCardView, ListPluginsView, RunPluginView
-from .views import RecreateFoldersView, SnapshotListView
+from .views import RecreateFoldersView, SnapshotListView, CreateSnapshotView, RollbackSnapshotView
 
 urlpatterns = [
     #path('run-script/', RunScriptView.as_view(), name='run_script'),
@@ -34,5 +34,7 @@ urlpatterns = [
     path('api/recreate-folders/', RecreateFoldersView.as_view(), name='recreate-folders'),
     path('recreate-folders/', RecreateFoldersView.as_view(), name='recreate-folders'),
     path('snapshots-list/<uuid>/', SnapshotListView.as_view(), name='snapshot-list'),
+    path('create-snapshot/<uuid>/', CreateSnapshotView.as_view(), name='create-snapshot'),
+    path('rollback-snapshot/<uuid>/', RollbackSnapshotView.as_view(), name='rollback-snapshot'),
 ]
 

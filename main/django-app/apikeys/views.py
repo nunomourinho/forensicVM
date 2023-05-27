@@ -30,6 +30,84 @@ from django.views import View
 from django.http import FileResponse
 import zipfile
 from PIL import Image
+import datetime
+
+async def rollback_snapshot(uuid, snapshot_name):
+    qmp = QMPClient('forensicVM')
+    socket_path = f"/forensicVM/mnt/vm/{uuid}/run/qmp.sock"
+
+    try:
+        await qmp.connect(socket_path)
+        await qmp.execute("human-monitor-command", {
+            "command-line": f"loadvm {snapshot_name}"
+        })
+        return "Snapshot rollback successful."
+    except Exception as e:
+        print(e)
+        return "Error rolling back snapshot."
+    finally:
+        await qmp.disconnect()
+
+@method_decorator(csrf_exempt, name='dispatch')
+class RollbackSnapshotView(View):
+    async def post(self, request, uuid):
+        api_key = request.META.get('HTTP_X_API_KEY')
+        if api_key:
+            try:
+                api_key = await sync_to_async(ApiKey.objects.get)(key=api_key)
+                user = await sync_to_async(getattr)(api_key, 'user')
+                if not user.is_active:
+                    return JsonResponse({'error': 'User account is disabled.'}, status=401)
+            except ApiKey.DoesNotExist:
+                return JsonResponse({'error': 'Invalid API key'}, status=401)
+        else:
+            return JsonResponse({'error': 'API key required'}, status=401)
+
+        snapshot_name = request.POST.get('snapshot_name')
+        if not snapshot_name:
+            return JsonResponse({'error': 'Snapshot name required'}, status=400)
+
+        rollback_status = await rollback_snapshot(uuid, snapshot_name)
+        return JsonResponse({'message': rollback_status}, status=200)
+
+
+async def create_snapshot(uuid):
+    qmp = QMPClient('forensicVM')
+    socket_path = f"/forensicVM/mnt/vm/{uuid}/run/qmp.sock"
+
+    try:
+        await qmp.connect(socket_path)
+        snapshot_name = datetime.datetime.now().strftime("snap-%Y-%m-%d_%H:%M:%S")
+        await qmp.execute("human-monitor-command", {
+            "command-line": f"savevm {snapshot_name}"
+        })
+        return snapshot_name
+    except Exception as e:
+        print(e)
+        return "Error creating snapshot."
+    finally:
+        await qmp.disconnect()
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class CreateSnapshotView(View):
+    async def post(self, request, uuid):
+        api_key = request.META.get('HTTP_X_API_KEY')
+        if api_key:
+            try:
+                api_key = await sync_to_async(ApiKey.objects.get)(key=api_key)
+                user = await sync_to_async(getattr)(api_key, 'user')
+                if not user.is_active:
+                    return JsonResponse({'error': 'User account is disabled.'}, status=401)
+            except ApiKey.DoesNotExist:
+                return JsonResponse({'error': 'Invalid API key'}, status=401)
+        else:
+            return JsonResponse({'error': 'API key required'}, status=401)
+
+        snapshot_name = await create_snapshot(uuid)
+        return JsonResponse({'snapshot_name': snapshot_name}, status=200)
+
+
 
 async def get_snapshots(uuid):
     qmp = QMPClient('forensicVM')

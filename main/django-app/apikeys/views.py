@@ -32,9 +32,9 @@ import zipfile
 from PIL import Image
 
 
-def create_and_format_vmdk(vmdk_file, folders):
-    # Create a new VMDK file with 20GB of space
-    subprocess.run(['qemu-img', 'create', '-f', 'vmdk', vmdk_file, '20G'], check=True)
+def create_and_format_qcow2(qcow2_file, folders):
+    # Create a new QCOW2 file with 20GB of space
+    subprocess.run(['qemu-img', 'create', '-f', 'qcow2', qcow2_file, '20G'], check=True)
 
     # Name for the label
     label_name = "possible evidence"
@@ -61,7 +61,7 @@ def create_and_format_vmdk(vmdk_file, folders):
 
 
 
-    command = f"guestfish --rw -a {vmdk_file} <<EOF\n{guestfish_commands}\nEOF\n"
+    command = f"guestfish --rw -a {qcow2_file} <<EOF\n{guestfish_commands}\nEOF\n"
     subprocess.run(command, shell=True, check=True)
 
     guestfish_commands = """
@@ -72,7 +72,7 @@ def create_and_format_vmdk(vmdk_file, folders):
     umount /
     """
 
-    command = f"guestfish --rw -a {vmdk_file} <<EOF\n{guestfish_commands}\nEOF\n"
+    command = f"guestfish --rw -a {qcow2_file} <<EOF\n{guestfish_commands}\nEOF\n"
     subprocess.run(command, shell=True, check=True)
 
     print("END guestfish")
@@ -101,19 +101,19 @@ class RecreateFoldersView(View):
         # Get the list of folders from the POST data
         folders = request.POST.getlist('folders')
         uuid_path = request.POST.get('uuid_path')
-        vmdk_file = f"/forensicVM/mnt/vm/{uuid_path}/evidence.vmdk"
+        qcow2_file = f"/forensicVM/mnt/vm/{uuid_path}/evidence.qcow2"
 
         try:
-            # Remove existing vmdk_file if it exists
-            if os.path.exists(vmdk_file):
-                os.remove(vmdk_file)
+            # Remove existing qcow2_file if it exists
+            if os.path.exists(qcow2_file):
+                os.remove(qcow2_file)
 
-            # Create and format the VMDK file
-            print("before create vmdk")
-            create_and_format_vmdk(vmdk_file, folders)
-            print("after create vmdk")
+            # Create and format the Qcow2 file
+            print("before create qcow2")
+            create_and_format_qcow2(qcow2_file, folders)
+            print("after create qcow2")
 
-            return JsonResponse({'message': f'Folders {", ".join(folders)} created successfully in {vmdk_file}'}, status=status.HTTP_200_OK)
+            return JsonResponse({'message': f'Folders {", ".join(folders)} created successfully in {qcow2_file}'}, status=status.HTTP_200_OK)
         except Exception as e:
             return JsonResponse({'error': f'Error executing guestfish: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 

@@ -31,6 +31,57 @@ from django.http import FileResponse
 import zipfile
 from PIL import Image
 
+async def get_snapshots(uuid):
+    qmp = QMPClient('forensicVM')
+    socket_path = f"/forensicVM/mnt/vm/{uuid}/run/qmp.sock"
+    snapshots = []
+
+    try:
+        await qmp.connect(socket_path)
+        result = await qmp.execute("human-monitor-command", {
+            "command-line": "info snapshots"
+        })
+        snapshot_lines = result.get('return').split('\n')
+        for line in snapshot_lines:
+            if line.startswith('--'):
+                snapshot_info = line.split()
+                snapshot_id = snapshot_info[0]
+                snapshot_tag = snapshot_info[1]
+                vm_size = snapshot_info[2]
+                date = snapshot_info[3]
+                vm_clock = snapshot_info[4]
+                snapshots.append({
+                    'id': snapshot_id,
+                    'tag': snapshot_tag,
+                    'vm_size': vm_size,
+                    'date': date,
+                    'vm_clock': vm_clock
+                })
+    except Exception as e:
+        print(e)
+    finally:
+        await qmp.disconnect()
+
+    return snapshots
+
+@method_decorator(csrf_exempt, name='dispatch')
+class SnapshotListView(View):
+    async def get(self, request, uuid):
+        api_key = request.META.get('HTTP_X_API_KEY')
+        if api_key:
+            try:
+                api_key = await sync_to_async(ApiKey.objects.get)(key=api_key)
+                user = await sync_to_async(getattr)(api_key, 'user')
+                if not user.is_active:
+                    return JsonResponse({'error': 'User account is disabled.'}, status=401)
+            except ApiKey.DoesNotExist:
+                return JsonResponse({'error': 'Invalid API key'}, status=401)
+        else:
+            return JsonResponse({'error': 'API key required'}, status=401)
+
+        snapshots = await get_snapshots(uuid)
+        return JsonResponse({'snapshots': snapshots}, status=200)
+
 
 def create_and_format_qcow2(qcow2_file, folders):
     # Create a new QCOW2 file with 20GB of space

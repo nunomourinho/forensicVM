@@ -35,7 +35,7 @@ import datetime
 
 #@method_decorator(csrf_exempt, name='dispatch')
 class MemorySizeView(View):
-    def get(self, request):
+    def get(self, request, uuid):
         api_key = request.META.get('HTTP_X_API_KEY')
         if api_key:
             try:

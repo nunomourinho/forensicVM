@@ -33,6 +33,43 @@ from PIL import Image
 import datetime
 
 
+#@method_decorator(csrf_exempt, name='dispatch')
+class MemorySizeView(View):
+    def get(self, request):
+        api_key = request.META.get('HTTP_X_API_KEY')
+        if api_key:
+            try:
+                api_key = ApiKey.objects.get(key=api_key)
+                user = api_key.user
+                if not user.is_active:
+                    return JsonResponse({'error': 'User account is disabled.'}, status=401)
+            except ApiKey.DoesNotExist:
+                return JsonResponse({'error': 'Invalid API key'}, status=401)
+        else:
+            return JsonResponse({'error': 'API key required'}, status=401)
+
+        vm_path = f"/forensicVM/mnt/vm/{uuid}"
+        if not os.path.exists(vm_path):
+            return JsonResponse({'error': f'Path for UUID {uuid} not found'}, status=404)
+
+        script_files = glob.glob(os.path.join(vm_path, '*.sh'))
+        if not script_files:
+            return JsonResponse({'error': f'No script files found for UUID {uuid}'}, status=404)
+
+        recent_script_file = max(script_files, key=os.path.getctime)
+
+        with open(recent_script_file, 'r') as f:
+            script_content = f.read()
+
+        memory_pattern = r'-m\s+(\d+)'
+        memory_match = re.search(memory_pattern, script_content)
+
+        if memory_match:
+            memory_size = int(memory_match.group(1))
+            return JsonResponse({'memory_size': memory_size}, status=200)
+        else:
+            return JsonResponse({'error': 'Memory parameter not found in the script.'}, status=404)
+
 async def delete_snapshot(uuid, snapshot_name):
     qmp = QMPClient('forensicVM')
     socket_path = f"/forensicVM/mnt/vm/{uuid}/run/qmp.sock"

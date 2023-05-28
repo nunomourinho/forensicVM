@@ -1,10 +1,13 @@
 from django.views.generic import View
 from django.urls import path
-from .views import ProtectedView, RunScriptView, DeleteVMView, MountFolderView, ResetVMView, ShutdownVMView, DownloadScreenshotsView
-from .views import CreateSshKeysView, ForensicImageVMStatus, StartVMView, StopVMView, CheckVMExistsView, ScreenshotVMView, MemorySnapshotView
+from .views import ProtectedView, RunScriptView, DeleteVMView, MountFolderView, ResetVMView, ShutdownVMView
+from .views import DownloadScreenshotsView
+from .views import CreateSshKeysView, ForensicImageVMStatus, StartVMView, StopVMView, CheckVMExistsView
+from .views import ScreenshotVMView, MemorySnapshotView
 from .views import DownloadEvidenceView, CreateFoldersView, ListISOFilesView, UploadISOView, DeleteISOFileView
 from .views import EjectCDROMView, InsertCDROMView, InsertNetworkCardView, ListPluginsView, RunPluginView
 from .views import RecreateFoldersView, SnapshotListView, CreateSnapshotView, RollbackSnapshotView, DeleteSnapshotView
+from .views import MemorySizeView
 
 urlpatterns = [
     #path('run-script/', RunScriptView.as_view(), name='run_script'),
@@ -37,5 +40,6 @@ urlpatterns = [
     path('create-snapshot/<uuid>/', CreateSnapshotView.as_view(), name='create-snapshot'),
     path('rollback-snapshot/<uuid>/', RollbackSnapshotView.as_view(), name='rollback-snapshot'),
     path('delete-snapshot/<uuid:uuid>/', DeleteSnapshotView.as_view(), name='delete-snapshot'),
+    path('get-memory-size/<uuid>/', MemorySizeView.as_view(), name='get-memory-size'),
 ]
 

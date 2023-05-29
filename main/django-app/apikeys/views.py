@@ -32,7 +32,7 @@ import zipfile
 from PIL import Image
 import datetime
 
-
+@method_decorator(csrf_exempt, name='dispatch')
 class ChangeMemorySizeView(View):
     def post(self, request, uuid):
         api_key = request.META.get('HTTP_X_API_KEY')

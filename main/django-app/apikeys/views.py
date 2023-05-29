@@ -18,6 +18,7 @@ from .models import ApiKey
 import os
 import json
 import shutil
+import psutil
 import asyncio
 from asgiref.sync import async_to_sync
 from asgiref.sync import sync_to_async
@@ -31,6 +32,32 @@ from django.http import FileResponse
 import zipfile
 from PIL import Image
 import datetime
+
+
+def get_available_memory():
+    mem_info = psutil.virtual_memory()
+    available_memory = mem_info.available / 1024 / 1024  # Convert to MB
+    return available_memory
+
+@method_decorator(csrf_exempt, name='dispatch')
+class GetAvailableMemoryView(View):
+    def get(self, request):
+        api_key = request.META.get('HTTP_X_API_KEY')
+        if api_key:
+            try:
+                api_key = ApiKey.objects.get(key=api_key)
+                user = api_key.user
+                if not user.is_active:
+                    return JsonResponse({'error': 'User account is disabled.'}, status=401)
+            except ApiKey.DoesNotExist:
+                return JsonResponse({'error': 'Invalid API key'}, status=401)
+        else:
+            return JsonResponse({'error': 'API key required'}, status=401)
+
+        available_memory = get_available_memory()
+
+        return JsonResponse({'available_memory': available_memory}, status=200)
+
 
 @method_decorator(csrf_exempt, name='dispatch')
 class ChangeMemorySizeView(View):

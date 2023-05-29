@@ -7,7 +7,7 @@ from .views import ScreenshotVMView, MemorySnapshotView
 from .views import DownloadEvidenceView, CreateFoldersView, ListISOFilesView, UploadISOView, DeleteISOFileView
 from .views import EjectCDROMView, InsertCDROMView, InsertNetworkCardView, ListPluginsView, RunPluginView
 from .views import RecreateFoldersView, SnapshotListView, CreateSnapshotView, RollbackSnapshotView, DeleteSnapshotView
-from .views import MemorySizeView, ChangeMemorySizeView
+from .views import MemorySizeView, ChangeMemorySizeView, GetAvailableMemoryView
 
 urlpatterns = [
     #path('run-script/', RunScriptView.as_view(), name='run_script'),
@@ -42,5 +42,6 @@ urlpatterns = [
     path('delete-snapshot/<uuid:uuid>/', DeleteSnapshotView.as_view(), name='delete-snapshot'),
     path('get-memory-size/<uuid>/', MemorySizeView.as_view(), name='get-memory-size'),
     path('change-memory-size/<uuid>/', ChangeMemorySizeView.as_view(), name='change_memory_size'),
+    path('get-available-memory/', GetAvailableMemoryView.as_view(), name='get_available_memory'),
 ]
 

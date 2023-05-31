@@ -11,6 +11,8 @@
 start_time=$(date +%s)
 
 
+
+
 # Helper function: Change qemu startup script.
 # This is a Bash function that generates a modified QEMU virtual machine configuration file based on the input parameters.
 
@@ -20,13 +22,16 @@ start_time=$(date +%s)
 # $2 - the path to the output file where the modified configuration will be saved
 # $3 - the path to the QEMU monitor socket
 # $4 - the path to the PID file for the QEMU process
+# $5 - the path of the vm
 # The function first reads the original configuration file and filters out certain lines using grep. It # then replaces a path string using sed.
-
 # The modified QEMU configuration includes additional parameters for the display, QEMU monitor, USB devices, VGA, and boot options. It also adds a read-only CD-ROM drive to the virtual machine.
-
 # The modified configuration is then saved to the output file specified by $2. The file permissions are set to 700 to ensure that only the owner can execute it.
+
 function change_qemu_vm {
-   vmconfig=`cat $1 | grep -v net0 | grep -v display | grep -v qxl | grep -v balloon | grep -v viosock| sed 's|/usr/share/OVMF/|/forensicVM/usr/share/qemu/|g'`
+#   vmconfig=`cat $1 | grep -v net0 | grep -v display | grep -v qxl | grep -v balloon | grep -v viosock| sed 's|/usr/share/OVMF/|/forensicVM/usr/share/qemu/|g'`
+   echo "$5"
+#   vmconfig=`cat $1 | grep -v net0 | grep -v display | grep -v qxl | grep -v balloon | grep -v viosock |  sed "s|format=raw|format=qcow2|g" | sed "s|cp '/usr/share/OVMF/OVMF_VARS.fd'|cp -n '/forensicVM/usr/share/qemu/OVMF_VARS.qcow2'|" | sed 's|-drive if=pflash,format=raw,file=/usr/share/OVMF/OVMF_CODE.fd,readonly |-drive if=pflash,format=qcow2,file=/forensicVM/usr/share/qemu/OVMF_CODE.qcow2,readonly |' | sed "s|\$uefi_vars|$5/OVMF_CODE.qcow2|"`
+   vmconfig=$(cat "$1" | grep -v net0 | grep -v display | grep -v qxl | grep -v balloon | grep -v viosock | sed 's|format=raw|format=qcow2|g' | sed "s|cp '/usr/share/OVMF/OVMF_VARS.fd'|cp -n '/forensicVM/usr/share/qemu/OVMF_VARS.qcow2'|" | sed 's|/usr/share/OVMF/OVMF_CODE.fd|/forensicVM/usr/share/qemu/OVMF_CODE.qcow2|' | sed "s|\$uefi_vars|$5/OVMF_VARS.qcow2|")
    extra_parameters="   -display vnc=0.0.0.0:\$1,websocket=\$2 \\
        -qmp unix:$3,server,nowait \\
        -pidfile $4 \\
@@ -218,6 +223,7 @@ tput sgr0
 
 if [ $imagemanager == "ewf" ]; then
    ewfmount "$image" "$image_ewf_mnt"/
+   # TODO: Create an extra mount image to snapshot
 fi
 
 if [ $imagemanager == "aff" ]; then
@@ -225,6 +231,7 @@ if [ $imagemanager == "aff" ]; then
    if [[ $? -eq 0 ]]; then
        affrawmnt="${image_aff_mnt}/`ls $image_aff_mnt`"
        echo "Image mounted on: $affrawmnt"
+       # TODO: Create an extra mount image to snapshot
    else
        echo "Error: could not mount $image"
        exit 1
@@ -237,10 +244,14 @@ echo "3) Get image information"
 tput sgr0
 if [ $imagemanager == "ewf" ]; then
    virt-inspector "$image_ewf_mnt"/ewf1 > ${info_name}
+   # DEBUG: Comment bellow:
+   #bash -i
 fi
 
 if [ $imagemanager == "aff" ]; then
    virt-inspector "$affrawmnt" > ${info_name}
+   # DEBUG: Comment bellow:
+   #bash -i
 fi
 
 if [ $imagemanager == "qemu" ]; then
@@ -308,7 +319,7 @@ tput setaf 2
 echo "7) Add virtio drivers and qemu guest"
 tput sgr0
 virt-v2v -i disk "$vm_name/S0001-P0000.qcow2-sda"  -o qemu -of qcow2 -os "$vm_name" -on "S0002-P0001.qcow2"
-change_qemu_vm "$vm_name/S0002-P0001.qcow2.sh" "$vm_name/S0002-P0001.qcow2-vnc.sh" "$qmp_socket" "$run_pid"
+change_qemu_vm "$vm_name/S0002-P0001.qcow2.sh" "$vm_name/S0002-P0001.qcow2-vnc.sh" "$qmp_socket" "$run_pid" "$vm_name"
 
 tput bold
 tput setaf 2
@@ -343,3 +354,4 @@ else
   echo "snap" > "${vm_name}/mode"
 fi
 
+read -p "Verify if the are any errors. Press any key to continue..."

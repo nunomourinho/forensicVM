@@ -1,0 +1,9 @@
+---> Create a apt installer (debian package) to automate production instalation on debian 11+
+
+---> Make a production enviroment
+
+---> Install production enviroment on remote debian 11
+
+---> Test production enviroment
+
+---> Document with docstrings. See first year project on personal MESI github

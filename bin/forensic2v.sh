@@ -340,9 +340,10 @@ virt-v2v -i disk "$vm_name/S0001-P0000.qcow2-sda"  -o qemu -of qcow2 -os "$vm_na
 #DEBUG
 if [[ $? -eq 1 ]]; then
    echo "Disk without partitions. Forensic image probably of a single partion. Heading to plan B..."
-   echo "/forensicVM/bin/create-windows-partition.sh" "${vm_name}/temp_image.qcow2" $forensic_source S0002-P0001.qcow2-sda
-   /forensicVM/bin/create-windows-partition.sh "${vm_name}/temp_image.qcow2" $forensic_source S0002-P0001.qcow2-sda
-   virt-inspector "S0002-P0001.qcow2-sda" > ${info_name}
+   echo "/forensicVM/bin/create-windows-partition.sh" "${vm_name}/temp_image.qcow2" $forensic_source ${vm_name}/S0002-P0001.qcow2
+   /forensicVM/bin/create-windows-partition.sh "${vm_name}/temp_image.qcow2" $forensic_source ${vm_name}/S0002-P0001.qcow2
+   virt-inspector "${vm_image}/S0002-P0001.qcow2-sda" > ${info_name}
+   bash -i
 fi
 
 change_qemu_vm "$vm_name/S0002-P0001.qcow2.sh" "$vm_name/S0002-P0001.qcow2-vnc.sh" "$qmp_socket" "$run_pid" "$vm_name"

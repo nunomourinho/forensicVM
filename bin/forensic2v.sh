@@ -12,6 +12,17 @@ start_time=$(date +%s)
 
 
 
+get_first_free_nbd() {
+    for nbd_device in /dev/nbd*; do
+        if ! $(lsblk | grep -q "^${nbd_device#/dev/}"); then
+            echo "$nbd_device"
+            return
+        fi
+    done
+    echo ""
+}
+
+first_nbd=$(get_first_free_nbd)
 
 # Helper function: Change qemu startup script.
 # This is a Bash function that generates a modified QEMU virtual machine configuration file based on the input parameters.
@@ -156,7 +167,8 @@ mkdir "$win_mount"
 mkdir "$run_mount"
 
 function DismountImage {
-     qemu-nbd --disconnect "/dev/nbd0"
+     #qemu-nbd --disconnect "/dev/nbd0"
+     qemu-nbd --disconnect $first_nbd
      if [ $imagemanager == "ewf" ]; then
         umount "$image_ewf_mnt"
         echo "Dismounted $image_ewf_mnt"
@@ -171,7 +183,8 @@ function DismountImage {
 
 function CleanUpINT {
      echo "CleanUp on errors"
-     qemu-nbd --disconnect "/dev/nbd0"
+     #qemu-nbd --disconnect "/dev/nbd0"
+     qemu-nbd --disconnect $first_nbd
      if [ $imagemanager == "ewf" ]; then
         umount "$image_ewf_mnt"
      fi
@@ -265,18 +278,22 @@ echo "4) Create backing file snapshot"
 tput sgr0
 # shellcheck disable=SC2164
 cd "$vm_name"
+forensic_source=""
 if [ $imagemanager == "ewf" ]; then
    qemu-img create -f qcow2 -b "$image_ewf_mnt"/ewf1 -F raw S0001-P0000.qcow2-sda
+   forensic_source="$image_ewf_mnt"/ewf1
 fi
 
 if [ $imagemanager == "aff" ]; then
    echo "$affrawmnt"
    ls "$affrawmnt"
    qemu-img create -f qcow2 -b "$affrawmnt" -F raw S0001-P0000.qcow2-sda
+   forensic_source="$affrawmnt"
 fi
 
 if [ $imagemanager == "qemu" ]; then
    qemu-img create -f qcow2 -b "$1" -F qcow2 S0001-P0000.qcow2-sda
+   forensic_source="$1"
 fi
 
 tput bold
@@ -288,7 +305,8 @@ tput setaf 2
 echo "5) Activate nbd block device"
 tput sgr0
 /sbin/modprobe nbd max_parts=25
-qemu-nbd --connect=/dev/nbd0 S0001-P0000.qcow2-sda
+qemu-nbd --connect=$first_nbd S0001-P0000.qcow2-sda
+#qemu-nbd --connect=/dev/nbd0 S0001-P0000.qcow2-sda
 tput bold
 tput setaf 2
 echo "6) Remove hibernate file"
@@ -300,17 +318,17 @@ xmllint --xpath '//mountpoint' ${info_name} | awk -F'"' '{print $2}' | while rea
    tput setaf 2
    echo "6.1) Removing hibernate file form partition number $NUMBER"
    tput sgr0
-   ntfsfix "/dev/nbd0p$NUMBER"
+   ntfsfix "${first_nbd}p$NUMBER"
    sync
-   ntfsfix -d "/dev/nbd0p$NUMBER"
+   ntfsfix -d "${first_nbd}p$NUMBER"
    sync
-   mount -t ntfs-3g "/dev/nbd0p$NUMBER" "$win_mount" -o remove_hiberfile
+   mount -t ntfs-3g "${first_nbd}p$NUMBER" "$win_mount" -o remove_hiberfile
    umount  "$win_mount"
-   ntfsfix "/dev/nbd0p$NUMBER"
+   ntfsfix "${first_nbd}p$NUMBER"
    sync
-   ntfsfix -d "/dev/nbd0p$NUMBER"
+   ntfsfix -d "${first_nbd}p$NUMBER"
 done
-qemu-nbd --disconnect "/dev/nbd0"
+qemu-nbd --disconnect "${first_nbd}"
 sync
 
 
@@ -319,6 +337,14 @@ tput setaf 2
 echo "7) Add virtio drivers and qemu guest"
 tput sgr0
 virt-v2v -i disk "$vm_name/S0001-P0000.qcow2-sda"  -o qemu -of qcow2 -os "$vm_name" -on "S0002-P0001.qcow2"
+#DEBUG
+if [[ $? -eq 1 ]]; then
+   echo "Disk without partitions. Forensic image probably of a single partion. Heading to plan B..."
+   echo "/forensicVM/bin/create-windows-partition.sh" "${vm_name}/temp_image.qcow2" $forensic_source S0002-P0001.qcow2-sda
+   /forensicVM/bin/create-windows-partition.sh "${vm_name}/temp_image.qcow2" $forensic_source S0002-P0001.qcow2-sda
+   virt-inspector "S0002-P0001.qcow2-sda" > ${info_name}
+fi
+
 change_qemu_vm "$vm_name/S0002-P0001.qcow2.sh" "$vm_name/S0002-P0001.qcow2-vnc.sh" "$qmp_socket" "$run_pid" "$vm_name"
 
 tput bold

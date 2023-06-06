@@ -10,7 +10,18 @@
 # Record the start time
 start_time=$(date +%s)
 
+check_disk_partitions() {
+  local image_file="$1"
 
+  # Use fdisk to check disk partitions and grep for "not in disk order"
+  if fdisk -lu "$image_file" | grep -q "not in disk order"; then
+    echo "Invalid partitions detected in $image_file"
+    return 1
+  else
+    echo "No invalid partitions found in $image_file"
+    return 0
+  fi
+}
 
 get_first_free_nbd() {
     for nbd_device in /dev/nbd*; do
@@ -339,11 +350,28 @@ tput sgr0
 virt-v2v -i disk "$vm_name/S0001-P0000.qcow2-sda"  -o qemu -of qcow2 -os "$vm_name" -on "S0002-P0001.qcow2"
 #DEBUG
 if [[ $? -eq 1 ]]; then
-   echo "Disk without partitions. Forensic image probably of a single partion. Heading to plan B..."
-   echo "/forensicVM/bin/create-windows-partition.sh" "${vm_name}/temp_image.qcow2" $forensic_source ${vm_name}/S0002-P0001.qcow2
-   /forensicVM/bin/create-windows-partition.sh "${vm_name}/temp_image.qcow2" $forensic_source ${vm_name}/S0002-P0001.qcow2
-   virt-inspector "${vm_image}/S0002-P0001.qcow2-sda" > ${info_name}
-   bash -i
+   check_disk_partitions "$forensic_source"
+   exit_code=$?
+   # Check if forrensic image has valid partions or is a single partion
+   if [ $exit_code -eq 0 ]; then
+      echo "Valid partitions detected. Copying image..."
+      qemu-img convert -p -O qcow2 "$forensic_source" "$vm_name/S0002-P0001.qcow2"
+   else
+      echo "Invalid partitions detected."
+      tput bold
+      tput setaf 2
+      echo "Disk without partitions. Forensic image probably of a single partion. Heading to plan B..."
+      echo "/forensicVM/bin/create-windows-partition.sh" "${vm_name}/temp_image.qcow2" $forensic_source ${vm_name}/S0002-P0001.qcow2
+      tput sgr0
+      /forensicVM/bin/create-windows-partition.sh "${vm_name}/temp_image.qcow2" $forensic_source ${vm_name}/S0002-P0001.qcow2
+      #/forensicVM/bin/create-windows-partition.sh "${vm_name}/temp_image.qcow2" "$vm_name/S0001-P0000.qcow2-sda"  ${vm_name}/S0002-P0001.qcow2
+      echo virt-v2v -i disk "${vm_name}/temp_image.qcow2" -o qemu -of qcow2 -os "$vm_name" -on "S0002-P0001.qcow2"
+      virt-v2v -i disk "${vm_name}/temp_image.qcow2" -o qemu -of qcow2 -os "$vm_name" -on "S0002-P0001.qcow2"
+      echo virt-inspector "${vm_image}/S0002-P0001.qcow2-sda" > ${info_name}
+      virt-inspector "S0002-P0001.qcow2-sda" > ${info_name}
+   fi
+   #echo bash -i
+   #bash -i
 fi
 
 change_qemu_vm "$vm_name/S0002-P0001.qcow2.sh" "$vm_name/S0002-P0001.qcow2-vnc.sh" "$qmp_socket" "$run_pid" "$vm_name"

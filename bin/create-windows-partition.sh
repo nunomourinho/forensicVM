@@ -102,5 +102,4 @@ dd if=/forensicVM/bin/win10bootp1.raw of=/dev/nbd0p1 bs=4MB status=progress
 dd if=$2 of=/dev/nbd0p2 bs=4MB status=progress
 qemu-nbd --disconnect $first_nbd
 /forensicVM/bin/remove-hibernation.sh $disk_image
-virt-v2v -i disk $disk_image  -o qemu -of qcow2 -os "./" -on "$3"
-rm $disk_image
+#rm $disk_image

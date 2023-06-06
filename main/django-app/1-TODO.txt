@@ -7,3 +7,5 @@
 ---> Test production enviroment
 
 ---> Document with docstrings. See first year project on personal MESI github
+
+---> Create a service to start the django app automatically

@@ -32,17 +32,30 @@ ip link set $next_tap down
 ifconfig $next_br up
 ifconfig $next_tap down
 
-# Allow all traffic on default_gw
-ufw allow in on $next_tap from $default_route_gw
-ufw allow out on $next_tap from $default_route_gw
+# Flush existing rules
+iptables -F
+iptables -X
 
-# Deny all traffic on tap from certain subnets
-ufw deny in on $next_tap from 192.168.0.0/24
-ufw deny out on $next_tap from 192.168.0.0/24
-ufw deny in on $next_tap from 172.16.0.0/16
-ufw deny out on $next_tap from 172.16.0.0/16
-ufw deny in on $next_tap from 10.0.0.0/8
-ufw deny out on $next_tap from 10.0.0.0/8
+# Set default policies to ACCEPT
+iptables -P INPUT ACCEPT
+iptables -P OUTPUT ACCEPT
+iptables -P FORWARD ACCEPT
+
+# Allow all traffic on default_gw
+iptables -A INPUT -i $next_tap -s $default_route_gw -j ACCEPT
+iptables -A OUTPUT -o $next_tap -d $default_route_gw -j ACCEPT
+
+# Deny all local traffic on tap
+iptables -A INPUT -i $next_tap -s 192.168.0.0/24 -j DROP
+iptables -A OUTPUT -o $next_tap -d 192.168.0.0/24 -j DROP
+iptables -A INPUT -i $next_tap -s 172.16.0.0/16 -j DROP
+iptables -A OUTPUT -o $next_tap -d 172.16.0.0/16 -j DROP
+iptables -A INPUT -i $next_tap -s 10.0.0.0/8 -j DROP
+iptables -A OUTPUT -o $next_tap -d 10.0.0.0/8 -j DROP
+
+# Allow all other traffic
+iptables -A INPUT -i $next_tap -j ACCEPT
+iptables -A OUTPUT -o $next_tap -j ACCEPT
 
 echo "Bridge: $next_br"
 echo "Tap: $next_tap"

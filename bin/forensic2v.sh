@@ -355,7 +355,7 @@ if [[ $? -eq 1 ]]; then
    # Check if forrensic image has valid partions or is a single partion
    if [ $exit_code -eq 0 ]; then
       echo "Valid partitions detected. Copying image..."
-      qemu-img convert -p -O qcow2 "$forensic_source" "$vm_name/S0002-P0001.qcow2"
+      qemu-img convert -p -O qcow2 "$forensic_source" "$vm_name/S0002-P0001.qcow2-sda"
    else
       echo "Invalid partitions detected."
       tput bold

@@ -1214,7 +1214,8 @@ class CheckVMExistsView(APIView):
         else:
             return Response({'error': 'API key required'}, status=status.HTTP_401_UNAUTHORIZED)
 
-        vm_path = f"/forensicVM/mnt/vm/{uuid}"
+        #vm_path = f"/forensicVM/mnt/vm/{uuid}"
+        vm_path = f"/forensicVM/mnt/vm/{uuid}/mode"
         vm_exists = os.path.exists(vm_path)
 
         result = {'vm_exists': vm_exists}
@@ -1337,7 +1338,9 @@ class ForensicImageVMStatus(APIView):
         pid_file = os.path.join(run_path, "run.pid")
         mode_file = os.path.join(run_path, "mode")
 
+        #if not os.path.exists(mode_file):
         if not os.path.exists(vm_path):
+            print("Does no exist")
             return Response({'PATH': 'not_exist'}, status=status.HTTP_404_NOT_FOUND)
         else:
             result = {'PATH': 'exists'}

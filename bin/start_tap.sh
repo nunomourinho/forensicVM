@@ -1,28 +1,12 @@
 #!/bin/bash
 
-apt install bridge-utils -y
-apt install iptables -y
-apt install -y uml-utilities
-
-# Function to find the next available number for bridge and tap interfaces
-find_next_available() {
-    local base_name=$1
-    local i=0
-    while ip link show "${base_name}${i}" >/dev/null 2>&1; do
-        i=$((i+1))
-    done
-    echo "${base_name}${i}"
-}
-
 # The interface for the default route
 default_route_interface=$(route -n | grep 'UG[ \t]' | awk '{print $8}')
 default_route_gw=$(route -n | grep 'UG[ \t]' | awk '{print $2}')
 
 # Find next available bridge and tap interface
-#next_br=$(find_next_available "br")
 next_br=br0
-next_tap=$(find_next_available "tap")
-next_tap=tap1
+next_tap=$1
 
 brctl addbr $next_br
 ip tuntap add dev $next_tap mode tap user `whoami`
@@ -124,3 +108,5 @@ echo "Interface: $default_route_interface"
 echo "Interface: $default_route_interface_ipv6"
 echo "GW: $default_route_gw"
 echo "GW: $default_route_gw_ipv6"
+
+exit 0

@@ -50,26 +50,37 @@ first_nbd=$(get_first_free_nbd)
 # The modified configuration is then saved to the output file specified by $2. The file permissions are set to 700 to ensure that only the owner can execute it.
 
 function change_qemu_vm {
-#   vmconfig=`cat $1 | grep -v net0 | grep -v display | grep -v qxl | grep -v balloon | grep -v viosock| sed 's|/usr/share/OVMF/|/forensicVM/usr/share/qemu/|g'`
-   echo "$5"
-#   vmconfig=`cat $1 | grep -v net0 | grep -v display | grep -v qxl | grep -v balloon | grep -v viosock |  sed "s|format=raw|format=qcow2|g" | sed "s|cp '/usr/share/OVMF/OVMF_VARS.fd'|cp -n '/forensicVM/usr/share/qemu/OVMF_VARS.qcow2'|" | sed 's|-drive if=pflash,format=raw,file=/usr/share/OVMF/OVMF_CODE.fd,readonly |-drive if=pflash,format=qcow2,file=/forensicVM/usr/share/qemu/OVMF_CODE.qcow2,readonly |' | sed "s|\$uefi_vars|$5/OVMF_CODE.qcow2|"`
-   vmconfig=$(cat "$1" | grep -v net0 | grep -v display | grep -v qxl | grep -v balloon | grep -v viosock | sed 's|format=raw|format=qcow2|g' | sed "s|cp '/usr/share/OVMF/OVMF_VARS.fd'|cp -n '/forensicVM/usr/share/qemu/OVMF_VARS.qcow2'|" | sed 's|/usr/share/OVMF/OVMF_CODE.fd|/forensicVM/usr/share/qemu/OVMF_CODE.qcow2|' | sed "s|\$uefi_vars|$5/OVMF_VARS.qcow2|")
-   extra_parameters="   -display vnc=0.0.0.0:\$1,websocket=\$2 \\
-       -qmp unix:$3,server,nowait \\
-       -pidfile $4 \\
-       -usb -device usb-tablet -device usb-kbd \\
-	   -drive if=none,id=drive-ide0-0-0,readonly=on \\
-       -device ide-cd,bus=ide.0,unit=0,drive=drive-ide0-0-0,id=ide0-0-0 \\
-       -vga virtio \\
-       -drive file=evidence.qcow2,format=qcow2,if=virtio,index=1,media=disk \\
-       -boot menu=on,strict=on,reboot-timeout=10000,splash-time=20000,splash=/forensicVM/branding/bootsplash.jpg"
+   #echo "$5"
+   startScript="#!/bin/bash
 
-    echo "$vmconfig
+# Function to find the next available number for bridge and tap interfaces
+find_next_available() {
+     local base_name=\$1
+     local i=0
+     while ip link show \"\${base_name}\${i}\" >/dev/null 2>&1; do
+        i=\$((i+1))
+     done
+     echo \"\${base_name}\${i}\"
+}
+
+tapInterface=\$(find_next_available \"tap\")
+"
+
+   vmconfig=$(cat "$1" | grep -v bash | grep -v \/bin\/sh | grep -v net0 | grep -v display | grep -v qxl | grep -v balloon | grep -v viosock | sed 's|format=raw|format=qcow2|g' | sed "s|cp '/usr/share/OVMF/OVMF_VARS.fd'|cp -n '/forensicVM/usr/share/qemu/OVMF_VARS.qcow2'|" | sed 's|/usr/share/OVMF/OVMF_CODE.fd|/forensicVM/usr/share/qemu/OVMF_CODE.qcow2|' | sed "s|\$uefi_vars|$5/OVMF_VARS.qcow2|")
+   extra_parameters="-display vnc=0.0.0.0:\$1,websocket=\$2 \\
+    -qmp unix:$3,server,nowait \\
+    -pidfile $4 \\
+    -usb -device usb-tablet -device usb-kbd \\
+    -drive if=none,id=drive-ide0-0-0,readonly=on \\
+    -device ide-cd,bus=ide.0,unit=0,drive=drive-ide0-0-0,id=ide0-0-0 \\
+    -vga virtio \\
+    -drive file=evidence.qcow2,format=qcow2,if=virtio,index=1,media=disk \\
+    -boot menu=on,strict=on,reboot-timeout=10000,splash-time=20000,splash=/forensicVM/branding/bootsplash.jpg \\
+    -netdev tap,id=u1,ifname=\$tapInterface,script=/forensicVM/bin/start_tap.sh,downscript=/forensicVM/bin/end_tap.sh -device e1000,netdev=u1-object filter-dump,id=f1,netdev=u1,file=$5/network.pcap"
+    echo "$startScript
+    $vmconfig
     $extra_parameters" >$2
     chmod 700 $2
-
-#       -chardev socket,id=mon0,host=localhost,port=4444,server=on,wait=off \\
-#       -mon chardev=mon0,mode=control,pretty=on \\
 
 }
 
@@ -109,6 +120,7 @@ if [[ -z $1 ]] || [[ -z $2 ]]; then
     echo "Sintaxe: forensic2v <forensic-image> <name> [copy|snap]"
     exit 1
 fi
+
 
 # Detect what image manager should be used to open the forensic image
 imagemanager=""

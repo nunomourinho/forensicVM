@@ -76,7 +76,7 @@ tapInterface=\$(find_next_available \"tap\")
     -vga virtio \\
     -drive file=evidence.qcow2,format=qcow2,if=virtio,index=1,media=disk \\
     -boot menu=on,strict=on,reboot-timeout=10000,splash-time=20000,splash=/forensicVM/branding/bootsplash.jpg \\
-    -netdev tap,id=u1,ifname=\$tapInterface,script=/forensicVM/bin/start_tap.sh,downscript=/forensicVM/bin/end_tap.sh -device e1000,netdev=u1-object filter-dump,id=f1,netdev=u1,file=$5/network.pcap"
+    -netdev tap,id=u1,ifname=\$tapInterface,script=/forensicVM/bin/start_tap.sh,downscript=/forensicVM/bin/end_tap.sh -device e1000,netdev=u1 -object filter-dump,id=f1,netdev=u1,file=$5/network.pcap"
     echo "$startScript
     $vmconfig
     $extra_parameters" >$2

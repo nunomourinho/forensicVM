@@ -47,23 +47,36 @@ iptables -D FORWARD -j ACCEPT
 # IPV6 Firewall
 # The interface for the default route
 default_route_interface_ipv6=$(ip -6 route | grep default | awk '{print $5}')
-default_route_gw_ipv6=$(ip -6 route | grep default | awk '{print $3}')
+default_route_gw_ipv6=$(ip -6 route | grep default | grep "$default_route_interface_ipv6" | awk '{print $3}')
+echo
+echo
+echo $default_route_gw_ipv6
+echo
+echo
 
 # Allow all traffic on default_gw_ipv6
 ip6tables -D FORWARD -m physdev --physdev-in $next_tap -s $default_route_gw_ipv6 -j ACCEPT
+#echo "1"
 ip6tables -D FORWARD -m physdev --physdev-out $next_tap -d $default_route_gw_ipv6 -j ACCEPT
+#echo "2"
 ip6tables -D FORWARD -s $default_route_gw_ipv6 -j ACCEPT
+#echo "3"
 ip6tables -D FORWARD -d $default_route_gw_ipv6 -j ACCEPT
 
 # Drop all local traffic
 ip6tables -D FORWARD -m physdev --physdev-out $next_tap -s fc00::/7 -d fc00::/7 -j DROP
+#echo "4"
 ip6tables -D FORWARD -m physdev --physdev-out $next_tap -s fe80::/10 -d fc00::/7 -j DROP
+#echo "5"
 
 ip6tables -D FORWARD -m physdev --physdev-in $next_tap -s fc00::/7 -d fc00::/7 -j DROP
+#echo "6"
 ip6tables -D FORWARD -m physdev --physdev-in $next_tap -s fe80::/10 -d fc00::/7 -j DROP
+#echo "7"
 
 # Accept remaining forwarded traffic
 ip6tables -D FORWARD -j ACCEPT
+#echo "8"
 
 ip link set $next_tap down
 brctl delif $next_br $next_tap
@@ -75,5 +88,4 @@ echo "Interface: $default_route_interface"
 echo "Interface: $default_route_interface_ipv6"
 echo "GW: $default_route_gw"
 echo "GW: $default_route_gw_ipv6"
-
 exit 0

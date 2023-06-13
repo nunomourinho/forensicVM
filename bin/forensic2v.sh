@@ -25,7 +25,8 @@ check_disk_partitions() {
 
 get_first_free_nbd() {
     for nbd_device in /dev/nbd*; do
-        if ! $(lsblk | grep -q "^${nbd_device#/dev/}"); then
+        echo $nbd_device
+        if ! $(lsblk -l | grep -q "^${nbd_device#/dev/}"); then
             echo "$nbd_device"
             return
         fi
@@ -34,6 +35,10 @@ get_first_free_nbd() {
 }
 
 first_nbd=$(get_first_free_nbd)
+first_nbd="/dev/nbd2"
+echo $first_nbd
+#read -p "pause"
+#exit 1
 
 # Helper function: Change qemu startup script.
 # This is a Bash function that generates a modified QEMU virtual machine configuration file based on the input parameters.
@@ -66,7 +71,7 @@ find_next_available() {
 tapInterface=\$(find_next_available \"tap\")
 "
 
-   vmconfig=$(cat "$1" | grep -v bash | grep -v \/bin\/sh | grep -v net0 | grep -v display | grep -v qxl | grep -v balloon | grep -v viosock | sed 's|format=raw|format=qcow2|g' | sed "s|cp '/usr/share/OVMF/OVMF_VARS.fd'|cp -n '/forensicVM/usr/share/qemu/OVMF_VARS.qcow2'|" | sed 's|/usr/share/OVMF/OVMF_CODE.fd|/forensicVM/usr/share/qemu/OVMF_CODE.qcow2|' | sed "s|\$uefi_vars|$5/OVMF_VARS.qcow2|")
+   vmconfig=$(cat "$1" | grep -v bash | grep -v sh | grep -v net0 | grep -v display | grep -v qxl | grep -v balloon | grep -v viosock | sed 's|format=raw|format=qcow2|g' | sed "s|cp '/usr/share/OVMF/OVMF_VARS.fd'|cp -n '/forensicVM/usr/share/qemu/OVMF_VARS.qcow2'|" | sed 's|/usr/share/OVMF/OVMF_CODE.fd|/forensicVM/usr/share/qemu/OVMF_CODE.qcow2|' | sed "s|\$uefi_vars|$5/OVMF_VARS.qcow2|")
    extra_parameters="-display vnc=0.0.0.0:\$1,websocket=\$2 \\
     -qmp unix:$3,server,nowait \\
     -pidfile $4 \\
@@ -329,6 +334,8 @@ echo "5) Activate nbd block device"
 tput sgr0
 /sbin/modprobe nbd max_parts=25
 qemu-nbd --connect=$first_nbd S0001-P0000.qcow2-sda
+echo qemu-nbd --connect=$first_nbd S0001-P0000.qcow2-sda
+#read -p "pause"
 #qemu-nbd --connect=/dev/nbd0 S0001-P0000.qcow2-sda
 tput bold
 tput setaf 2

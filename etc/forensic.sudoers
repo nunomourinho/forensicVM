@@ -1,0 +1,3 @@
+forensicinvestigator ALL=(ALL) NOPASSWD: /forensicVM/bin/*, /forensicVM/plugins/*, /forensicVM/mnt/vm/*
+
+

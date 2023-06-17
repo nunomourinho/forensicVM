@@ -56,6 +56,16 @@ echo $first_nbd
 
 function change_qemu_vm {
    #echo "$5"
+
+   missingScript="
+qemu-system-x86_64 \\
+    -no-user-config \\
+    -nodefaults \\
+    -name S0002-P0001.qcow2 \\
+    -machine pc,accel=kvm:tcg \\
+    -m 2048 \\
+    -drive file=$5/S0002-P0001.qcow2-sda,format=qcow2,if=virtio,index=0,media=disk \\"
+
    startScript="#!/bin/bash
 
 # Function to find the next available number for bridge and tap interfaces
@@ -69,9 +79,14 @@ find_next_available() {
 }
 
 tapInterface=\$(find_next_available \"tap\")
-"
 
-   vmconfig=$(cat "$1" | grep -v bash | grep -v sh | grep -v net0 | grep -v display | grep -v qxl | grep -v balloon | grep -v viosock | sed 's|format=raw|format=qcow2|g' | sed "s|cp '/usr/share/OVMF/OVMF_VARS.fd'|cp -n '/forensicVM/usr/share/qemu/OVMF_VARS.qcow2'|" | sed 's|/usr/share/OVMF/OVMF_CODE.fd|/forensicVM/usr/share/qemu/OVMF_CODE.qcow2|' | sed "s|\$uefi_vars|$5/OVMF_VARS.qcow2|")
+echo \$tapInterface > $5/tap.interface
+"
+   vmconfig=$(cat "$1" | grep -v bash | grep -v /bin/sh | grep -v net0 | grep -v display | grep -v qxl | grep -v balloon | grep -v viosock | sed 's|format=raw|format=qcow2|g' | sed "s|cp '/usr/share/OVMF/OVMF_VARS.fd'|cp -n '/forensicVM/usr/share/qemu/OVMF_VARS.qcow2'|" | sed 's|/usr/share/OVMF/OVMF_CODE.fd|/forensicVM/usr/share/qemu/OVMF_CODE.qcow2|' | sed "s|\$uefi_vars|$5/OVMF_VARS.qcow2|")
+   if ! [$? -eq 0 ]
+   then
+	vmconfig=$missingScript
+   fi
    extra_parameters="-display vnc=0.0.0.0:\$1,websocket=\$2 \\
     -qmp unix:$3,server,nowait \\
     -pidfile $4 \\
@@ -85,6 +100,7 @@ tapInterface=\$(find_next_available \"tap\")
     echo "$startScript
     $vmconfig
     $extra_parameters" >$2
+
     chmod 700 $2
 
 }
@@ -123,6 +139,7 @@ EOF
 
 if [[ -z $1 ]] || [[ -z $2 ]]; then
     echo "Sintaxe: forensic2v <forensic-image> <name> [copy|snap]"
+    read -p "Image not detected"
     exit 1
 fi
 
@@ -147,6 +164,7 @@ if [[ -n $1 ]]; then
                  imagemanager="qemu"
               else
                  echo "Image format not detected. Aborting"
+                 read -p "Image not detected"
                  exit 1
               fi
           fi
@@ -154,6 +172,7 @@ if [[ -n $1 ]]; then
   fi
   else
       echo "The image parameter (1) is missing"
+      read -p "Image not detected"
       exit 1
 fi
 
@@ -275,6 +294,7 @@ if [ $imagemanager == "aff" ]; then
        # TODO: Create an extra mount image to snapshot
    else
        echo "Error: could not mount $image"
+       read -p ""
        exit 1
    fi
 fi
@@ -428,4 +448,3 @@ else
   echo "snap" > "${vm_name}/mode"
 fi
 
-read -p "Verify if the are any errors. Press any key to continue..."

@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # The interface for the default route
-default_route_interface=$(route -n | grep 'UG[ \t]' | awk '{print $8}')
-default_route_gw=$(route -n | grep 'UG[ \t]' | awk '{print $2}')
+default_route_interface=$(route -n | grep 'UG[ \t]' | awk '{print $8}' | tail -n 1)
+default_route_gw=$(route -n | grep 'UG[ \t]' | awk '{print $2}' | tail -n 1)
 
 # Find next available bridge and tap interface
 next_br=br0
@@ -46,8 +46,8 @@ iptables -D FORWARD -j ACCEPT
 
 # IPV6 Firewall
 # The interface for the default route
-default_route_interface_ipv6=$(ip -6 route | grep default | awk '{print $5}')
-default_route_gw_ipv6=$(ip -6 route | grep default | grep "$default_route_interface_ipv6" | awk '{print $3}')
+default_route_interface_ipv6=$(ip -6 route | grep default | awk '{print $5}' | tail -n 1)
+default_route_gw_ipv6=$(ip -6 route | grep default | grep "$default_route_interface_ipv6" | awk '{print $3}' | tail -n 1)
 echo
 echo
 echo $default_route_gw_ipv6

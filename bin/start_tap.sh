@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # The interface for the default route
-default_route_interface=$(route -n | grep 'UG[ \t]' | awk '{print $8}')
-default_route_gw=$(route -n | grep 'UG[ \t]' | awk '{print $2}')
+default_route_interface=$(route -n | grep 'UG[ \t]' | awk '{print $8}' | tail -n 1)
+default_route_gw=$(route -n | grep 'UG[ \t]' | awk '{print $2}' | tail -n 1)
 
 # Find next available bridge and tap interface
 next_br=br0
@@ -19,8 +19,8 @@ ifconfig $next_br up
 ifconfig $next_tap down
 
 # Flush existing rules
-iptables -F
-iptables -X
+#iptables -F
+#iptables -X
 
 modprobe br_netfilter
 echo 1 > /proc/sys/net/bridge/bridge-nf-call-iptables
@@ -77,8 +77,8 @@ iptables -A FORWARD -j ACCEPT
 
 # IPV6 Firewall
 # The interface for the default route
-default_route_interface_ipv6=$(ip -6 route | grep default | awk '{print $5}')
-default_route_gw_ipv6=$(ip -6 route | grep default | grep "$default_route_interface_ipv6" | awk '{print $3}')
+default_route_interface_ipv6=$(ip -6 route | grep default | awk '{print $5}' | tail -n 1)
+default_route_gw_ipv6=$(ip -6 route | grep default | grep "$default_route_interface_ipv6" | awk '{print $3}' | tail -n 1)
 
 ip6tables -P FORWARD DROP
 ip6tables -A INPUT -i lo -j ACCEPT

@@ -33,6 +33,144 @@ import zipfile
 from PIL import Image
 import datetime
 
+@method_decorator(csrf_exempt, name='dispatch')
+class CheckTapInterfaceView(View):
+    authentication_classes = []
+    permission_classes = []
+
+    async def post(self, request):
+        api_key = request.META.get('HTTP_X_API_KEY')
+        if api_key:
+            try:
+                api_key = await sync_to_async(ApiKey.objects.get)(key=api_key)
+                user = await sync_to_async(getattr)(api_key, 'user')
+                if not user.is_active:
+                    return JsonResponse({'error': 'User account is disabled.'}, status=status.HTTP_401_UNAUTHORIZED)
+            except ApiKey.DoesNotExist:
+                return JsonResponse({'error': 'Invalid API key'}, status=status.HTTP_401_UNAUTHORIZED)
+        else:
+            return JsonResponse({'error': 'API key required'}, status=status.HTTP_401_UNAUTHORIZED)
+
+        # Get the uuid from the POST data
+        uuid = request.POST.get('uuid')
+
+        if not uuid:
+            return JsonResponse({'error': 'UUID required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Execute the command to get the tap interface
+        cmd = f"ps -ef | grep qemu | grep {uuid}"
+        process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+        output, error = process.communicate()
+
+        if error:
+            return JsonResponse({'error': f'Error finding QEMU process: {error}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        tap_interface = output.decode().split('-netdev tap,id=u1,ifname=')[1].split(',')[0]
+
+        # Check the status of the tap interface
+        check_tap_cmd = f"ifconfig {tap_interface}"
+        check_tap_process = subprocess.Popen(check_tap_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+        check_tap_output, check_tap_error = check_tap_process.communicate()
+
+        if check_tap_error:
+            return JsonResponse({'error': f'Error checking tap interface: {check_tap_error}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        is_up = 'UP' in check_tap_output.decode()
+
+        if is_up:
+            return JsonResponse({'message': f'Tap interface {tap_interface} is up', 'status': True}, status=status.HTTP_200_OK)
+        else:
+            return JsonResponse({'message': f'Tap interface {tap_interface} is down', 'status': False}, status=status.HTTP_200_OK)
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class StartTapInterfaceView(View):
+    authentication_classes = []
+    permission_classes = []
+
+    async def post(self, request):
+        api_key = request.META.get('HTTP_X_API_KEY')
+        if api_key:
+            try:
+                api_key = await sync_to_async(ApiKey.objects.get)(key=api_key)
+                user = await sync_to_async(getattr)(api_key, 'user')
+                if not user.is_active:
+                    return JsonResponse({'error': 'User account is disabled.'}, status=status.HTTP_401_UNAUTHORIZED)
+            except ApiKey.DoesNotExist:
+                return JsonResponse({'error': 'Invalid API key'}, status=status.HTTP_401_UNAUTHORIZED)
+        else:
+            return JsonResponse({'error': 'API key required'}, status=status.HTTP_401_UNAUTHORIZED)
+
+        # Get the uuid from the POST data
+        uuid = request.POST.get('uuid')
+
+        if not uuid:
+            return JsonResponse({'error': 'UUID required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Execute the command to get the tap interface
+        cmd = f"ps -ef | grep qemu | grep {uuid}"
+        process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+        output, error = process.communicate()
+
+        if error:
+            return JsonResponse({'error': f'Error finding QEMU process: {error}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        tap_interface = output.decode().split('-netdev tap,id=u1,ifname=')[1].split(',')[0]
+
+        # Start the tap interface
+        start_tap_cmd = f"ifconfig {tap_interface} up"
+        start_tap_process = subprocess.Popen(start_tap_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+        start_tap_output, start_tap_error = start_tap_process.communicate()
+
+        if start_tap_error:
+            return JsonResponse({'error': f'Error starting tap interface: {start_tap_error}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        return JsonResponse({'message': f'Tap interface {tap_interface} started successfully'}, status=status.HTTP_200_OK)
+
+@method_decorator(csrf_exempt, name='dispatch')
+class StopTapInterfaceView(View):
+    authentication_classes = []
+    permission_classes = []
+
+    async def post(self, request):
+        api_key = request.META.get('HTTP_X_API_KEY')
+        if api_key:
+            try:
+                api_key = await sync_to_async(ApiKey.objects.get)(key=api_key)
+                user = await sync_to_async(getattr)(api_key, 'user')
+                if not user.is_active:
+                    return JsonResponse({'error': 'User account is disabled.'}, status=status.HTTP_401_UNAUTHORIZED)
+            except ApiKey.DoesNotExist:
+                return JsonResponse({'error': 'Invalid API key'}, status=status.HTTP_401_UNAUTHORIZED)
+        else:
+            return JsonResponse({'error': 'API key required'}, status=status.HTTP_401_UNAUTHORIZED)
+
+        # Get the uuid from the POST data
+        uuid = request.POST.get('uuid')
+
+        if not uuid:
+            return JsonResponse({'error': 'UUID required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Execute the command to get the tap interface
+        cmd = f"ps -ef | grep qemu | grep {uuid}"
+        process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+        output, error = process.communicate()
+
+        if error:
+            return JsonResponse({'error': f'Error finding QEMU process: {error}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        tap_interface = output.decode().split('-netdev tap,id=u1,ifname=')[1].split(',')[0]
+
+        # Start the tap interface
+        start_tap_cmd = f"ifconfig {tap_interface} down"
+        start_tap_process = subprocess.Popen(start_tap_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+        start_tap_output, start_tap_error = start_tap_process.communicate()
+
+        if start_tap_error:
+            return JsonResponse({'error': f'Error stopping tap interface: {start_tap_error}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        return JsonResponse({'message': f'Tap interface {tap_interface} stopped successfully'}, status=status.HTTP_200_OK)
+
 
 def get_available_memory():
     mem_info = psutil.virtual_memory()

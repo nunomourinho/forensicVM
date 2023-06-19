@@ -1,23 +1,24 @@
 #!/bin/bash
 
 # The interface for the default route
-default_route_interface=$(route -n | grep 'UG[ \t]' | awk '{print $8}' | tail -n 1)
+default_route_interface=br0
+#$(route -n | grep 'UG[ \t]' | awk '{print $8}' | tail -n 1)
 default_route_gw=$(route -n | grep 'UG[ \t]' | awk '{print $2}' | tail -n 1)
 
 # Find next available bridge and tap interface
 next_br=br0
 next_tap=$1
 
-brctl addbr $next_br
+#brctl addbr $next_br
 ip tuntap add dev $next_tap mode tap user `whoami`
 tunctl -u `whoami` -t $next_tap
 brctl addif $next_br $next_tap
-brctl addif $next_br $default_route_interface
+#brctl addif $next_br $default_route_interface
 ip link set $next_tap up promisc on
 ip link set $next_tap down
-ifconfig $next_br up
+#ifconfig $next_br up
 ifconfig $next_tap down
-ip link set dev $default_route_interface master $next_br
+#ip link set dev $default_route_interface master $next_br
 
 
 # Flush existing rules
@@ -79,7 +80,8 @@ iptables -A FORWARD -j ACCEPT
 
 # IPV6 Firewall
 # The interface for the default route
-default_route_interface_ipv6=$(ip -6 route | grep default | awk '{print $5}' | tail -n 1)
+default_route_interface_ipv6=br0
+#$(ip -6 route | grep default | awk '{print $5}' | tail -n 1)
 default_route_gw_ipv6=$(ip -6 route | grep default | grep "$default_route_interface_ipv6" | awk '{print $3}' | tail -n 1)
 
 ip6tables -P FORWARD DROP
@@ -109,9 +111,9 @@ ip6tables -A FORWARD -j ACCEPT
 
 echo "Bridge: $next_br"
 echo "Tap: $next_tap"
-echo "Interface: $default_route_interface"
-echo "Interface: $default_route_interface_ipv6"
-echo "GW: $default_route_gw"
-echo "GW: $default_route_gw_ipv6"
+echo "Interface IPV4: $default_route_interface"
+echo "Interface IPV6: $default_route_interface_ipv6"
+echo "GW IPV4: $default_route_gw"
+echo "GW IPV6: $default_route_gw_ipv6"
 
 exit 0

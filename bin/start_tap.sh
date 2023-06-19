@@ -17,6 +17,8 @@ ip link set $next_tap up promisc on
 ip link set $next_tap down
 ifconfig $next_br up
 ifconfig $next_tap down
+ip link set dev $default_route_interface master $next_br
+
 
 # Flush existing rules
 #iptables -F

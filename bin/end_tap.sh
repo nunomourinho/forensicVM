@@ -81,6 +81,7 @@ ip6tables -D FORWARD -j ACCEPT
 ip link set $next_tap down
 brctl delif $next_br $next_tap
 ip link delete $next_tap
+ip link set dev $default_route_interface master $next_br
 
 echo "Bridge: $next_br"
 echo "Tap: $next_tap"

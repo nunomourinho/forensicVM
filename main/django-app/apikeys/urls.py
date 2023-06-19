@@ -8,7 +8,7 @@ from .views import DownloadEvidenceView, CreateFoldersView, ListISOFilesView, Up
 from .views import EjectCDROMView, InsertCDROMView, InsertNetworkCardView, ListPluginsView, RunPluginView
 from .views import RecreateFoldersView, SnapshotListView, CreateSnapshotView, RollbackSnapshotView, DeleteSnapshotView
 from .views import MemorySizeView, ChangeMemorySizeView, GetAvailableMemoryView, StartTapInterfaceView, StopTapInterfaceView
-from .views import CheckTapInterfaceView
+from .views import DownloadNetworkPcapView,CheckTapInterfaceView
 
 urlpatterns = [
     #path('run-script/', RunScriptView.as_view(), name='run_script'),
@@ -47,5 +47,6 @@ urlpatterns = [
     path('start_tap/', StartTapInterfaceView.as_view(), name='start_tap'),
     path('stop_tap/', StopTapInterfaceView.as_view(), name='stop_tap'),
     path('check_tap/', CheckTapInterfaceView.as_view(), name='check_tap'),
+    path('download_pcap/<str:uuid>/', DownloadNetworkPcapView.as_view(), name='download_pcap'),
 ]
 

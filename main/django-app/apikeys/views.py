@@ -33,6 +33,47 @@ import zipfile
 from PIL import Image
 import datetime
 
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class DownloadNetworkPcapView(View):
+    authentication_classes = []
+    permission_classes = []
+
+    async def get(self, request, uuid):
+        api_key = request.META.get('HTTP_X_API_KEY')
+        if api_key:
+            try:
+                api_key = await sync_to_async(ApiKey.objects.get)(key=api_key)
+                user = await sync_to_async(getattr)(api_key, 'user')
+                if not user.is_active:
+                    return JsonResponse({'error': 'User account is disabled.'}, status=status.HTTP_401_UNAUTHORIZED)
+            except ApiKey.DoesNotExist:
+                return JsonResponse({'error': 'Invalid API key'}, status=status.HTTP_401_UNAUTHORIZED)
+        else:
+            return JsonResponse({'error': 'API key required'}, status=status.HTTP_401_UNAUTHORIZED)
+
+        vm_path = f"/forensicVM/mnt/vm/{uuid}"
+        vm_exists = os.path.exists(vm_path)
+
+        if not vm_exists:
+            return JsonResponse({'error': f'VM with UUID {uuid} not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        pcap_path = f"/forensicVM/mnt/vm/{uuid}/pcap/"
+
+        # Create a zip file containing all pcap files
+        zip_file_path = f"/forensicVM/mnt/vm/{uuid}/pcap.zip"
+        with zipfile.ZipFile(zip_file_path, 'w') as zipf:
+            for pcap_file in glob.glob(f"{pcap_path}/*.pcap"):
+                zipf.write(pcap_file, os.path.basename(pcap_file))
+
+        # Return the zip file as a FileResponse
+        response = FileResponse(open(zip_file_path, 'rb'), content_type='application/zip')
+        response['Content-Disposition'] = f'attachment; filename="{os.path.basename(zip_file_path)}"'
+        return response
+
+
+
 @method_decorator(csrf_exempt, name='dispatch')
 class CheckTapInterfaceView(View):
     authentication_classes = []

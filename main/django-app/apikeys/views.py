@@ -5,6 +5,7 @@ import socket
 import glob
 import time
 from django.shortcuts import render
+from django.contrib.auth import get_user_model
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -23,7 +24,6 @@ import asyncio
 from asgiref.sync import async_to_sync
 from asgiref.sync import sync_to_async
 from qemu.qmp import QMPClient
-
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
@@ -32,8 +32,114 @@ from django.http import FileResponse
 import zipfile
 from PIL import Image
 import datetime
+from datetime import datetime
+import glob
+
+#User = get_user_model()
+
+@method_decorator(csrf_exempt, name='dispatch')
+class RemoveVMDateTimeView(View):
+    authentication_classes = []
+    permission_classes = []
+
+    async def post(self, request):
+        api_key = request.META.get('HTTP_X_API_KEY')
+        if api_key:
+            try:
+                api_key = await sync_to_async(ApiKey.objects.get)(key=api_key)
+                user = await sync_to_async(getattr)(api_key, 'user')
+                if not user.is_active:
+                    return JsonResponse({'error': 'User account is disabled.'}, status=status.HTTP_401_UNAUTHORIZED)
+            except ApiKey.DoesNotExist:
+                return JsonResponse({'error': 'Invalid API key'}, status=status.HTTP_401_UNAUTHORIZED)
+        else:
+            return JsonResponse({'error': 'API key required'}, status=status.HTTP_401_UNAUTHORIZED)
+
+        # Get the UUID from the POST data
+        uuid = request.POST.get('uuid')
+
+        try:
+            # Get the .vnc file path
+            vnc_file_path = glob.glob(f"/forensicVM/mnt/vm/{uuid}/*vnc.sh")[0]
+
+            # Read the content of the file
+            with open(vnc_file_path, 'r') as file:
+                lines = file.readlines()
+
+            # Remove the -rtc base=<datetime> line if it exists
+            lines = [line for line in lines if '-rtc base=' not in line]
+
+            # Write the changes back to the file
+            with open(vnc_file_path, 'w') as file:
+                file.writelines(lines)
+
+            return JsonResponse({'message': f'Date time line removed successfully for VM {uuid}'}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return JsonResponse({'error': f'Error updating VM date time: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
+@method_decorator(csrf_exempt, name='dispatch')
+class ChangeVMDateTimeView(View):
+    authentication_classes = []
+    permission_classes = []
+
+    async def post(self, request):
+        api_key = request.META.get('HTTP_X_API_KEY')
+        if api_key:
+            try:
+                api_key = await sync_to_async(ApiKey.objects.get)(key=api_key)
+                user = await sync_to_async(getattr)(api_key, 'user')
+                if not user.is_active:
+                    return JsonResponse({'error': 'User account is disabled.'}, status=status.HTTP_401_UNAUTHORIZED)
+            except ApiKey.DoesNotExist:
+                return JsonResponse({'error': 'Invalid API key'}, status=status.HTTP_401_UNAUTHORIZED)
+        else:
+            return JsonResponse({'error': 'API key required'}, status=status.HTTP_401_UNAUTHORIZED)
+
+
+
+        # Get the UUID and datetime from the POST data
+        uuid = request.POST.get('uuid')
+        datetime_str = request.POST.get('datetime')
+
+        # Validate the datetime
+        if not validate_date(datetime_str):
+            return JsonResponse({'error': 'Invalid datetime format'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            # Get the .sh file path
+            vnc_file_path = glob.glob(f"/forensicVM/mnt/vm/{uuid}/*vnc.sh")[0]
+
+            # Read the content of the file
+            with open(vnc_file_path, 'r') as file:
+                lines = file.readlines()
+
+            # Add the new line after the -vga section if it doesn't exist
+            for i, line in enumerate(lines):
+                if '-vga' in line:
+                    if '-rtc base=' not in lines[i+1]:
+                        lines.insert(i+1, f'    -rtc base={datetime_str} \\\n')
+                    else:
+                        lines[i+1]=f'    -rtc base={datetime_str} \\\n'
+                    break
+
+            # Write the changes back to the file
+            with open(vnc_file_path, 'w') as file:
+                file.writelines(lines)
+
+            return JsonResponse({'message': f'Date time {datetime_str} set successfully for VM {uuid}'}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return JsonResponse({'error': f'Error updating VM date time: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+def validate_date(date_str):
+    """
+    Function to validate the date string against the format 'YYYY-MM-DDTHH:MM:SS'
+    """
+    try:
+        datetime.strptime(date_str, "%Y-%m-%dT%H:%M:%S")
+        return True
+    except ValueError:
+        return False
 
 @method_decorator(csrf_exempt, name='dispatch')
 class DownloadNetworkPcapView(View):

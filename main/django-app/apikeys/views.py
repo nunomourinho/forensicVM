@@ -14,6 +14,7 @@ from subprocess import CalledProcessError
 from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework.authentication import SessionAuthentication
 from rest_framework import status
 from .models import ApiKey
 import os
@@ -27,6 +28,7 @@ from qemu.qmp import QMPClient
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
+from django.contrib.auth.decorators import login_required
 from django.views import View
 from django.http import FileResponse
 import zipfile
@@ -44,7 +46,11 @@ class RemoveVMDateTimeView(View):
 
     async def post(self, request):
         api_key = request.META.get('HTTP_X_API_KEY')
-        if api_key:
+
+        user = await sync_to_async(getattr)(request, 'user', None)  # Get the user in the request
+        if user and user.is_authenticated:                          # User is authenticated via session
+            pass                                                    # Add this extra block to the request
+        elif api_key:                                               # <--- Changed
             try:
                 api_key = await sync_to_async(ApiKey.objects.get)(key=api_key)
                 user = await sync_to_async(getattr)(api_key, 'user')
@@ -1339,27 +1345,55 @@ async def system_shutdown(uuid):
     print(res)
 
     await qmp.disconnect()
+#
+#@method_decorator(csrf_exempt, name='dispatch')
+#class ShutdownVMView(View):
+#    authentication_classes = [SessionAuthentication]                # ADDED
+#    permission_classes = []
+#
+#    async def post(self, request, uuid):
+#        api_key = request.META.get('HTTP_X_API_KEY')
+#        user = getattr(request, 'user', None)                       # IF sync
+#        #user = await sync_to_async(getattr)(request, 'user', None)  # ASYNC: Get the user in the request
+#        if user and user.is_authenticated:                          # User is authenticated via session
+#            print("DEBUG: USER AUTHENTICATED")
+#            pass                                                    # Add this extra block to the request
+#        elif api_key:                                               # <--- Changed
+#            try:
+#                api_key = await sync_to_async(ApiKey.objects.get)(key=api_key)
+#                user = await sync_to_async(getattr)(api_key, 'user')
+#                if not user.is_active:
+#                    return JsonResponse({'error': 'User account is disabled.'}, status=status.HTTP_401_UNAUTHORIZED)
+#            except ApiKey.DoesNotExist:
+#                return JsonResponse({'error': 'Invalid API key'}, status=status.HTTP_401_UNAUTHORIZED)
+#        else:
+#            return JsonResponse({'error': 'API key required'}, status=status.HTTP_401_UNAUTHORIZED)
+#
+#        vm_path = f"/forensicVM/mnt/vm/{uuid}"
+#        vm_exists = os.path.exists(vm_path)
+#
+#        if not vm_exists:
+#            return JsonResponse({'error': f'VM with UUID {uuid} not found'}, status=status.HTTP_404_NOT_FOUND)
+#
+#        await system_shutdown(uuid)
+#
+#        result = {'vm_shutdown': True, 'message': f'Shutdown command sent to VM with UUID {uuid}'}
+#
+#        return JsonResponse(result, status=status.HTTP_200_OK)
+#
 
 @method_decorator(csrf_exempt, name='dispatch')
 class ShutdownVMView(View):
-    authentication_classes = []
+    authentication_classes = [SessionAuthentication]
     permission_classes = []
 
     async def post(self, request, uuid):
-        api_key = request.META.get('HTTP_X_API_KEY')
-        if api_key:
-            try:
-                api_key = await sync_to_async(ApiKey.objects.get)(key=api_key)
-                user = await sync_to_async(getattr)(api_key, 'user')
-                if not user.is_active:
-                    return JsonResponse({'error': 'User account is disabled.'}, status=status.HTTP_401_UNAUTHORIZED)
-            except ApiKey.DoesNotExist:
-                return JsonResponse({'error': 'Invalid API key'}, status=status.HTTP_401_UNAUTHORIZED)
-        else:
-            return JsonResponse({'error': 'API key required'}, status=status.HTTP_401_UNAUTHORIZED)
+        user, api_key_error = await sync_to_async(self.get_user_or_key_error)(request)
+        if api_key_error:
+            return api_key_error
 
         vm_path = f"/forensicVM/mnt/vm/{uuid}"
-        vm_exists = os.path.exists(vm_path)
+        vm_exists = await sync_to_async(os.path.exists)(vm_path)
 
         if not vm_exists:
             return JsonResponse({'error': f'VM with UUID {uuid} not found'}, status=status.HTTP_404_NOT_FOUND)
@@ -1370,6 +1404,22 @@ class ShutdownVMView(View):
 
         return JsonResponse(result, status=status.HTTP_200_OK)
 
+    def get_user_or_key_error(self, request):
+        api_key = request.META.get('HTTP_X_API_KEY')
+        user = getattr(request, 'user', None)
+        if user and user.is_authenticated:
+            print("DEBUG: USER AUTHENTICATED")
+        elif api_key:
+            try:
+                api_key = ApiKey.objects.get(key=api_key)
+                user = getattr(api_key, 'user')
+                if not user.is_active:
+                    return None, JsonResponse({'error': 'User account is disabled.'}, status=status.HTTP_401_UNAUTHORIZED)
+            except ApiKey.DoesNotExist:
+                return None, JsonResponse({'error': 'Invalid API key'}, status=status.HTTP_401_UNAUTHORIZED)
+        else:
+            return None, JsonResponse({'error': 'API key required'}, status=status.HTTP_401_UNAUTHORIZED)
+        return user, None
 
 
 async def system_reset(uuid):
@@ -1389,27 +1439,55 @@ async def system_reset(uuid):
         print(res)
     await qmp.disconnect()
 
+#@method_decorator(csrf_exempt, name='dispatch')
+#class ResetVMView(View):
+#    authentication_classes = [SessionAuthentication]                # ADDED
+#    permission_classes = []
+#
+#    async def post(self, request, uuid):
+#        api_key = request.META.get('HTTP_X_API_KEY')
+#        #user = getattr(request, 'user', None)                       # IF sync
+#        user = await sync_to_async(getattr)(request, 'user', None)  # ASYNC: Get the user in the request
+#        if user and user.is_authenticated:                          # User is authenticated via session
+#            print("DEBUG: USER AUTHENTICATED")
+#            pass                                                    # Add this extra block to the request
+#        elif api_key:                                               # <--- Changed
+#        #if api_key:
+#            try:
+#                api_key = await sync_to_async(ApiKey.objects.get)(key=api_key)
+#                user = await sync_to_async(getattr)(api_key, 'user')
+#                #user = api_key.user
+#                if not user.is_active:
+#                    return JsonResponse({'error': 'User account is disabled.'}, status=status.HTTP_401_UNAUTHORIZED)
+#            except ApiKey.DoesNotExist:
+#                return JsonResponse({'error': 'Invalid API key'}, status=status.HTTP_401_UNAUTHORIZED)
+#        else:
+#            return JsonResponse({'error': 'API key required'}, status=status.HTTP_401_UNAUTHORIZED)
+#
+#        vm_path = f"/forensicVM/mnt/vm/{uuid}"
+#        vm_exists = os.path.exists(vm_path)
+#
+#        if not vm_exists:
+#            return JsonResponse({'error': f'VM with UUID {uuid} not found'}, status=status.HTTP_404_NOT_FOUND)
+#
+#        await system_reset(uuid)
+#
+#        result = {'vm_reset': True, 'message': f'Reset command sent to VM with UUID {uuid}'}
+#
+#        return JsonResponse(result, status=status.HTTP_200_OK)
+
 @method_decorator(csrf_exempt, name='dispatch')
 class ResetVMView(View):
-    authentication_classes = []
+    authentication_classes = [SessionAuthentication]
     permission_classes = []
 
     async def post(self, request, uuid):
-        api_key = request.META.get('HTTP_X_API_KEY')
-        if api_key:
-            try:
-                api_key = await sync_to_async(ApiKey.objects.get)(key=api_key)
-                user = await sync_to_async(getattr)(api_key, 'user')
-                #user = api_key.user
-                if not user.is_active:
-                    return JsonResponse({'error': 'User account is disabled.'}, status=status.HTTP_401_UNAUTHORIZED)
-            except ApiKey.DoesNotExist:
-                return JsonResponse({'error': 'Invalid API key'}, status=status.HTTP_401_UNAUTHORIZED)
-        else:
-            return JsonResponse({'error': 'API key required'}, status=status.HTTP_401_UNAUTHORIZED)
+        user, api_key_error = await sync_to_async(self.get_user_or_key_error)(request)
+        if api_key_error:
+            return api_key_error
 
         vm_path = f"/forensicVM/mnt/vm/{uuid}"
-        vm_exists = os.path.exists(vm_path)
+        vm_exists = await sync_to_async(os.path.exists)(vm_path)
 
         if not vm_exists:
             return JsonResponse({'error': f'VM with UUID {uuid} not found'}, status=status.HTTP_404_NOT_FOUND)
@@ -1419,6 +1497,24 @@ class ResetVMView(View):
         result = {'vm_reset': True, 'message': f'Reset command sent to VM with UUID {uuid}'}
 
         return JsonResponse(result, status=status.HTTP_200_OK)
+
+    def get_user_or_key_error(self, request):
+        api_key = request.META.get('HTTP_X_API_KEY')
+        user = getattr(request, 'user', None)
+        if user and user.is_authenticated:
+            print("DEBUG: USER AUTHENTICATED")
+        elif api_key:
+            try:
+                api_key = ApiKey.objects.get(key=api_key)
+                user = getattr(api_key, 'user')
+                if not user.is_active:
+                    return None, JsonResponse({'error': 'User account is disabled.'}, status=status.HTTP_401_UNAUTHORIZED)
+            except ApiKey.DoesNotExist:
+                return None, JsonResponse({'error': 'Invalid API key'}, status=status.HTTP_401_UNAUTHORIZED)
+        else:
+            return None, JsonResponse({'error': 'API key required'}, status=status.HTTP_401_UNAUTHORIZED)
+        return user, None
+
 
 class MountFolderView(APIView):
     authentication_classes = []
@@ -1522,13 +1618,18 @@ def find_available_port(start_port):
                     raise e
 
 class StopVMView(APIView):
-    authentication_classes = []
+    authentication_classes = [SessionAuthentication]                # ADDED
     permission_classes = []
 
     def post(self, request, uuid):
         # Authenticate user using API key
         api_key = request.META.get('HTTP_X_API_KEY')
-        if api_key:
+        user = getattr(request, 'user', None)                       # IF sync
+        #user = await sync_to_async(getattr)(request, 'user', None)  # ASYNC: Get the user in the request
+        if user and user.is_authenticated:                          # User is authenticated via session
+            print("DEBUG: USER AUTHENTICATED")
+            pass                                                    # Add this extra block to the request
+        elif api_key:                                               # <--- Changed
             try:
                 api_key = ApiKey.objects.get(key=api_key)
                 user = api_key.user
@@ -1556,12 +1657,17 @@ class StopVMView(APIView):
 
 
 class StartVMView(APIView):
-    authentication_classes = []
+    authentication_classes = [SessionAuthentication]                # ADDED
     permission_classes = []
 
     def post(self, request, uuid):
         api_key = request.META.get('HTTP_X_API_KEY')
-        if api_key:
+        user = getattr(request, 'user', None)                       # IF sync
+        #user = await sync_to_async(getattr)(request, 'user', None)  # ASYNC: Get the user in the request
+        if user and user.is_authenticated:                          # User is authenticated via session
+            print("DEBUG: USER AUTHENTICATED")
+            pass                                                    # Add this extra block to the request
+        elif api_key:                                               # <--- Changed
             try:
                 api_key = ApiKey.objects.get(key=api_key)
                 user = api_key.user

@@ -387,10 +387,10 @@
 			<img alt="Forensic VM" src="{% static 'novnc/' %}images/ForensicVM.png">
 			</div>
             <div id="noVNC_connect_button"><div>
-                <img alt="" src="{% static 'novnc/' %}app/images/connect.svg"> Connect
+                <img alt="" src="{% static 'novnc/' %}app/images/connect.svg"> Connect /
+                <input type="button" value="Start" onclick="startVM()">
             </div></div>
          <!-- Test start button -->
-        <input type="button" value="Start" onclick="startVM()">
         </div>
     </div>
 
@@ -463,21 +463,6 @@
     </audio>
  </body>
  
- <!-- NGAM: Scripts to automate actions -->
- <script>
-    function mensagem() {
-        alert("Desligar o computador")
-    }
-    function shutdown() {
-        alert("shutdown the pc")
-    }
-    function reboot() {
-        alert("Reboot the pc")
-    }
-    function reset() {
-        alert("Reset the pc")
-    }
-</script>
 </html>
 
 

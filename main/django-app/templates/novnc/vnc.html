@@ -475,6 +475,21 @@
   cameraIcon.addEventListener('click', function() {
     alert('Camera icon clicked!');
   });
+
+document.addEventListener('keydown', function(event) {
+  // Check if the shortcut key is pressed (e.g., Ctrl+Shift+C)
+  if (event.shiftKey && event.key === 'S') {
+    // Call your script or perform your desired action here
+    screenshot();
+  }
+});
+
+function screenshot() {
+  // Your script logic goes here
+  // Replace this with your actual script or action
+  alert('Shift + S!');
+}
+
 </script> 
 </html>
 

@@ -2,6 +2,20 @@
 <!DOCTYPE html>
 <html lang="pt_PT" class="noVNC_loading">
 <head>
+<style>
+    .fade {
+      opacity: 1;
+      transition: opacity 0.3s;
+    }
+    
+    .fade-out {
+      opacity: 0;
+    }
+    
+    .button-container {
+      margin-top: 20px;
+    }
+  </style>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script>
         function getCookie(name) {
@@ -42,12 +56,19 @@
                     },
                     credentials: 'include'
                 })
-                .then(response => response.json())
+                //.then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                    throw new Error('Error: ' + response.status);
+                 }
+                    return response.json();
+                })
                 .then(data => {
                     console.log(data);
                 })
                 .catch((error) => {
                     console.error('Error:', error);
+                    location.reload();
                 });
             }
         }
@@ -64,12 +85,19 @@
                     },
                     credentials: 'include'
                 })
-                .then(response => response.json())
+                //.then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                    throw new Error('Error: ' + response.status);
+                }
+                    return response.json();
+                })
                 .then(data => {
                     console.log(data);
                 })
                 .catch((error) => {
                     console.error('Error:', error);
+                    location.reload();
                 });
             }
         }
@@ -85,12 +113,19 @@
                     },
                     credentials: 'include'
                 })
-                .then(response => response.json())
+                //.then(response => response.json())
+               .then(response => {
+                    if (!response.ok) {
+                    throw new Error('Error: ' + response.status);
+                }
+                    return response.json();
+                })
                 .then(data => {
                     console.log(data);
                 })
                 .catch((error) => {
                     console.error('Error:', error);
+                    location.reload();
                 });
             }
         }
@@ -106,12 +141,19 @@
                     },
                     credentials: 'include'
                 })
-                .then(response => response.json())
+                //.then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                    throw new Error('Error: ' + response.status);
+                }
+                    return response.json();
+                })
                 .then(data => {
                     console.log(data);
                 })
                 .catch((error) => {
                     console.error('Error:', error);
+                    location.reload();
                 });
             }
         }
@@ -168,13 +210,15 @@
 
     <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
-
     <script type="module" crossorigin="anonymous" src="{% static 'novnc/' %}app/error-handler.js"></script>
     <script type="module" crossorigin="anonymous" src="{% static 'novnc/' %}app/ui.js"></script>
 </head>
 
 <body>
-    <div id="noVNC_fallback_error" class="noVNC_center">
+  <div id="photo" class="fade">
+<p> photo </p>
+  </div>
+   <div id="noVNC_fallback_error" class="noVNC_center">
         <div>
             <div>noVNC encountered an error:</div>
             <br>
@@ -379,7 +423,6 @@
         <div id="noVNC_control_bar_hint"></div>
 
     </div> <!-- End of noVNC_control_bar -->
-
     <!-- Status Dialog -->
     <div id="noVNC_status"></div>
 
@@ -460,6 +503,7 @@
             autocomplete="off" spellcheck="false" tabindex="-1"></textarea>
     </div>
 
+
     <audio id="noVNC_bell">
         <source src="{% static 'novnc/' %}app/sounds/bell.oga" type="audio/ogg">
         <source src="{% static 'novnc/' %}app/sounds/bell.mp3" type="audio/mpeg">
@@ -473,24 +517,35 @@
 
   // Add a click event listener
   cameraIcon.addEventListener('click', function() {
-    alert('Camera icon clicked!');
+    fadePhoto();
   });
 
 document.addEventListener('keydown', function(event) {
   // Check if the shortcut key is pressed (e.g., Ctrl+Shift+C)
   if (event.shiftKey && event.key === 'S') {
     // Call your script or perform your desired action here
-    screenshot();
+    //screenshot();
+    fadePhoto();
   }
 });
 
 function screenshot() {
   // Your script logic goes here
   // Replace this with your actual script or action
-  alert('Shift + S!');
+  fadePhoto();
+  // alert('Shift + S!');
+}
+
+function fadePhoto() {
+      var photo = document.getElementById("photo");
+      photo.classList.add("fade-out");
+      
+      setTimeout(function() {
+        photo.classList.remove("fade-out");
+        photo.classList.add("fade");
+      }, 80);
+    alert('Camera icon clicked twice!');
 }
 
 </script> 
 </html>
-
-

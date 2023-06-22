@@ -1299,27 +1299,50 @@ async def screendump(uuid):
         print(e)
     finally:
         await qmp.disconnect()
+#
+#@method_decorator(csrf_exempt, name='dispatch')
+#class ScreenshotVMView(View):
+#    authentication_classes = []
+#    permission_classes = []
+#
+#    async def post(self, request, uuid):
+#        api_key = request.META.get('HTTP_X_API_KEY')
+#        if api_key:
+#            try:
+#                api_key = await sync_to_async(ApiKey.objects.get)(key=api_key)
+#                user = await sync_to_async(getattr)(api_key, 'user')
+#                if not user.is_active:
+#                    return JsonResponse({'error': 'User account is disabled.'}, status=status.HTTP_401_UNAUTHORIZED)
+#            except ApiKey.DoesNotExist:
+#                return JsonResponse({'error': 'Invalid API key'}, status=status.HTTP_401_UNAUTHORIZED)
+#        else:
+#            return JsonResponse({'error': 'API key required'}, status=status.HTTP_401_UNAUTHORIZED)
+#
+#        vm_path = f"/forensicVM/mnt/vm/{uuid}"
+#        vm_exists = os.path.exists(vm_path)
+#
+#        if not vm_exists:
+#            return JsonResponse({'error': f'VM with UUID {uuid} not found'}, status=status.HTTP_404_NOT_FOUND)
+#
+#        await screendump(uuid)
+#
+#        result = {'screenshot_taken': True, 'message': f'Screenshot taken for VM with UUID {uuid}'}
+#
+#        return JsonResponse(result, status=status.HTTP_200_OK)
 
 @method_decorator(csrf_exempt, name='dispatch')
 class ScreenshotVMView(View):
-    authentication_classes = []
+    authentication_classes = [SessionAuthentication]                # ADDED
+    #authentication_classes = []
     permission_classes = []
 
     async def post(self, request, uuid):
-        api_key = request.META.get('HTTP_X_API_KEY')
-        if api_key:
-            try:
-                api_key = await sync_to_async(ApiKey.objects.get)(key=api_key)
-                user = await sync_to_async(getattr)(api_key, 'user')
-                if not user.is_active:
-                    return JsonResponse({'error': 'User account is disabled.'}, status=status.HTTP_401_UNAUTHORIZED)
-            except ApiKey.DoesNotExist:
-                return JsonResponse({'error': 'Invalid API key'}, status=status.HTTP_401_UNAUTHORIZED)
-        else:
-            return JsonResponse({'error': 'API key required'}, status=status.HTTP_401_UNAUTHORIZED)
+        user, api_key_error = await sync_to_async(self.get_user_or_key_error)(request)
+        if api_key_error:
+            return api_key_error
 
         vm_path = f"/forensicVM/mnt/vm/{uuid}"
-        vm_exists = os.path.exists(vm_path)
+        vm_exists = await sync_to_async(os.path.exists)(vm_path)
 
         if not vm_exists:
             return JsonResponse({'error': f'VM with UUID {uuid} not found'}, status=status.HTTP_404_NOT_FOUND)
@@ -1329,6 +1352,25 @@ class ScreenshotVMView(View):
         result = {'screenshot_taken': True, 'message': f'Screenshot taken for VM with UUID {uuid}'}
 
         return JsonResponse(result, status=status.HTTP_200_OK)
+
+
+    def get_user_or_key_error(self, request):
+        api_key = request.META.get('HTTP_X_API_KEY')
+        user = getattr(request, 'user', None)
+        if user and user.is_authenticated:
+            print("DEBUG: USER AUTHENTICATED")
+        elif api_key:
+            try:
+                api_key = ApiKey.objects.get(key=api_key)
+                user = getattr(api_key, 'user')
+                if not user.is_active:
+                    return None, JsonResponse({'error': 'User account is disabled.'}, status=status.HTTP_401_UNAUTHORIZED)
+            except ApiKey.DoesNotExist:
+                return None, JsonResponse({'error': 'Invalid API key'}, status=status.HTTP_401_UNAUTHORIZED)
+        else:
+            return None, JsonResponse({'error': 'API key required'}, status=status.HTTP_401_UNAUTHORIZED)
+        return user, None
+
 
 
 async def system_shutdown(uuid):

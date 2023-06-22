@@ -157,6 +157,36 @@
                 });
             }
         }
+
+
+function screenshotVM() {
+    const uuid = getParameterByName('uuid');
+    if (uuid) {
+        fetch('/api/screenshot-vm/' + uuid + '/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            credentials: 'include'
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Error: ' + response.status);
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log(data);
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+            //location.reload();
+        });
+    }
+}
+
+
      </script>
 
     <!--
@@ -518,13 +548,14 @@
   // Add a click event listener
   cameraIcon.addEventListener('click', function() {
     fadePhoto();
+    screenshot()
   });
 
 document.addEventListener('keydown', function(event) {
   // Check if the shortcut key is pressed (e.g., Ctrl+Shift+C)
   if (event.shiftKey && event.key === 'S') {
     // Call your script or perform your desired action here
-    //screenshot();
+    screenshot();
     fadePhoto();
   }
 });
@@ -533,7 +564,7 @@ function screenshot() {
   // Your script logic goes here
   // Replace this with your actual script or action
   fadePhoto();
-  // alert('Shift + S!');
+  screenshotVM()
 }
 
 function fadePhoto() {
@@ -544,7 +575,6 @@ function fadePhoto() {
         photo.classList.remove("fade-out");
         photo.classList.add("fade");
       }, 80);
-    alert('Camera icon clicked twice!');
 }
 
 </script> 

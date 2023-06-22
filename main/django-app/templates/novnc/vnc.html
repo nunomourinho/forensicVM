@@ -115,8 +115,7 @@
                 });
             }
         }
-
-    </script>
+     </script>
 
     <!--
     Connect parameters are provided in query string:
@@ -168,6 +167,7 @@
     <link rel="preload" as="image" href="{% static 'novnc/' %}app/images/warning.svg">
 
     <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
 
     <script type="module" crossorigin="anonymous" src="{% static 'novnc/' %}app/error-handler.js"></script>
     <script type="module" crossorigin="anonymous" src="{% static 'novnc/' %}app/ui.js"></script>
@@ -245,12 +245,15 @@
             </div>
 
 
-            
 
             <!-- Toggle fullscreen -->
             <input type="image" alt="Full Screen" src="{% static 'novnc/' %}app/images/fullscreen.svg"
                 id="noVNC_fullscreen_button" class="noVNC_button noVNC_hidden"
                 title="Full Screen">
+
+            <!-- Screenshot Photo camera icon -->
+            <i id="cameraIcon" class="material-icons w3-text-white noVNC_button">photo_camera</i>
+
 
             <!-- Settings -->
             <input type="image" alt="Settings" src="{% static 'novnc/' %}app/images/settings.svg"
@@ -462,7 +465,17 @@
         <source src="{% static 'novnc/' %}app/sounds/bell.mp3" type="audio/mpeg">
     </audio>
  </body>
- 
+
+<!-- JavaScript -->
+<script>
+  // Get the camera icon element
+  var cameraIcon = document.getElementById('cameraIcon');
+
+  // Add a click event listener
+  cameraIcon.addEventListener('click', function() {
+    alert('Camera icon clicked!');
+  });
+</script> 
 </html>
 
 

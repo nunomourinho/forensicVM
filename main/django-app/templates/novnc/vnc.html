@@ -2,23 +2,6 @@
 <!DOCTYPE html>
 <html lang="pt_PT" class="noVNC_loading">
 <head>
-<style>
-    .fade {
-      opacity: 1;
-      transition: opacity 0.3s;
-      z-index: 9999;
-    }
-    
-    .fade-out {
-      opacity: 0;
-      z-index: 9999;
-    }
-    
-    .button-container {
-      margin-top: 20px;
-      z-index: 9999;
-    }
-  </style>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script>
         function getCookie(name) {
@@ -67,6 +50,7 @@
                     return response.json();
                 })
                 .then(data => {
+                    showAlert('Start sent...')
                     console.log(data);
                 })
                 .catch((error) => {
@@ -96,6 +80,7 @@
                     return response.json();
                 })
                 .then(data => {
+                    showAlert('Stop sent...')
                     console.log(data);
                 })
                 .catch((error) => {
@@ -124,6 +109,7 @@
                     return response.json();
                 })
                 .then(data => {
+                    showAlert('Reset sent...')
                     console.log(data);
                 })
                 .catch((error) => {
@@ -147,12 +133,14 @@
                 //.then(response => response.json())
                 .then(response => {
                     if (!response.ok) {
+                    showAlert('Error in machine shutdown', 'w3-red')
                     throw new Error('Error: ' + response.status);
                 }
                     return response.json();
                 })
                 .then(data => {
                     console.log(data);
+                    showAlert('Shutdown sent...')
                 })
                 .catch((error) => {
                     console.error('Error:', error);
@@ -194,12 +182,12 @@ function screenshotVM() {
      </script>
 
 <script>
-    function showAlert(message) {
+    function showAlert(message, color = 'w3-green') {
       var alertContainer = document.getElementById('alertContainer');
       var alertElement = document.createElement('div');
       alertElement.classList.add('alert');
       alertElement.classList.add('w3-panel');
-      alertElement.classList.add('w3-green');
+      alertElement.classList.add(color);
       alertElement.classList.add('w3-display-container');
 
       var closeButton = document.createElement('span');
@@ -315,8 +303,7 @@ function screenshotVM() {
 
 <body>
   <div id="alertContainer"></div>
-  <div id="photo" class="fade">
-  </div>
+
   </div>   <div id="noVNC_fallback_error" class="noVNC_center">
         <div>
             <div>noVNC encountered an error:</div>
@@ -395,7 +382,7 @@ function screenshotVM() {
                 title="Full Screen">
 
             <!-- Screenshot Photo camera icon -->
-            <i id="cameraIcon" class="material-icons w3-text-white noVNC_button">photo_camera</i>
+            <i id="cameraIcon" class="material-icons w3-text-white noVNC_button" onclick="screenshotVM()">photo_camera</i>
 
 
             <!-- Settings -->
@@ -611,40 +598,12 @@ function screenshotVM() {
 
 <!-- JavaScript -->
 <script>
-  // Get the camera icon element
-  var cameraIcon = document.getElementById('cameraIcon');
-
-  // Add a click event listener
-  cameraIcon.addEventListener('click', function() {
-    fadePhoto();
-    screenshot()
-  });
-
 document.addEventListener('keydown', function(event) {
-  // Check if the shortcut key is pressed (e.g., Ctrl+Shift+C)
-  if (event.shiftKey && event.key === 'S') {
-    // Call your script or perform your desired action here
-    screenshot();
-    fadePhoto();
+  // Check if the shortcut key is pressed (e.g., Shift+F12)
+  if (event.shiftKey && event.key === 'F12') {
+    screenshotVM();
   }
 });
-
-function screenshot() {
-  // Your script logic goes here
-  // Replace this with your actual script or action
-  fadePhoto();
-  screenshotVM()
-}
-
-function fadePhoto() {
-      var photo = document.getElementById("photo");
-      photo.classList.add("fade-out");
-      
-      setTimeout(function() {
-        photo.classList.remove("fade-out");
-        photo.classList.add("fade");
-      }, 80);
-}
 
 </script> 
 </html>

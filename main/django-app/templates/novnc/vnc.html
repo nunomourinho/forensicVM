@@ -6,14 +6,17 @@
     .fade {
       opacity: 1;
       transition: opacity 0.3s;
+      z-index: 9999;
     }
     
     .fade-out {
       opacity: 0;
+      z-index: 9999;
     }
     
     .button-container {
       margin-top: 20px;
+      z-index: 9999;
     }
   </style>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
@@ -177,6 +180,7 @@ function screenshotVM() {
             return response.json();
         })
         .then(data => {
+            showAlert('Screenshot with success')
             console.log(data);
         })
         .catch((error) => {
@@ -189,6 +193,52 @@ function screenshotVM() {
 
      </script>
 
+<script>
+    function showAlert(message) {
+      var alertContainer = document.getElementById('alertContainer');
+      var alertElement = document.createElement('div');
+      alertElement.classList.add('alert');
+      alertElement.classList.add('w3-panel');
+      alertElement.classList.add('w3-green');
+      alertElement.classList.add('w3-display-container');
+
+      var closeButton = document.createElement('span');
+      closeButton.classList.add('w3-button');
+      closeButton.classList.add('w3-display-topright');
+      closeButton.textContent = '×';
+      closeButton.onclick = function() {
+        alertElement.classList.remove('show');
+      };
+
+      var messageElement = document.createElement('p');
+      messageElement.classList.add('alert-message');
+      messageElement.textContent = message;
+
+      alertElement.appendChild(closeButton);
+      alertElement.appendChild(messageElement);
+
+      alertContainer.appendChild(alertElement);
+
+      // Calculate the top position for the alert
+      var alertHeight = alertElement.offsetHeight;
+      var alertCount = alertContainer.getElementsByClassName('alert').length;
+      var alertTop = (alertCount - 1) * (alertHeight+2);
+
+      // Set the top position dynamically
+      alertElement.style.top = alertTop + 'px';
+
+      setTimeout(function() {
+        alertElement.classList.add('show');
+      }, 10);
+
+      setTimeout(function() {
+        alertElement.classList.remove('show');
+        setTimeout(function() {
+          alertContainer.removeChild(alertElement);
+        }, 300);
+      }, 3000);
+    }
+  </script>
     <!--
     Connect parameters are provided in query string:
         http://example.com/?host=HOST&port=PORT&encrypt=1
@@ -242,13 +292,32 @@ function screenshotVM() {
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
     <script type="module" crossorigin="anonymous" src="{% static 'novnc/' %}app/error-handler.js"></script>
     <script type="module" crossorigin="anonymous" src="{% static 'novnc/' %}app/ui.js"></script>
+    <style>
+      .alert {
+        opacity: 0;
+        transition: opacity 0.3s;
+        position: fixed;
+        top: 0;
+        width: 100%;
+        z-index: 9999;
+     }
+
+     .alert.show {
+       opacity: 1;
+    }
+
+    .alert-message {
+      font-size: 14px; /* Adjust the text size as desired */
+    }
+  </style>
+
 </head>
 
 <body>
+  <div id="alertContainer"></div>
   <div id="photo" class="fade">
-<p> photo </p>
   </div>
-   <div id="noVNC_fallback_error" class="noVNC_center">
+  </div>   <div id="noVNC_fallback_error" class="noVNC_center">
         <div>
             <div>noVNC encountered an error:</div>
             <br>

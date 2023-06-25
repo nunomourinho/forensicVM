@@ -8,8 +8,12 @@ from .models import Server
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import login
 from django.shortcuts import render, redirect
+from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.auth.mixins import LoginRequiredMixin
+import os
+import xml.etree.ElementTree as ET
+from django.views import View
 
 
 def register(request):
@@ -105,3 +109,48 @@ class ProxyShellbox(LoginRequiredMixin, ProxyView):
 
 #class ProxyMeo(ProxyView):
 #    upstream = 'https://192.168.1.254'
+
+class VMListView(View):
+    @method_decorator(login_required)
+    def get(self, request):
+        vm_path = "/forensicVM/mnt/vm/"
+        vm_exists = os.path.exists(vm_path)
+
+        if not vm_exists:
+            return JsonResponse({'error': 'VM path not found'}, status=404)
+
+        folders = [f for f in os.listdir(vm_path) if os.path.isdir(os.path.join(vm_path, f))]
+        data = []
+
+        for folder in folders:
+            try:
+                info_name = folder + ".info"
+                print(info_name)
+                info_file = os.path.join(vm_path, folder, info_name)
+                if os.path.exists(info_file):
+                   data.append(self.process_info_file(info_file, folder))
+                else:
+                   data_item = {
+                               'uuid': folder,
+                               'distro': '---',
+                               'hostname': '---',
+                               'osinfo': '---',
+                               'product_name': '---'
+                   }
+                   data.append(data_item)
+            except Exception as e:
+                print(str(e))
+        return render(request, 'vm_list.html', {'data': data})
+
+    def process_info_file(self, info_file, uuid):
+        tree = ET.parse(info_file)
+        root = tree.getroot()
+        os_data = root.find('operatingsystem')
+
+        return {
+            'uuid': uuid,
+            'distro': os_data.find('distro').text,
+            'hostname': os_data.find('hostname').text,
+            'osinfo': os_data.find('osinfo').text,
+            'product_name': os_data.find('product_name').text
+        }

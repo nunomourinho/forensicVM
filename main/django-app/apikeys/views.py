@@ -1750,12 +1750,18 @@ class StartVMView(APIView):
         return Response(result, status=status.HTTP_200_OK)
 
 class ForensicImageVMStatus(APIView):
-    authentication_classes = []
+    authentication_classes = [SessionAuthentication]                # ADDED
+    #authentication_classes = []
     permission_classes = []
 
     def get(self, request, uuid):
         api_key = request.META.get('HTTP_X_API_KEY')
-        if api_key:
+        user = getattr(request, 'user', None)                       # IF sync
+        #user = await sync_to_async(getattr)(request, 'user', None)  # ASYNC: Get the user in the request
+        if user and user.is_authenticated:                          # User is authenticated via session
+            print("DEBUG: USER AUTHENTICATED")
+            pass                                                    # Add this extra block to the request
+        elif api_key:                                               # <--- Changed
             try:
                 api_key = ApiKey.objects.get(key=api_key)
                 user = api_key.user

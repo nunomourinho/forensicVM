@@ -55,5 +55,7 @@ urlpatterns = [
     re_path(r'^netdata/(?P<path>.*)$', ProxyNetdata.as_view()),
     re_path(r'^shell/(?P<path>.*)$', ProxyShellbox.as_view()),
     path('api/', include('apikeys.urls')),
-    path('', app.views.vnc_proxy_http),
+    path('screen', app.views.vnc_proxy_http),
+    path('', app.views.VMListView.as_view(), name='vm_list'),
+    path('vm-list', app.views.VMListView.as_view(), name='vm_list'),
 ]

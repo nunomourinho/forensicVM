@@ -6,6 +6,7 @@ import glob
 import time
 from django.shortcuts import render
 from django.contrib.auth import get_user_model
+from django.contrib.auth import get_user
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -238,12 +239,19 @@ class CheckTapInterfaceView(View):
 
 @method_decorator(csrf_exempt, name='dispatch')
 class StartTapInterfaceView(View):
-    authentication_classes = []
+    authentication_classes = [SessionAuthentication]                # ADDED
     permission_classes = []
 
     async def post(self, request):
+        # Authenticate user using API key
         api_key = request.META.get('HTTP_X_API_KEY')
-        if api_key:
+        #user = getattr(request, 'user', None)                       # IF sync
+        #user = await sync_to_async(getattr)(request, 'user', None)  # ASYNC: Get the user in the request
+        user = await sync_to_async(get_user)(request)
+        if user and user.is_authenticated:                          # User is authenticated via session
+            print("DEBUG: USER AUTHENTICATED")
+            pass                                                    # Add this extra block to the request
+        elif api_key:                                               # <--- Changed
             try:
                 api_key = await sync_to_async(ApiKey.objects.get)(key=api_key)
                 user = await sync_to_async(getattr)(api_key, 'user')
@@ -258,6 +266,7 @@ class StartTapInterfaceView(View):
         uuid = request.POST.get('uuid')
 
         if not uuid:
+            print('no UUID sent')
             return JsonResponse({'error': 'UUID required'}, status=status.HTTP_400_BAD_REQUEST)
 
         # Execute the command to get the tap interface
@@ -282,12 +291,20 @@ class StartTapInterfaceView(View):
 
 @method_decorator(csrf_exempt, name='dispatch')
 class StopTapInterfaceView(View):
-    authentication_classes = []
+    authentication_classes = [SessionAuthentication]                # ADDED
     permission_classes = []
 
     async def post(self, request):
+        # Authenticate user using API key
         api_key = request.META.get('HTTP_X_API_KEY')
-        if api_key:
+        #user = getattr(request, 'user', None)                       # IF sync
+        #user = await sync_to_async(getattr)(request, 'user', None)  # ASYNC: Get the user in the request
+        user = await sync_to_async(get_user)(request)
+
+        if user and user.is_authenticated:                          # User is authenticated via session
+            print("DEBUG: USER AUTHENTICATED")
+            pass                                                    # Add this extra block to the request
+        elif api_key:                                               # <--- Changed
             try:
                 api_key = await sync_to_async(ApiKey.objects.get)(key=api_key)
                 user = await sync_to_async(getattr)(api_key, 'user')
@@ -302,6 +319,7 @@ class StopTapInterfaceView(View):
         uuid = request.POST.get('uuid')
 
         if not uuid:
+            print('no UUID sent')
             return JsonResponse({'error': 'UUID required'}, status=status.HTTP_400_BAD_REQUEST)
 
         # Execute the command to get the tap interface

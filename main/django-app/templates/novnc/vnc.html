@@ -180,15 +180,81 @@ function screenshotVM() {
 
 
 function enableNetwork() {
-     showAlert('Enable network sent', 'w3-orange');
-     document.getElementById('id01').style.display='none';
+            let uuid = getParameterByName('uuid');
+            if (uuid) {
+                let formData = new FormData();
+                formData.append('uuid', uuid);       
+                fetch('/api/start_tap/', {
+                    method: 'POST',
+                    headers: {
+                        //'Content-Type': 'application/json',
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: new URLSearchParams(formData).toString(),
+                    //body: formData,
+                    credentials: 'include'
+                })
+                //.then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                    throw new Error('Error: ' + response.status);
+                }
+                    return response.json();
+                })
+                .then(data => {
+                    showAlert('Enable network sent', 'w3-orange');
+                    document.getElementById('id01').style.display='none';
+                    console.log(data);
+                })
+                .catch((error) => {
+                    console.log('UUID:', uuid);
+                    console.log('CSRF Token:', getCookie('csrftoken'));
+                    console.error('Error:', error);
+                    showAlert('Error enabling network', 'w3-red'); // Show error message to the user
+                    //location.reload();
+                });
+            }
+
 }
 
 function disableNetwork() {
-     showAlert('Disable network sent', 'w3-teal')
-     document.getElementById('id01').style.display='none';
+  let uuid = getParameterByName('uuid');
+  let formData = new FormData();
+  formData.append('uuid', uuid);       
+  if (uuid) {
+    fetch('/api/stop_tap/', {
+      method: 'POST',
+      headers: {
+        //'Content-Type': 'application/json',
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'X-CSRFToken': getCookie('csrftoken')
+      },
+      body: new URLSearchParams(formData).toString(),
+      //body: formData,
+      credentials: 'include'
+    })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Error: ' + response.status);
+      }
+      return response.json();
+    })
+    .then(data => {
+      showAlert('Disable network sent', 'w3-teal')
+      document.getElementById('id01').style.display = 'none';
+      console.log(data);
+    })
+    .catch((error) => {
+      console.error('Error:', error);
+      console.log('UUID:', uuid);
+      console.log('CSRF Token:', getCookie('csrftoken'));
+      showAlert('Error disabling network', 'w3-red'); // Show error message to the user
+      // Optionally, you can reload the page
+      // location.reload();
+    });
+  }
 }
-
 
 function showAlert(message, color = 'w3-green') {
       var alertContainer = document.getElementById('alertContainer');

@@ -303,7 +303,7 @@ function showAlert(message, color = 'w3-green') {
     }
 
     .alert-message {
-      font-size: 14px; /* Adjust the text size as desired */
+      font-size: 14px;
     }
   </style>
 
@@ -312,7 +312,7 @@ function showAlert(message, color = 'w3-green') {
 <body>
 <div id="alertContainer"></div>
 
-<div id="id01" class="w3-modal w3-animate-top w3-animate-opacity w3-round-large">
+<div id="id01" style="position: fixed;" class="w3-modal w3-animate-top w3-animate-opacity">
     <div class="w3-modal-content">
          <div class="w3-card-4">
 
@@ -331,15 +331,13 @@ function showAlert(message, color = 'w3-green') {
 
           <footer class="w3-container w3-blue">
                <div class="w3-container w3-cell-middle w3-center">
-                <br/>
-                <button  style="background: unset;" class="w3-button w3-round-large w3-red w3-large" onclick="enableNetwork()">Enable network (caution!)</button>   
-                <button  style="background: unset;" class="w3-button w3-round-large w3-green w3-large" onClick="disableNetwork()">Disable network</button>
-                <br/>
-                <br/>
+                <br>
+                <button style="background: unset;" class="w3-button w3-round-large w3-red w3-large" onclick="enableNetwork()">Enable network (caution!)</button>   
+                <button style="background: unset;" class="w3-button w3-round-large w3-green w3-large" onClick="disableNetwork()">Disable network</button>
+                <br>
+                <br>
                </div>
-
          </footer>
-
         </div>
     </div>
 </div>

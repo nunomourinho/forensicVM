@@ -131,15 +131,27 @@ class VMListView(View):
                    data.append(self.process_info_file(info_file, folder))
                 else:
                    data_item = {
-                               'uuid': folder,
-                               'distro': '---',
-                               'hostname': '---',
-                               'osinfo': '---',
-                               'product_name': '---'
+                       'uuid': folder,
+                       'distro': '---',
+                       'hostname': '---',
+                       'osinfo': '---',
+                       'product_name': '---'
                    }
                    data.append(data_item)
             except Exception as e:
                 print(str(e))
+                try:
+                    data_item = {
+                        'uuid': folder,
+                        'distro': '---',
+                        'hostname': '---',
+                        'osinfo': '---',
+                        'product_name': '---'
+                    }
+                    data.append(data_item)
+                except Exception as e:
+                    print(str(e))
+
         return render(request, 'vm_list.html', {'data': data})
 
     def process_info_file(self, info_file, uuid):

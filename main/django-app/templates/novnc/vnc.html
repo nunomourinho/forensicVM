@@ -250,8 +250,7 @@ function disableNetwork() {
       console.log('UUID:', uuid);
       console.log('CSRF Token:', getCookie('csrftoken'));
       showAlert('Error disabling network', 'w3-red'); // Show error message to the user
-      // Optionally, you can reload the page
-      // location.reload();
+      //location.reload();
     });
   }
 }
@@ -378,6 +377,7 @@ function showAlert(message, color = 'w3-green') {
 <body>
 <div id="alertContainer"></div>
 
+<!-- Network control -->
 <div id="id01" style="position: fixed;" class="w3-modal w3-animate-top w3-animate-opacity">
     <div class="w3-modal-content">
          <div class="w3-card-4">
@@ -400,6 +400,34 @@ function showAlert(message, color = 'w3-green') {
                 <br>
                 <button style="background: unset;" class="w3-button w3-round-large w3-red w3-large" onclick="enableNetwork()">Enable network (caution!)</button>   
                 <button style="background: unset;" class="w3-button w3-round-large w3-green w3-large" onClick="disableNetwork()">Disable network</button>
+                <br>
+                <br>
+               </div>
+         </footer>
+        </div>
+    </div>
+</div>
+
+<!-- Media control -->
+<div id="id02" style="position: fixed;" class="w3-modal w3-animate-top w3-animate-opacity">
+    <div class="w3-modal-content">
+         <div class="w3-card-4">
+
+           <span onclick="document.getElementById('id02').style.display='none'" class="w3-button w3-display-topright">&times;</span>
+
+           <header class="w3-container w3-blue">
+                  <h1>Media Control</h1>
+           </header>
+
+           <div class="w3-container">
+                <p>Please boot before inserting media.</p>
+           </div>
+
+          <footer class="w3-container w3-blue">
+               <div class="w3-container w3-cell-middle w3-center">
+                <br>
+                <button style="background: unset;" class="w3-button w3-round-large w3-green w3-large" onclick="insertMedia()">Insert media</button>   
+                <button style="background: unset;" class="w3-button w3-round-large w3-green w3-large" onClick="removeMedia()">Remove Media</button>
                 <br>
                 <br>
                </div>
@@ -490,6 +518,9 @@ function showAlert(message, color = 'w3-green') {
 
             <!-- Network control icon -->
             <i id="networkIcon" class="material-icons w3-text-white noVNC_button" onclick="document.getElementById('id01').style.display='block'">lan</i>
+
+            <!-- DVD control icon -->
+            <i id="dvdIcon" class="material-icons w3-text-white noVNC_button" onclick="document.getElementById('id02').style.display='block'">eject</i>
 
             <!-- Settings -->
             <input type="image" alt="Settings" src="{% static 'novnc/' %}app/images/settings.svg"

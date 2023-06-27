@@ -255,6 +255,18 @@ function disableNetwork() {
   }
 }
 
+
+function insertMedia() {
+      showAlert('Insert media sent', 'w3-teal')
+      document.getElementById('id02').style.display = 'none';
+}
+
+function removeMedia() {
+      showAlert('Eject media sent', 'w3-teal')
+      document.getElementById('id02').style.display = 'none';
+}
+
+
 function showAlert(message, color = 'w3-green') {
       var alertContainer = document.getElementById('alertContainer');
       var alertElement = document.createElement('div');
@@ -421,6 +433,11 @@ function showAlert(message, color = 'w3-green') {
 
            <div class="w3-container">
                 <p>Please boot before inserting media.</p>
+                <select id="cdrom" name="cdrom">
+                   {% for item in iso_files %}
+                   <option value="{{ item }}">{{ item }}</option>
+                   {% endfor %}
+                </select>
            </div>
 
           <footer class="w3-container w3-blue">

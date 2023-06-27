@@ -58,34 +58,31 @@ def vnc_proxy(request):
 def vnc_proxy_http(request):
     """VNC agente de controlo remoto"""
 
-    token = request.GET.get('token')
-    #assert False
-    #try:
-    #    obj = Server.objects.get(token=token)
+    #token = request.GET.get('token')
 
-    #except Server.DoesNotExist:
-    #    return HttpResponse('Token missing or incorrect.', status=404)
 
-    #except Exception as e:
-    #    return HttpResponse(str(e), status=500)
+    #host = settings.VNC_PROXY_HOST
+    #port = settings.VNC_PROXY_PORT
 
-    host = settings.VNC_PROXY_HOST
-    port = settings.VNC_PROXY_PORT
-    #assert False
-    # password = obj.vnc_password
-
-    template = loader.get_template('novnc/vnc.html')
-    context = {
-        "token": "",
-        "host": "localhost",
-        "port": 5901,        
-        "password": ''
-    }
+    #template = loader.get_template('novnc/vnc.html')
     #context = {
-
+    #    "token": "",
+    #    "host": "localhost",
+    #    "port": 5901,        
+    #    "password": ''
     #}
-    #return HttpResponse(template.render())
-    return HttpResponse(template.render(context))
+
+
+    iso_dir = '/forensicVM/mnt/iso'
+
+    iso_files = []
+    for file in os.listdir(iso_dir):
+        if file.endswith('.iso'):
+            iso_files.append(file)
+
+    return render(request, 'novnc/vnc.html', {'iso_files': iso_files})
+
+    #return HttpResponse(template.render(context))
 
 
 

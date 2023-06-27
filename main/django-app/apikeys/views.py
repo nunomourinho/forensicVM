@@ -922,24 +922,55 @@ async def insert_cdrom(uuid, filename):
 
 @method_decorator(csrf_exempt, name='dispatch')
 class InsertCDROMView(View):
-    authentication_classes = []
+    authentication_classes = [SessionAuthentication]
+    #authentication_classes = []
     permission_classes = []
 
     async def get(self, request, uuid, filename):
-        api_key = request.META.get('HTTP_X_API_KEY')
-        if api_key:
-            try:
-                api_key = await sync_to_async(ApiKey.objects.get)(key=api_key)
-                user = await sync_to_async(getattr)(api_key, 'user')
-                if not user.is_active:
-                    return JsonResponse({'error': 'User account is disabled.'}, status=status.HTTP_401_UNAUTHORIZED)
-            except ApiKey.DoesNotExist:
-                return JsonResponse({'error': 'Invalid API key'}, status=status.HTTP_401_UNAUTHORIZED)
-        else:
-            return JsonResponse({'error': 'API key required'}, status=status.HTTP_401_UNAUTHORIZED)
+        #api_key = request.META.get('HTTP_X_API_KEY')
+
+        # Authenticate user using API key
+        #api_key = request.META.get('HTTP_X_API_KEY')
+        #user = getattr(request, 'user', None)                       # IF sync
+        #user = await sync_to_async(getattr)(request, 'user', None)  # ASYNC: Get the user in the request
+        #if user and user.is_authenticated:                          # User is authenticated via session
+        #    print("DEBUG: USER AUTHENTICATED")
+        #    pass                                                    # Add this extra block to the request
+        #elif api_key:
+        #if api_key:
+        #    try:
+        #        api_key = await sync_to_async(ApiKey.objects.get)(key=api_key)
+        #        user = await sync_to_async(getattr)(api_key, 'user')
+        #        if not user.is_active:
+        #            return JsonResponse({'error': 'User account is disabled.'}, status=status.HTTP_401_UNAUTHORIZED)
+        #    except ApiKey.DoesNotExist:
+        #        return JsonResponse({'error': 'Invalid API key'}, status=status.HTTP_401_UNAUTHORIZED)
+        #else:
+        #    return JsonResponse({'error': 'API key required'}, status=status.HTTP_401_UNAUTHORIZED)
+
+        user, api_key_error = await sync_to_async(self.get_user_or_key_error)(request)
+        if api_key_error:
+            return api_key_error
 
         cdrom_status = await insert_cdrom(uuid, filename)
         return JsonResponse({'message': cdrom_status}, status=status.HTTP_200_OK)
+
+    def get_user_or_key_error(self, request):
+        api_key = request.META.get('HTTP_X_API_KEY')
+        user = getattr(request, 'user', None)
+        if user and user.is_authenticated:
+            print("DEBUG: USER AUTHENTICATED")
+        elif api_key:
+            try:
+                api_key = ApiKey.objects.get(key=api_key)
+                user = getattr(api_key, 'user')
+                if not user.is_active:
+                    return None, JsonResponse({'error': 'User account is disabled.'}, status=status.HTTP_401_UNAUTHORIZED)
+            except ApiKey.DoesNotExist:
+                return None, JsonResponse({'error': 'Invalid API key'}, status=status.HTTP_401_UNAUTHORIZED)
+        else:
+            return None, JsonResponse({'error': 'API key required'}, status=status.HTTP_401_UNAUTHORIZED)
+        return user, None
 
 
 async def eject_cdrom(uuid):
@@ -962,24 +993,47 @@ async def eject_cdrom(uuid):
 
 @method_decorator(csrf_exempt, name='dispatch')
 class EjectCDROMView(View):
-    authentication_classes = []
+    #authentication_classes = []
+    authentication_classes = [SessionAuthentication]
     permission_classes = []
 
     async def get(self, request, uuid):
-        api_key = request.META.get('HTTP_X_API_KEY')
-        if api_key:
-            try:
-                api_key = await sync_to_async(ApiKey.objects.get)(key=api_key)
-                user = await sync_to_async(getattr)(api_key, 'user')
-                if not user.is_active:
-                    return JsonResponse({'error': 'User account is disabled.'}, status=status.HTTP_401_UNAUTHORIZED)
-            except ApiKey.DoesNotExist:
-                return JsonResponse({'error': 'Invalid API key'}, status=status.HTTP_401_UNAUTHORIZED)
-        else:
-            return JsonResponse({'error': 'API key required'}, status=status.HTTP_401_UNAUTHORIZED)
+#        api_key = request.META.get('HTTP_X_API_KEY')
+#        if api_key:
+#            try:
+#                api_key = await sync_to_async(ApiKey.objects.get)(key=api_key)
+#                user = await sync_to_async(getattr)(api_key, 'user')
+#                if not user.is_active:
+#                    return JsonResponse({'error': 'User account is disabled.'}, status=status.HTTP_401_UNAUTHORIZED)
+#            except ApiKey.DoesNotExist:
+#                return JsonResponse({'error': 'Invalid API key'}, status=status.HTTP_401_UNAUTHORIZED)
+#        else:
+#            return JsonResponse({'error': 'API key required'}, status=status.HTTP_401_UNAUTHORIZED)
+
+
+        user, api_key_error = await sync_to_async(self.get_user_or_key_error)(request)
+        if api_key_error:
+            return api_key_error
 
         cdrom_status = await eject_cdrom(uuid)
         return JsonResponse({'message': cdrom_status}, status=status.HTTP_200_OK)
+
+    def get_user_or_key_error(self, request):
+        api_key = request.META.get('HTTP_X_API_KEY')
+        user = getattr(request, 'user', None)
+        if user and user.is_authenticated:
+            print("DEBUG: USER AUTHENTICATED")
+        elif api_key:
+            try:
+                api_key = ApiKey.objects.get(key=api_key)
+                user = getattr(api_key, 'user')
+                if not user.is_active:
+                    return None, JsonResponse({'error': 'User account is disabled.'}, status=status.HTTP_401_UNAUTHORIZED)
+            except ApiKey.DoesNotExist:
+                return None, JsonResponse({'error': 'Invalid API key'}, status=status.HTTP_401_UNAUTHORIZED)
+        else:
+            return None, JsonResponse({'error': 'API key required'}, status=status.HTTP_401_UNAUTHORIZED)
+        return user, None
 
 
 @method_decorator(csrf_exempt, name='dispatch')

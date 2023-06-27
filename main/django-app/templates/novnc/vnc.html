@@ -257,13 +257,67 @@ function disableNetwork() {
 
 
 function insertMedia() {
+  const cdromDropdown = document.getElementById('cdrom');
+  const filename = cdromDropdown.value;
+  let uuid = getParameterByName('uuid');
+  const url = `/api/insert-cdrom/${uuid}/${filename}/`;
+  console.log(url)
+  fetch(url, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': getCookie('csrftoken')
+    },
+    credentials: 'include'
+  })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Error: ' + response.status);
+      }
+      return response.json();
+    })
+    .then(data => {
+      // Handle successful response
       showAlert('Insert media sent', 'w3-teal')
       document.getElementById('id02').style.display = 'none';
+      console.log(data);
+    })
+    .catch(error => {
+      // Handle error
+      showAlert('Error inserting media', 'w3-red')
+      console.error('Error:', error);
+    });
 }
 
 function removeMedia() {
-      showAlert('Eject media sent', 'w3-teal')
-      document.getElementById('id02').style.display = 'none';
+    const uuid = getParameterByName('uuid');
+    if (uuid) {
+        fetch('/api/eject-cdrom/' + uuid + '/', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            credentials: 'include'
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Error: ' + response.status);
+            }
+            return response.json();
+        })
+        .then(data => {
+            showAlert('Eject media sent', 'w3-teal')
+            document.getElementById('id02').style.display = 'none';
+            console.log(data);
+        })
+        .catch((error) => {
+            showAlert('Eject media sent', 'w3-red')
+            console.error('Error:', error);
+            document.getElementById('id02').style.display = 'none';
+            //location.reload();
+        });
+    }
 }
 
 

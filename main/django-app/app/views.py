@@ -80,6 +80,7 @@ def vnc_proxy_http(request):
         if file.endswith('.iso'):
             iso_files.append(file)
 
+    iso_files.sort()
     return render(request, 'novnc/vnc.html', {'iso_files': iso_files})
 
     #return HttpResponse(template.render(context))

@@ -1367,6 +1367,7 @@ async def screendump(uuid):
         await qmp.connect(socket_path)
         res = await qmp.execute('screendump', {"filename": next_screenshot_path})
         print(f"Screenshot saved: {next_screenshot_path}")
+        return(next_screenshot_number)
     except Exception as e:
         print(e)
     finally:
@@ -1419,9 +1420,9 @@ class ScreenshotVMView(View):
         if not vm_exists:
             return JsonResponse({'error': f'VM with UUID {uuid} not found'}, status=status.HTTP_404_NOT_FOUND)
 
-        await screendump(uuid)
+        screen_number = await screendump(uuid)
 
-        result = {'screenshot_taken': True, 'message': f'Screenshot taken for VM with UUID {uuid}'}
+        result = {'screenshot_taken': True, 'message': f'{screen_number}'}
 
         return JsonResponse(result, status=status.HTTP_200_OK)
 

@@ -168,7 +168,7 @@ function screenshotVM() {
             return response.json();
         })
         .then(data => {
-            showAlert('Screenshot with success')
+            showAlert('Screenshot with success (' + data.message + ')')
             console.log(data);
         })
         .catch((error) => {
@@ -430,7 +430,7 @@ function showAlert(message, color = 'w3-green') {
      }
 
      .alert.show {
-       opacity: 1;
+       opacity: 0.75;
     }
 
     .alert-message {
@@ -487,18 +487,21 @@ function showAlert(message, color = 'w3-green') {
 
            <div class="w3-container">
                 <p>Please boot before inserting media.</p>
+                <div class="w3-container w3-center">
                 <select id="cdrom" name="cdrom">
                    {% for item in iso_files %}
                    <option value="{{ item }}">{{ item }}</option>
                    {% endfor %}
                 </select>
+                <br>
+                </div>
            </div>
 
           <footer class="w3-container w3-blue">
                <div class="w3-container w3-cell-middle w3-center">
                 <br>
                 <button style="background: unset;" class="w3-button w3-round-large w3-green w3-large" onclick="insertMedia()">Insert media</button>   
-                <button style="background: unset;" class="w3-button w3-round-large w3-green w3-large" onClick="removeMedia()">Remove Media</button>
+                <button style="background: unset;" class="w3-button w3-round-large w3-purple w3-large" onClick="removeMedia()">Remove Media</button>
                 <br>
                 <br>
                </div>

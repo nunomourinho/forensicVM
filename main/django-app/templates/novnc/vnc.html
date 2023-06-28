@@ -320,6 +320,88 @@ function removeMedia() {
     }
 }
 
+/*
+function recordVideo() {
+    const uuid = getParameterByName('uuid');
+
+    if(!uuid){
+        console.error('UUID is not provided.');
+        return;
+    }
+
+    fetch('/api/record_video/' + uuid + '/', {
+
+        method: 'POST',
+        credentials: 'include' 
+    })
+    .then(response => response.json())
+    .then(data => console.log(data))
+    .catch(error => console.error(error));
+}
+*/
+
+function recordVideo() {
+  const uuid = getParameterByName('uuid');
+
+  if (!uuid) {
+    console.error('UUID is not provided.');
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append('uuid', uuid);
+
+  fetch('/api/record_video/' + uuid + '/', {
+
+//  fetch('/api/record_video/', {
+    method: 'POST',
+    credentials: 'include',
+    body: formData
+  })
+    .then(response => response.json())
+    .then(data => console.log(data))
+    .catch(error => console.error(error));
+}
+
+function stopVideo() {
+    const uuid = getParameterByName('uuid');
+
+    if(!uuid){
+        console.error('UUID is not provided.');
+        return;
+    }
+
+    fetch('/api/stop_video/' + uuid + '/', {
+
+    //fetch(`/api/stop_video/${uuid}/`, {
+        method: 'POST',
+        credentials: 'include'
+    })
+    .then(response => response.json())
+    .then(data => console.log(data))
+    .catch(error => console.error(error));
+}
+
+function checkRecordingStatus() {
+    const uuid = getParameterByName('uuid');
+
+    if(!uuid){
+        console.error('UUID is not provided.');
+        return;
+    }
+
+    fetch('/api/check_recording/' + uuid + '/', {
+
+    //fetch(`/api/check_recording/${uuid}/`, {
+        method: 'GET',
+        credentials: 'include'
+    })
+    .then(response => response.json())
+    .then(data => console.log(data))
+    .catch(error => console.error(error));
+}
+
+
 
 function showAlert(message, color = 'w3-green') {
       var alertContainer = document.getElementById('alertContainer');
@@ -510,6 +592,39 @@ function showAlert(message, color = 'w3-green') {
     </div>
 </div>
 
+
+<!-- Video control -->
+<div id="id03" style="position: fixed;" class="w3-modal w3-animate-top w3-animate-opacity">
+    <div class="w3-modal-content">
+         <div class="w3-card-4">
+
+           <span onclick="document.getElementById('id03').style.display='none'" class="w3-button w3-display-topright">&times;</span>
+
+           <header class="w3-container w3-blue">
+                  <h1>Video Control</h1>
+           </header>
+
+           <div class="w3-container">
+                <p>Record video: Limited to one hour per video</p>
+           </div>
+
+          <footer class="w3-container w3-blue">
+               <div class="w3-container w3-cell-middle w3-center">
+                <br>
+                <button style="background: unset;" class="w3-button w3-round-large w3-green w3-red" onclick="recordVideo()">Record Video</button>   
+                <button style="background: unset;" class="w3-button w3-round-large w3-purple w3-large" onClick="stopVideo()">Stop recording</button>
+                <br>
+                <br>
+               </div>
+         </footer>
+        </div>
+    </div>
+</div>
+
+
+
+
+
 </div> <div id="noVNC_fallback_error" class="noVNC_center">
         <div>
             <div>noVNC encountered an error:</div>
@@ -595,6 +710,9 @@ function showAlert(message, color = 'w3-green') {
 
             <!-- DVD control icon -->
             <i id="dvdIcon" class="material-icons w3-text-white noVNC_button" onclick="document.getElementById('id02').style.display='block'">eject</i>
+
+            <!-- RecodVideo icon -->
+            <i id="RecordIcon" class="material-icons w3-text-white noVNC_button" onclick="document.getElementById('id03').style.display='block'">videocam</i>
 
             <!-- Settings -->
             <input type="image" alt="Settings" src="{% static 'novnc/' %}app/images/settings.svg"

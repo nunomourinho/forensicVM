@@ -25,6 +25,13 @@ import psutil
 import asyncio
 from asgiref.sync import async_to_sync
 from asgiref.sync import sync_to_async
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+try:
+    import asyncio
+except ImportError:
+    import trollius as asyncio
+from django.http import HttpResponseBadRequest
+from django.utils.decorators import method_decorator
 from qemu.qmp import QMPClient
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -38,7 +45,196 @@ import datetime
 from datetime import datetime
 import glob
 
-#User = get_user_model()
+
+recordings = {}
+
+async def create_video(uuid):
+    qmp = QMPClient('forensicVM')
+    socket_path = f"/forensicVM/mnt/vm/{uuid}/run/qmp.sock"
+    frames_path = f"/forensicVM/mnt/vm/{uuid}/frames/"
+
+    print(f"{uuid} inside create_video")
+    if not os.path.exists(frames_path):
+        os.makedirs(frames_path)
+        print("created dirs in path")
+
+    existing_frames = sorted(glob.glob(f"{frames_path}/fr*.ppm"))
+    next_frame_number = len(existing_frames) + 1
+    next_frame_filename = f"fr{next_frame_number:05d}.ppm"
+    next_frame_path = os.path.join(frames_path, next_frame_filename)
+    try:
+        await qmp.connect(socket_path)
+        res = await qmp.execute('screendump', {"filename": next_frame_path})
+        print(f"Frame saved: {next_frame_path}")
+        return next_frame_number
+    except Exception as e:
+        print(e)
+    finally:
+        await qmp.disconnect()
+
+    # check if recording is stopped for this VM
+    if uuid in recordings and not recordings[uuid]:
+        scheduler.remove_job(f'create_video_job_{uuid}')
+        print("removed job")
+
+scheduler = AsyncIOScheduler()
+
+@method_decorator(csrf_exempt, name='dispatch')
+class RecordVideoVMView(View):
+    authentication_classes = [SessionAuthentication]
+    permission_classes = []
+
+    async def post(self, request, uuid):
+        user, api_key_error = await sync_to_async(self.get_user_or_key_error)(request)
+        if api_key_error:
+            return api_key_error
+
+        vm_path = f"/forensicVM/mnt/vm/{uuid}"
+        vm_exists = await sync_to_async(os.path.exists)(vm_path)
+
+        if not vm_exists:
+            return JsonResponse({'error': f'VM with UUID {uuid} not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        print(uuid)
+        if uuid not in recordings:
+            recordings[uuid] = True
+            print('started schedule recording')
+            scheduler.add_job(create_video, 'interval', seconds=1, id=f'create_video_job_{uuid}', args=[uuid], replace_existing=True)
+            scheduler.start()
+            # Sleep for 1 hour or until the stop event is set
+            await asyncio.sleep(60)
+            scheduler.remove_job(f'create_video_job_{uuid}')
+
+            # use ffmpeg to convert the sequence of frames into a video
+            frames_path = f"/forensicVM/mnt/vm/{uuid}/frames/"
+            output_video_path = f"/forensicVM/mnt/vm/{uuid}/video.mp4"
+            ffmpeg_command = f"ffmpeg -r 1 -i {frames_path}/fr%05d.ppm -vcodec libx264 -pix_fmt yuv420p {output_video_path}"
+            os.system(ffmpeg_command)
+            result = {'video_recorded': True, 'message': f'Video recorded for VM with UUID {uuid}'}
+            return JsonResponse(result, status=status.HTTP_200_OK)
+        else:
+            return JsonResponse({'error': f'Recording for VM with UUID {uuid} has already started'}, status=status.HTTP_400_BAD_REQUEST)
+
+        result = {'video_recording_started': True, 'message': f'Video recording started for VM with UUID {uuid}'}
+        return JsonResponse(result, status=status.HTTP_200_OK)
+
+    def get_user_or_key_error(self, request):
+        api_key = request.META.get('HTTP_X_API_KEY')
+        user = getattr(request, 'user', None)
+        if user and user.is_authenticated:
+            print("DEBUG: USER AUTHENTICATED")
+        elif api_key:
+            try:
+                api_key = ApiKey.objects.get(key=api_key)
+                user = getattr(api_key, 'user')
+                if not user.is_active:
+                    return None, JsonResponse({'error': 'User account is disabled.'}, status=status.HTTP_401_UNAUTHORIZED)
+            except ApiKey.DoesNotExist:
+                return None, JsonResponse({'error': 'Invalid API key'}, status=status.HTTP_401_UNAUTHORIZED)
+        else:
+            return None, JsonResponse({'error': 'API key required'}, status=status.HTTP_401_UNAUTHORIZED)
+        return user, None
+
+
+#
+#@method_decorator(csrf_exempt, name='dispatch')
+#class RecordVideoVMView(View):
+#    authentication_classes = [SessionAuthentication]
+#    permission_classes = []
+#
+#    async def post(self, request, uuid):
+#        user, api_key_error = await sync_to_async(self.get_user_or_key_error)(request)
+#        if api_key_error:
+#            return api_key_error
+#
+#        vm_path = f"/forensicVM/mnt/vm/{uuid}"
+#        vm_exists = await sync_to_async(os.path.exists)(vm_path)
+#
+#        if not vm_exists:
+#            return JsonResponse({'error': f'VM with UUID {uuid} not found'}, status=status.HTTP_404_NOT_FOUND)
+#
+#        if uuid not in recordings:
+#            recordings[uuid] = True
+#            scheduler.add_job(create_video, 'interval', seconds=1, id=f'create_video_job_{uuid}', replace_existing=True)
+#        else:
+#            return HttpResponseBadRequest(f'Recording for VM with UUID {uuid} has already started')
+#
+#        result = {'video_recording_started': True, 'message': f'Video recording started for VM with UUID {uuid}'}
+#
+#        return JsonResponse(result, status=status.HTTP_200_OK)
+#
+
+@method_decorator(csrf_exempt, name='dispatch')
+class StopVideoRecordingVMView(View):
+    authentication_classes = [SessionAuthentication]
+    permission_classes = []
+
+    async def post(self, request, uuid):
+        user, api_key_error = await sync_to_async(self.get_user_or_key_error)(request)
+        if api_key_error:
+            return api_key_error
+
+        if uuid in recordings:
+            recordings[uuid] = False
+        else:
+            return HttpResponseBadRequest(f'No recording to stop for VM with UUID {uuid}')
+
+        result = {'video_recording_stopped': True, 'message': f'Video recording stopped for VM with UUID {uuid}'}
+
+        return JsonResponse(result, status=status.HTTP_200_OK)
+
+    def get_user_or_key_error(self, request):
+        api_key = request.META.get('HTTP_X_API_KEY')
+        user = getattr(request, 'user', None)
+        if user and user.is_authenticated:
+            print("DEBUG: USER AUTHENTICATED")
+        elif api_key:
+            try:
+                api_key = ApiKey.objects.get(key=api_key)
+                user = getattr(api_key, 'user')
+                if not user.is_active:
+                    return None, JsonResponse({'error': 'User account is disabled.'}, status=status.HTTP_401_UNAUTHORIZED)
+            except ApiKey.DoesNotExist:
+                return None, JsonResponse({'error': 'Invalid API key'}, status=status.HTTP_401_UNAUTHORIZED)
+        else:
+            return None, JsonResponse({'error': 'API key required'}, status=status.HTTP_401_UNAUTHORIZED)
+        return user, None
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class CheckRecordingStatusVMView(View):
+    authentication_classes = [SessionAuthentication]
+    permission_classes = []
+
+    async def get(self, request, uuid):
+        user, api_key_error = await sync_to_async(self.get_user_or_key_error)(request)
+        if api_key_error:
+            return api_key_error
+
+        if uuid in recordings and recordings[uuid]:
+            result = {'is_recording': True, 'message': f'Recording is in progress for VM with UUID {uuid}'}
+        else:
+            result = {'is_recording': False, 'message': f'No recording is in progress for VM with UUID {uuid}'}
+
+        return JsonResponse(result, status=status.HTTP_200_OK)
+
+    def get_user_or_key_error(self, request):
+        api_key = request.META.get('HTTP_X_API_KEY')
+        user = getattr(request, 'user', None)
+        if user and user.is_authenticated:
+            print("DEBUG: USER AUTHENTICATED")
+        elif api_key:
+            try:
+                api_key = ApiKey.objects.get(key=api_key)
+                user = getattr(api_key, 'user')
+                if not user.is_active:
+                    return None, JsonResponse({'error': 'User account is disabled.'}, status=status.HTTP_401_UNAUTHORIZED)
+            except ApiKey.DoesNotExist:
+                return None, JsonResponse({'error': 'Invalid API key'}, status=status.HTTP_401_UNAUTHORIZED)
+        else:
+            return None, JsonResponse({'error': 'API key required'}, status=status.HTTP_401_UNAUTHORIZED)
+        return user, None
+
 
 @method_decorator(csrf_exempt, name='dispatch')
 class RemoveVMDateTimeView(View):

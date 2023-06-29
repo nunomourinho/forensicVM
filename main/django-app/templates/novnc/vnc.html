@@ -364,14 +364,13 @@ function stopVideo() {
     }
 
     document.getElementById('id03').style.display = 'none';
-    showAlert("Sent stop video recording", "w3-teal")
     fetch('/api/stop_video/' + uuid + '/', {
     method: 'POST',
     credentials: 'include'
     })
     .then(response => response.json())
     .then(data => {
-                   showAlert("Stopped video recording", "w3-orange")
+                   showAlert("Sent stop video recording", "w3-teal")
                    document.getElementById("rec-image").style.display = "none";  // Hide rec-image
                    console.log(data) 
                   })

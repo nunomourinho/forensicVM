@@ -107,7 +107,8 @@ class RecordVideoVMView(View):
             output_video_path = f"/forensicVM/mnt/vm/{uuid}/video.mp4"
             frames_path = f"/forensicVM/mnt/vm/{uuid}/frames/"
             video_path = f"/forensicVM/mnt/vm/{uuid}/video/"
-            shutil.rmtree(frames_path)  # Delete the directory and its contents
+            if os.path.exists(frames_path):
+                shutil.rmtree(frames_path)  # Delete the directory and its contents
             if not os.path.exists(frames_path):
                 os.makedirs(frames_path)  # Recreate the empty directory
             if not os.path.exists(video_path):

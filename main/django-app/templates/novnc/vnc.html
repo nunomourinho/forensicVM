@@ -320,25 +320,6 @@ function removeMedia() {
     }
 }
 
-/*
-function recordVideo() {
-    const uuid = getParameterByName('uuid');
-
-    if(!uuid){
-        console.error('UUID is not provided.');
-        return;
-    }
-
-    fetch('/api/record_video/' + uuid + '/', {
-
-        method: 'POST',
-        credentials: 'include' 
-    })
-    .then(response => response.json())
-    .then(data => console.log(data))
-    .catch(error => console.error(error));
-}
-*/
 
 function recordVideo() {
   const uuid = getParameterByName('uuid');
@@ -351,16 +332,27 @@ function recordVideo() {
   const formData = new FormData();
   formData.append('uuid', uuid);
 
+  showAlert("Record Video sent")
+  document.getElementById("rec-image").style.display = "block";  // Show rec-image
+  document.getElementById('id03').style.display = 'none';
   fetch('/api/record_video/' + uuid + '/', {
 
-//  fetch('/api/record_video/', {
-    method: 'POST',
-    credentials: 'include',
-    body: formData
+  method: 'POST',
+  credentials: 'include',
+  body: formData
   })
     .then(response => response.json())
-    .then(data => console.log(data))
-    .catch(error => console.error(error));
+    .then(data => {
+                   showAlert('Video saved (' + data.message + ')', "w3-green")
+                   document.getElementById("rec-image").style.display = "none";  // Hide rec-image
+                   console.log(data) 
+                  })
+    .catch(error => {
+                    showAlert("Error recording video", "w3-red")
+                    document.getElementById("rec-image").style.display = "none";  // Hide rec-image
+                    console.error(error)
+                    });
+
 }
 
 function stopVideo() {
@@ -371,15 +363,24 @@ function stopVideo() {
         return;
     }
 
+    document.getElementById('id03').style.display = 'none';
+    showAlert("Sent stop video recording", "w3-teal")
     fetch('/api/stop_video/' + uuid + '/', {
-
-    //fetch(`/api/stop_video/${uuid}/`, {
-        method: 'POST',
-        credentials: 'include'
+    method: 'POST',
+    credentials: 'include'
     })
     .then(response => response.json())
-    .then(data => console.log(data))
-    .catch(error => console.error(error));
+    .then(data => {
+                   showAlert("Stopped video recording", "w3-orange")
+                   document.getElementById("rec-image").style.display = "none";  // Hide rec-image
+                   console.log(data) 
+                  })
+    .catch(error => {
+                    showAlert("Error stopping video recording", "w3-red")
+                    document.getElementById("rec-image").style.display = "none";  // Hide rec-image
+                    console.error(error)
+                    });
+
 }
 
 function checkRecordingStatus() {
@@ -496,6 +497,7 @@ function showAlert(message, color = 'w3-green') {
     <link rel="preload" as="image" href="{% static 'novnc/' %}app/images/info.svg">
     <link rel="preload" as="image" href="{% static 'novnc/' %}app/images/error.svg">
     <link rel="preload" as="image" href="{% static 'novnc/' %}app/images/warning.svg">
+    <link rel="preload" as="image" href="{% static 'novnc/' %}images/record.gif">
 
     <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
@@ -508,7 +510,7 @@ function showAlert(message, color = 'w3-green') {
         position: fixed;
         top: 0;
         width: 100%;
-        z-index: 9999;
+        z-index: 9998;
      }
 
      .alert.show {
@@ -518,11 +520,21 @@ function showAlert(message, color = 'w3-green') {
     .alert-message {
       font-size: 14px;
     }
+    .rec-image {
+         position: fixed;
+         right: 5px;
+         top: 5px;
+         opacity: 0.90;
+         width: 100px;
+         pointer-events: none;
+    }
   </style>
 
 </head>
 
 <body>
+<img id="rec-image" style="display: none;" class="rec-image" src="{% static 'novnc/' %}images/record.gif"></img>
+
 <div id="alertContainer"></div>
 
 <!-- Network control -->
@@ -923,6 +935,7 @@ function showAlert(message, color = 'w3-green') {
         <source src="{% static 'novnc/' %}app/sounds/bell.oga" type="audio/ogg">
         <source src="{% static 'novnc/' %}app/sounds/bell.mp3" type="audio/mpeg">
     </audio>
+
  </body>
 
 <!-- JavaScript -->

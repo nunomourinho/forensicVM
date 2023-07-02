@@ -50,6 +50,34 @@ import cv2
 
 recordings = {}
 
+class CheckUserAuthenticatedView(View):
+    authentication_classes = [SessionAuthentication]
+    permission_classes = []
+
+    def get(self, request):
+        user, api_key_error = self.get_user_or_key_error(request)
+        if api_key_error:
+            return api_key_error
+        else:
+            return JsonResponse({'authenticated': True}, status=status.HTTP_200_OK)
+
+    def get_user_or_key_error(self, request):
+        api_key = request.META.get('HTTP_X_API_KEY')
+        user = getattr(request, 'user', None)
+        if user and user.is_authenticated:
+            print("DEBUG: USER AUTHENTICATED")
+        elif api_key:
+            try:
+                api_key = ApiKey.objects.get(key=api_key)
+                user = getattr(api_key, 'user')
+                if not user.is_active:
+                    return None, JsonResponse({'error': 'User account is disabled.'}, status=status.HTTP_401_UNAUTHORIZED)
+            except ApiKey.DoesNotExist:
+                return None, JsonResponse({'error': 'Invalid API key'}, status=status.HTTP_401_UNAUTHORIZED)
+        else:
+            return None, JsonResponse({'error': 'API key required'}, status=status.HTTP_401_UNAUTHORIZED)
+        return user, None
+
 class DownloadVideoView(APIView):
     authentication_classes = [SessionAuthentication]
     permission_classes = []
@@ -284,6 +312,9 @@ class RecordVideoVMView(View):
             return JsonResponse({'error': f'VM with UUID {uuid} not found'}, status=404)
 
         video_path = f"/forensicVM/mnt/vm/{uuid}/video/"
+        if not os.path.exists(video_path):
+            os.makedirs(video_path)  # Recreate the empty directory
+
         video_count = len(os.listdir(video_path))
         output_video_path = os.path.join(video_path, f"video{video_count + 1:04d}.mp4")
 

@@ -11,6 +11,7 @@ from .views import MemorySizeView, ChangeMemorySizeView, GetAvailableMemoryView,
 from .views import DownloadNetworkPcapView,CheckTapInterfaceView
 from .views import ChangeVMDateTimeView, RemoveVMDateTimeView, DownloadVideoView
 from .views import RecordVideoVMView, StopVideoRecordingVMView, CheckRecordingStatusVMView, ListVideosView
+from .views import CheckUserAuthenticatedView
 
 urlpatterns = [
     #path('run-script/', RunScriptView.as_view(), name='run_script'),
@@ -57,4 +58,5 @@ urlpatterns = [
     path('check_recording/<str:uuid>/', CheckRecordingStatusVMView.as_view(), name='check_recording'),
     path('list_videos/<str:uuid>/', ListVideosView.as_view(), name='list_videos'),
     path('download_video/<uuid:uuid>/<str:filename>/', DownloadVideoView.as_view(), name='download_video'),
+    path('check-authenticated/', CheckUserAuthenticatedView.as_view(), name='check-authenticated'),
 ]

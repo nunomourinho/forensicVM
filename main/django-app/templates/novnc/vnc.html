@@ -410,7 +410,8 @@ function getVideoList() {
 }
 
 document.addEventListener('DOMContentLoaded', (event) => {
-    getVideoList()
+    getVideoList();
+    checkRecordingStatus();
 });
 
 function downloadVideo() {
@@ -419,7 +420,7 @@ function downloadVideo() {
   const urlParams = new URLSearchParams(window.location.search);
   const uuid = urlParams.get('uuid');
 
-
+  showAlert("Your video is beeing preparated. Please wait a couple of minutes for the download to begin...", "w3-teal")
   fetch('/api/download_video/' + uuid + '/' + filename, {
       method: 'GET',
       credentials: 'include', // Send session cookie with the request
@@ -427,6 +428,7 @@ function downloadVideo() {
   .then(response => response.blob())
   .then(blob => {
       // Create a URL for the blob
+      showAlert("Download started", "w3-teal")
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -453,7 +455,12 @@ function checkRecordingStatus() {
         credentials: 'include'
     })
     .then(response => response.json())
-    .then(data => console.log(data))
+    .then(data => {
+                   console.log(data);
+                   if (data.is_recording) {
+                   	document.getElementById("rec-image").style.display = "block";  // Show rec-image
+                   }
+     })
     .catch(error => console.error(error));
 }
 
@@ -503,6 +510,25 @@ function showAlert(message, color = 'w3-green') {
         }, 300);
       }, 3000);
     }
+
+  setInterval(function() {
+    fetch('/api/check-authenticated/', {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        credentials: 'include'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (!data.authenticated) {
+            location.reload();
+        }
+    })
+    .catch((error) => {
+        console.error('Error:', error);
+    });
+  }, 309000); // 5.15 minutes in milliseconds
   </script>
     <!--
     Connect parameters are provided in query string:

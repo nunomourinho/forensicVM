@@ -339,7 +339,7 @@ class RecordVideoVMView(View):
                 #scheduler.add_job(create_video, 'interval', seconds=0.04, id=f'create_video_job_{uuid}', args=[uuid, output_video_path, video_writer], replace_existing=True)
                 scheduler.start()
 
-                for _ in range(3600):  # run the loop for 3600 interactions (one hour)
+                for _ in range(3600*3):  # run the loop for 3600 interactions*3 (three hour)
                     await asyncio.sleep(1)  # sleep for 1 second
                     if not recordings[uuid]:  # if recordings[uuid] is False, break the loop
                         break

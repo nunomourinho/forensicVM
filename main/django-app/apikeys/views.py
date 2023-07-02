@@ -937,10 +937,36 @@ class DownloadNetworkPcapView(View):
 
 @method_decorator(csrf_exempt, name='dispatch')
 class CheckTapInterfaceView(View):
+    """
+    View to check the status of the tap interface of a VM.
+
+    The view has no authentication or permission restrictions.
+    The post method is used to handle the status checking of the tap interface of a VM.
+    """
     authentication_classes = []
     permission_classes = []
 
     async def post(self, request):
+        """
+        Handle a POST request to check the status of the tap interface of a VM.
+
+        This method first checks if there is an API key error.
+        If there's an API key error, it returns a JSON response with the error.
+        The method then gets the UUID from the POST data and checks the status of the tap interface.
+        It executes shell commands to get the tap interface and checks its status.
+        If the tap interface is up, the method returns a JSON response with a positive status and message.
+        If the tap interface is down, the method returns a JSON response with a negative status and message.
+
+        Parameters:
+        ----------
+        request : django.http.HttpRequest
+            The request instance for the current request.
+
+        Returns:
+        -------
+        django.http.JsonResponse
+            A JsonResponse with the status and message about the status of the tap interface.
+        """
         api_key = request.META.get('HTTP_X_API_KEY')
         if api_key:
             try:
@@ -987,10 +1013,36 @@ class CheckTapInterfaceView(View):
 
 @method_decorator(csrf_exempt, name='dispatch')
 class StartTapInterfaceView(View):
+    """
+    View to start the tap interface of a VM.
+
+    The view authenticates the user with SessionAuthentication. The post method is used to handle the start request of
+    the tap interface of a VM.
+    """
     authentication_classes = [SessionAuthentication]                # ADDED
     permission_classes = []
 
     async def post(self, request):
+        """
+        Handle a POST request to start the tap interface of a VM.
+
+        This method first checks if there is an API key error.
+        If there's an API key error, it returns a JSON response with the error.
+        The method then gets the UUID from the POST data and tries to start the tap interface.
+        It executes shell commands to get the tap interface and starts it.
+        If the tap interface starts successfully, the method returns a JSON response with a positive message.
+        If there's an error while starting the tap interface, the method returns a JSON response with the error.
+
+        Parameters:
+        ----------
+        request : django.http.HttpRequest
+            The request instance for the current request.
+
+        Returns:
+        -------
+        django.http.JsonResponse
+            A JsonResponse with a message about the status of the tap interface start action.
+        """
         # Authenticate user using API key
         api_key = request.META.get('HTTP_X_API_KEY')
         #user = getattr(request, 'user', None)                       # IF sync

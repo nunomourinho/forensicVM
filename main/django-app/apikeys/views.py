@@ -1091,10 +1091,36 @@ class StartTapInterfaceView(View):
 
 @method_decorator(csrf_exempt, name='dispatch')
 class StopTapInterfaceView(View):
+    """
+    View to stop the tap interface of a VM.
+
+    The view authenticates the user with SessionAuthentication. The post method is used to handle the stop request of
+    the tap interface of a VM.
+    """
     authentication_classes = [SessionAuthentication]                # ADDED
     permission_classes = []
 
     async def post(self, request):
+        """
+        Handle a POST request to stop the tap interface of a VM.
+
+        This method first checks if there is an API key error.
+        If there's an API key error, it returns a JSON response with the error.
+        The method then gets the UUID from the POST data and tries to stop the tap interface.
+        It executes shell commands to get the tap interface and stops it.
+        If the tap interface stops successfully, the method returns a JSON response with a positive message.
+        If there's an error while stopping the tap interface, the method returns a JSON response with the error.
+
+        Parameters:
+        ----------
+        request : django.http.HttpRequest
+            The request instance for the current request.
+
+        Returns:
+        -------
+        django.http.JsonResponse
+            A JsonResponse with a message about the status of the tap interface stop action.
+        """
         # Authenticate user using API key
         api_key = request.META.get('HTTP_X_API_KEY')
         #user = getattr(request, 'user', None)                       # IF sync
@@ -1144,13 +1170,47 @@ class StopTapInterfaceView(View):
 
 
 def get_available_memory():
+    """
+    Get the current available system memory.
+
+    This function uses the psutil library to fetch system memory information.
+    It returns the amount of available memory in Megabytes.
+
+    Returns:
+    -------
+    float
+        The amount of available system memory in Megabytes.
+    """
     mem_info = psutil.virtual_memory()
     available_memory = mem_info.available / 1024 / 1024  # Convert to MB
     return available_memory
 
 @method_decorator(csrf_exempt, name='dispatch')
 class GetAvailableMemoryView(View):
+    """
+    API View that handles GET requests to retrieve available system memory.
+
+    This view requires an API key for authentication. If the API key is valid
+    and is associated with an active user, the system's available memory is returned.
+    The available memory is calculated using the get_available_memory function.
+
+    If the API key is missing, invalid, or associated with an inactive user, an error message is returned.
+
+    The available memory is returned in a JSON format:
+    {
+        "available_memory": <float>
+    }
+    """
     def get(self, request):
+        """
+        Handles the GET request to retrieve the system's available memory.
+
+        Args:
+            request: The HTTP request from the client. Expected to contain the API key in the headers.
+
+        Returns:
+            JsonResponse: A JsonResponse that either contains the available memory or an error message.
+        """
         api_key = request.META.get('HTTP_X_API_KEY')
         if api_key:
             try:
@@ -1170,7 +1230,33 @@ class GetAvailableMemoryView(View):
 
 @method_decorator(csrf_exempt, name='dispatch')
 class ChangeMemorySizeView(View):
+    """
+    API View that handles POST requests to change the memory size of a Virtual Machine (VM).
+
+    This view requires an API key for authentication and a POST body containing a new memory size.
+    If the API key is valid and is associated with an active user, and the POST body contains a valid
+    memory size, the script files in the VM directory are updated with the new memory size.
+
+    If the API key is missing, invalid, or associated with an inactive user, or if the memory size
+    is invalid, an error message is returned.
+
+    The response indicates whether the memory size update was successful or not in a JSON format:
+    {
+        "message": <string>
+    }
+    """
     def post(self, request, uuid):
+        """
+        Handles the POST request to change the memory size of a VM.
+
+        Args:
+            request: The HTTP request from the client. Expected to contain the API key in the headers and the new
+                     memory size in the POST body.
+            uuid: The UUID of the VM whose memory size is to be changed.
+
+        Returns:
+            JsonResponse: A JsonResponse that either contains a success message or an error message.
+        """
         api_key = request.META.get('HTTP_X_API_KEY')
         if api_key:
             try:
@@ -1213,7 +1299,35 @@ class ChangeMemorySizeView(View):
 
 #@method_decorator(csrf_exempt, name='dispatch')
 class MemorySizeView(View):
+    """
+    API View that handles GET requests to fetch the current memory size of a Virtual Machine (VM).
+
+    This view requires an API key for authentication. If the API key is valid and is associated
+    with an active user, the memory size is retrieved from the script files in the VM directory.
+
+    If the API key is missing, invalid, or associated with an inactive user, or if the memory size
+    cannot be found, an error message is returned.
+
+    The response indicates either the memory size or an error message in a JSON format:
+    {
+        "memory_size": <int>
+    }
+    or
+    {
+        "error": <string>
+    }
+    """
     def get(self, request, uuid):
+        """
+        Handles the GET request to fetch the memory size of a VM.
+
+        Args:
+            request: The HTTP request from the client. Expected to contain the API key in the headers.
+            uuid: The UUID of the VM whose memory size is to be fetched.
+
+        Returns:
+            JsonResponse: A JsonResponse that either contains the memory size or an error message.
+        """
         api_key = request.META.get('HTTP_X_API_KEY')
         if api_key:
             try:
@@ -1249,6 +1363,19 @@ class MemorySizeView(View):
             return JsonResponse({'error': 'Memory parameter not found in the script.'}, status=404)
 
 async def delete_snapshot(uuid, snapshot_name):
+    """
+    Asynchronously delete a snapshot of a specific VM.
+
+    This function uses QEMU's QMP (QEMU Machine Protocol) to execute commands on the VM.
+    It specifically runs the `delvm` command to delete the snapshot.
+
+    Args:
+        uuid (str): The unique identifier for the VM.
+        snapshot_name (str): The name of the snapshot to delete.
+
+    Returns:
+        str: A message indicating whether the snapshot was successfully deleted or not.
+    """
     qmp = QMPClient('forensicVM')
     socket_path = f"/forensicVM/mnt/vm/{uuid}/run/qmp.sock"
 
@@ -1267,7 +1394,36 @@ async def delete_snapshot(uuid, snapshot_name):
 
 @method_decorator(csrf_exempt, name='dispatch')
 class DeleteSnapshotView(View):
+    """
+    API View that handles POST requests to delete a snapshot of a specific VM.
+
+    This view requires an API key for authentication. If the API key is valid and is associated
+    with an active user, it calls the `delete_snapshot` asynchronous function to delete the snapshot.
+
+    If the API key is missing, invalid, or associated with an inactive user, or if the snapshot
+    name is missing in the request data, an error message is returned.
+
+    The response indicates either a success or an error message in a JSON format:
+    {
+        "message": <string>
+    }
+    or
+    {
+        "error": <string>
+    }
+    """
     async def post(self, request, uuid):
+        """
+        Handles the POST request to delete a snapshot of a VM.
+
+        Args:
+            request: The HTTP request from the client. Expected to contain the API key in the headers,
+                     and the snapshot name in the request data.
+            uuid: The UUID of the VM whose snapshot is to be deleted.
+
+        Returns:
+            JsonResponse: A JsonResponse that either contains a success message or an error message.
+        """
         api_key = request.META.get('HTTP_X_API_KEY')
         if api_key:
             try:
@@ -1289,6 +1445,19 @@ class DeleteSnapshotView(View):
 
 
 async def rollback_snapshot(uuid, snapshot_name):
+    """
+    Asynchronously rollback to a snapshot of a specific VM.
+
+    This function uses QEMU's QMP (QEMU Machine Protocol) to execute commands on the VM.
+    It specifically runs the `loadvm` command to rollback to the snapshot.
+
+    Args:
+        uuid (str): The unique identifier for the VM.
+        snapshot_name (str): The name of the snapshot to rollback to.
+
+    Returns:
+        str: A message indicating whether the snapshot was successfully rolled back or not.
+    """
     qmp = QMPClient('forensicVM')
     socket_path = f"/forensicVM/mnt/vm/{uuid}/run/qmp.sock"
 
@@ -1306,7 +1475,36 @@ async def rollback_snapshot(uuid, snapshot_name):
 
 @method_decorator(csrf_exempt, name='dispatch')
 class RollbackSnapshotView(View):
+    """
+    API View that handles POST requests to rollback a snapshot of a specific VM.
+
+    This view requires an API key for authentication. If the API key is valid and is associated
+    with an active user, it calls the `rollback_snapshot` asynchronous function to rollback to the snapshot.
+
+    If the API key is missing, invalid, or associated with an inactive user, or if the snapshot
+    name is missing in the request data, an error message is returned.
+
+    The response indicates either a success or an error message in a JSON format:
+    {
+        "message": <string>
+    }
+    or
+    {
+        "error": <string>
+    }
+    """
     async def post(self, request, uuid):
+        """
+        Handles the POST request to rollback to a snapshot of a VM.
+
+        Args:
+            request: The HTTP request from the client. Expected to contain the API key in the headers,
+                     and the snapshot name in the request data.
+            uuid: The UUID of the VM to rollback the snapshot.
+
+        Returns:
+            JsonResponse: A JsonResponse that either contains a success message or an error message.
+        """
         api_key = request.META.get('HTTP_X_API_KEY')
         if api_key:
             try:
@@ -1328,6 +1526,18 @@ class RollbackSnapshotView(View):
 
 
 async def create_snapshot(uuid):
+    """
+    Asynchronously creates a snapshot of a specific VM.
+
+    This function uses QEMU's QMP (QEMU Machine Protocol) to execute commands on the VM.
+    It specifically runs the `savevm` command to create the snapshot.
+
+    Args:
+        uuid (str): The unique identifier for the VM.
+
+    Returns:
+        str: The name of the snapshot if successful, or an error message if an exception occurred.
+    """
     qmp = QMPClient('forensicVM')
     socket_path = f"/forensicVM/mnt/vm/{uuid}/run/qmp.sock"
 
@@ -1347,7 +1557,34 @@ async def create_snapshot(uuid):
 
 @method_decorator(csrf_exempt, name='dispatch')
 class CreateSnapshotView(View):
+    """
+    API View that handles POST requests to create a snapshot of a specific VM.
+
+    This view requires an API key for authentication. If the API key is valid and is associated
+    with an active user, it calls the `create_snapshot` asynchronous function to create the snapshot.
+
+    If the API key is missing, invalid, or associated with an inactive user, an error message is returned.
+
+    The response indicates either the snapshot name or an error message in a JSON format:
+    {
+        "snapshot_name": <string>
+    }
+    or
+    {
+        "error": <string>
+    }
+    """
     async def post(self, request, uuid):
+        """
+        Handles the POST request to create a snapshot of a VM.
+
+        Args:
+            request: The HTTP request from the client. Expected to contain the API key in the headers.
+            uuid: The UUID of the VM to create the snapshot.
+
+        Returns:
+            JsonResponse: A JsonResponse that either contains the snapshot name or an error message.
+        """
         api_key = request.META.get('HTTP_X_API_KEY')
         if api_key:
             try:
@@ -1363,9 +1600,21 @@ class CreateSnapshotView(View):
         snapshot_name = await create_snapshot(uuid)
         return JsonResponse({'snapshot_name': snapshot_name}, status=200)
 
-
-
 async def get_snapshots(uuid):
+    """
+    Asynchronously retrieves the list of snapshots of a specific VM.
+
+    This function uses QEMU's QMP (QEMU Machine Protocol) to execute commands on the VM.
+    It specifically runs the `info snapshots` command to retrieve the list of snapshots.
+
+    Args:
+        uuid (str): The unique identifier for the VM.
+
+    Returns:
+        list: A list of dictionaries containing snapshot information. Each dictionary includes
+              snapshot id, tag, VM size, date, and VM clock.
+              If an exception occurred, an empty list is returned.
+    """
     qmp = QMPClient('forensicVM')
     socket_path = f"/forensicVM/mnt/vm/{uuid}/run/qmp.sock"
     snapshots = []
@@ -1404,7 +1653,34 @@ async def get_snapshots(uuid):
 
 @method_decorator(csrf_exempt, name='dispatch')
 class SnapshotListView(View):
+    """
+    API View that handles GET requests to retrieve the list of snapshots of a specific VM.
+
+    This view requires an API key for authentication. If the API key is valid and is associated
+    with an active user, it calls the `get_snapshots` asynchronous function to retrieve the list of snapshots.
+
+    If the API key is missing, invalid, or associated with an inactive user, an error message is returned.
+
+    The response includes a list of snapshots or an error message in a JSON format:
+    {
+        "snapshots": [<list of snapshots>]
+    }
+    or
+    {
+        "error": <string>
+    }
+    """
     async def get(self, request, uuid):
+        """
+        Handles the GET request to retrieve the list of snapshots of a VM.
+
+        Args:
+            request: The HTTP request from the client. Expected to contain the API key in the headers.
+            uuid: The UUID of the VM to get the snapshots.
+
+        Returns:
+            JsonResponse: A JsonResponse that either contains the list of snapshots or an error message.
+        """
         api_key = request.META.get('HTTP_X_API_KEY')
         if api_key:
             try:
@@ -1422,6 +1698,22 @@ class SnapshotListView(View):
 
 
 def create_and_format_qcow2(qcow2_file, folders):
+    """
+    Creates and formats a new QCOW2 file with a capacity of 20GB, and initializes it with a new NTFS partition.
+
+    This function first creates a new QCOW2 file using the `qemu-img` command. Then, it initializes a new NTFS partition on
+    the QCOW2 file using the `guestfish` command-line tool.
+
+    After the partition is created, the function creates a series of folders in the root directory of the partition.
+    Finally, it writes a readme file in the root directory of the partition.
+
+    Args:
+        qcow2_file (str): The path where the new QCOW2 file will be created.
+        folders (list): A list of folder names that will be created in the root directory of the NTFS partition.
+
+    Raises:
+        subprocess.CalledProcessError: If the `qemu-img` command or the `guestfish` command fails.
+    """
     # Create a new QCOW2 file with 20GB of space
     subprocess.run(['qemu-img', 'create', '-f', 'qcow2', qcow2_file, '20G'], check=True)
 
@@ -1471,6 +1763,21 @@ def create_and_format_qcow2(qcow2_file, folders):
 
 @method_decorator(csrf_exempt, name='dispatch')
 class RecreateFoldersView(View):
+    """
+    This Django view handles POST requests to recreate a set of folders inside a QCOW2 file in a Virtual Machine.
+
+    The view first authenticates the request based on the provided API key. If the user related to the API key is not active,
+    it returns an error.
+
+    Upon successful authentication, the view retrieves a list of folders and a VM uuid from the request. It then creates
+    a new QCOW2 file in the corresponding VM directory and formats it with NTFS filesystem, followed by creating the specified
+    folders in the root directory of the filesystem. If the QCOW2 file already exists, it is first deleted.
+
+    If the QCOW2 file is created and formatted successfully, the view returns a success message. If an error occurs during
+    the operation, it returns an error message.
+
+    The view uses the `create_and_format_qcow2` function to perform the creation and formatting operations.
+    """
     authentication_classes = []
     permission_classes = []
 
@@ -1507,14 +1814,50 @@ class RecreateFoldersView(View):
             return JsonResponse({'error': f'Error executing guestfish: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-
-
-
 class RunPluginView(APIView):
+    """
+    This Django view handles GET requests to run a forensic plugin script on a specified image within a Virtual Machine.
+
+    The view first authenticates the request based on the provided API key. If the user related to the API key is not active,
+    it returns an error.
+
+    Upon successful authentication, the view retrieves the plugin directory and VM uuid from the request parameters.
+    It validates the existence of the plugin script and the image, both identified using the provided parameters.
+
+    If the validation is successful, it attempts to run the plugin script on the image and returns the script's stdout as
+    the response. If the script fails to run, the error details are returned in the response.
+
+    If the validation fails because of the non-existence of the plugin script or the image, an appropriate error message is returned.
+
+    This view does not require any special permissions or authentication classes, as it is intended to be used internally
+    by the system.
+    """
     authentication_classes = []
     permission_classes = []
 
     def get(self, request):
+        """
+        Handles GET requests to execute a specific forensic plugin on a VM image.
+
+        The method retrieves the API key from the request headers and validates it. If the API key is invalid or
+        belongs to an inactive user, an error response is returned.
+
+        The method retrieves the plugin directory and image UUID from the GET parameters. It validates these parameters
+        by checking the existence of the plugin script and the image path. If any of these does not exist, an error response is returned.
+
+        The method looks for the latest '.qcow2-sda' file within the image path and sets it as the target for the plugin.
+
+        Upon successful validation, the method attempts to run the plugin script on the image using a bash subprocess. The output
+        from the subprocess is returned in the response.
+
+        If the plugin script execution fails, the error details are returned in the response.
+
+        Parameters:
+        request (HttpRequest): The request object that has triggered this method.
+
+        Returns:
+        JsonResponse: A JSON object containing either the output of the plugin execution or an error message.
+        """
         api_key = request.META.get('HTTP_X_API_KEY')
         if api_key:
             try:

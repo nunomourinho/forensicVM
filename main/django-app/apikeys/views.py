@@ -301,6 +301,27 @@ class ListVideosView(APIView):
         return JsonResponse({'video_files': video_files}, status=status.HTTP_200_OK)
 
     def get_user_or_key_error(self, request):
+        """
+        Retrieves the authenticated user from the request or returns an API key error.
+
+        This method attempts to get an authenticated user from the request.
+        If the user is authenticated, it will return the user and None for the error.
+        If the user is not authenticated, it will attempt to authenticate the user using an API key provided in the request.
+        If the API key is valid and associated with an active user, it returns the user and None for the error.
+        If the API key is invalid or the user associated with the key is not active, it returns None for the user and a JsonResponse indicating the error.
+        If no API key is provided in the request, it returns None for the user and a JsonResponse indicating that an API key is required.
+
+        Parameters:
+        ----------
+        request : django.http.HttpRequest
+            The request instance for the current request.
+
+        Returns:
+        -------
+        tuple
+            A tuple where the first element is the authenticated user or None if no user could be authenticated,
+            and the second element is None or a JsonResponse containing an error message.
+        """
         api_key = request.META.get('HTTP_X_API_KEY')
         user = getattr(request, 'user', None)
         if user and user.is_authenticated:
@@ -317,106 +338,30 @@ class ListVideosView(APIView):
             return None, JsonResponse({'error': 'API key required'}, status=status.HTTP_401_UNAUTHORIZED)
         return user, None
 
-#
-#async def create_video(uuid):
-#    qmp = QMPClient('forensicVM')
-#    socket_path = f"/forensicVM/mnt/vm/{uuid}/run/qmp.sock"
-#    frames_path = f"/forensicVM/mnt/vm/{uuid}/frames/"
-#
-#    if not os.path.exists(frames_path):
-#        os.makedirs(frames_path)
-#
-#    existing_frames = sorted(glob.glob(f"{frames_path}/fr*.ppm"))
-#    next_frame_number = len(existing_frames) + 1
-#    next_frame_filename = f"fr{next_frame_number:05d}.ppm"
-#    next_frame_path = os.path.join(frames_path, next_frame_filename)
-#    try:
-#        await qmp.connect(socket_path)
-#        res = await qmp.execute('screendump', {"filename": next_frame_path})
-#        return next_frame_number
-#    except Exception as e:
-#        print(e)
-#    finally:
-#        await qmp.disconnect()
-#
-#    # check if recording is stopped for this VM
-#    print(recordings)
-#    if uuid in recordings:
-#        if not recordings[uuid]:
-#            scheduler.remove_job(f'create_video_job_{uuid}')
-#            del recordings[uuid]
-#
-#
-#@method_decorator(csrf_exempt, name='dispatch')
-#class RecordVideoVMView(View):
-#    authentication_classes = [SessionAuthentication]
-#    permission_classes = []
-#
-#    async def post(self, request, uuid):
-#        user, api_key_error = await sync_to_async(self.get_user_or_key_error)(request)
-#        if api_key_error:
-#            return api_key_error
-#
-#        vm_path = f"/forensicVM/mnt/vm/{uuid}"
-#        vm_exists = await sync_to_async(os.path.exists)(vm_path)
-#
-#        if not vm_exists:
-#            return JsonResponse({'error': f'VM with UUID {uuid} not found'}, status=status.HTTP_404_NOT_FOUND)
-#
-#        print(uuid)
-#        record = False
-#        if uuid not in recordings:
-#            record = True
-#            print("uuid not in the recordigs")
-#        elif uuid in recordings and not recordings[uuid]:
-#            record = True
-#            print("uuid is in the recordings, but not in the uuid")
-#
-#
-#        if record:
-#            output_video_path = f"/forensicVM/mnt/vm/{uuid}/video.mp4"
-#            frames_path = f"/forensicVM/mnt/vm/{uuid}/frames/"
-#            video_path = f"/forensicVM/mnt/vm/{uuid}/video/"
-#            if os.path.exists(frames_path):
-#                shutil.rmtree(frames_path)  # Delete the directory and its contents
-#            if not os.path.exists(frames_path):
-#                os.makedirs(frames_path)  # Recreate the empty directory
-#            if not os.path.exists(video_path):
-#                os.makedirs(video_path)  # Recreate the empty directory
-#            recordings[uuid] = True
-#            print('started schedule recording')
-#            scheduler = AsyncIOScheduler()
-#            scheduler.add_job(create_video, 'interval', seconds=0.04, id=f'create_video_job_{uuid}', args=[uuid], replace_existing=True)
-#            scheduler.start()
-#            for _ in range(3600):  # run the loop for 3600 interactions (one hour)
-#                await asyncio.sleep(1)  # sleep for 1 second
-#                if not recordings[uuid]:  # if recordings[uuid] is False, break the loop
-#                    break
-#
-#            scheduler.remove_job(f'create_video_job_{uuid}')
-#
-#            # use ffmpeg to convert the sequence of frames into a video
-#            ffmpeg_command = f"ffmpeg -y -r 25 -i {frames_path}/fr%05d.ppm -vcodec libx264 -pix_fmt yuv420p {output_video_path}"
-#            os.system(ffmpeg_command)
-#            # Move the video file to the video_path directory with sequential renaming
-#            video_count = len(os.listdir(video_path))
-#            new_video_path = os.path.join(video_path, f"video{video_count + 1:04d}.mp4")
-#            shutil.move(output_video_path, new_video_path)
-#
-#            result = {'video_recorded': True, 'message': f'Video recorded with the name video{video_count + 1:04d}.mp4'}
-#            recordings[uuid] = False
-#            return JsonResponse(result, status=status.HTTP_200_OK)
-#        else:
-#            return JsonResponse({'error': f'Recording for VM with UUID {uuid} has already started'}, status=status.HTTP_400_BAD_REQUEST)
-#
-#        result = {'video_recording_started': True, 'message': f'Video recording started for VM with UUID {uuid}'}
-#        return JsonResponse(result, status=status.HTTP_200_OK)
-#
-
 video_writers = {}
 
 
 async def create_video(uuid, output_video_path):
+    """
+    Asynchronously create a video from screenshots taken in a virtual machine using QEMU Machine Protocol (QMP).
+
+    The function connects to QMP, executes a screendump command to take a screenshot and saves it to a specified path.
+    It then reads the screenshot into an image and writes the image as a frame to a video file.
+    If the video writer is not yet set up, it initializes it with the size of the first frame.
+    Once the frame has been written to the video, it removes the screenshot file.
+
+    Parameters:
+    ----------
+    uuid : str
+        The unique identifier for the video file's directory.
+    output_video_path : str
+        The path where the output video will be saved.
+
+    Raises:
+    ------
+    Exception
+        Any exception that occurs while creating the video or connecting/disconnecting from QMP.
+    """
     qmp = QMPClient('forensicVM')
     socket_path = f"/forensicVM/mnt/vm/{uuid}/run/qmp.sock"
     frame_path = f"/forensicVM/mnt/vm/{uuid}/frames"
@@ -455,10 +400,46 @@ async def create_video(uuid, output_video_path):
 
 @method_decorator(csrf_exempt, name='dispatch')
 class RecordVideoVMView(View):
+    """
+    A Django View class that handles the video recording process of a virtual machine.
+
+    This class implements the POST HTTP method to start and manage the recording of a video.
+    If the requested virtual machine (identified by uuid) exists and is not already recording,
+    it starts a new recording, creating a video file in a specified directory.
+    The recording runs asynchronously for a maximum duration of three hours or until it is manually stopped.
+
+    If the virtual machine is already recording, the POST request will return an error.
+    """
     authentication_classes = [SessionAuthentication]
     permission_classes = []
 
     async def post(self, request, uuid):
+        """
+        Asynchronously handle a POST request to start recording a video.
+
+        This method attempts to start a recording for the specified virtual machine.
+        It checks if the machine exists and if a recording is not already in progress.
+        If these conditions are met, it sets up a new video file and starts the recording.
+        The recording runs for a maximum duration of three hours or until it is manually stopped.
+        After the recording is finished, it cleans up the resources and sends a response indicating success.
+
+        Parameters:
+        ----------
+        request : django.http.HttpRequest
+            The request instance for the current request.
+        uuid : str
+            The unique identifier for the virtual machine.
+
+        Returns:
+        -------
+        JsonResponse
+            A JsonResponse indicating whether the recording started successfully or detailing any errors that occurred.
+
+        Raises:
+        ------
+        Exception
+            Any exception that occurs while starting or managing the recording.
+        """
         user, api_key_error = await sync_to_async(self.get_user_or_key_error)(request)
         if api_key_error:
             return api_key_error
@@ -520,6 +501,26 @@ class RecordVideoVMView(View):
 
 
     def get_user_or_key_error(self, request):
+        """
+        Check if the user is authenticated or if there is an API key error.
+
+        This method checks if the user associated with the request is authenticated.
+        If the user is not authenticated, it checks if there's an API key in the request.
+        If the API key is valid and associated with an active user, the method returns this user.
+        If the API key is not valid or the user is not active, it returns a JSON response with the corresponding error.
+        If there's no API key at all, it returns a JSON response indicating that the API key is required.
+
+        Parameters:
+        ----------
+        request : django.http.HttpRequest
+            The request instance for the current request.
+
+        Returns:
+        -------
+        tuple
+            A tuple where the first element is the authenticated user or None,
+            and the second element is a JsonResponse with an error message or None.
+        """
         api_key = request.META.get('HTTP_X_API_KEY')
         user = getattr(request, 'user', None)
         if user and user.is_authenticated:
@@ -540,10 +541,37 @@ class RecordVideoVMView(View):
 
 @method_decorator(csrf_exempt, name='dispatch')
 class StopVideoRecordingVMView(View):
+    """
+    View to handle the stoppage of video recording.
+
+    The view uses session authentication and has no permission restrictions.
+    The post method is used to handle the stoppage of the video recording for a VM with a given UUID.
+    """
     authentication_classes = [SessionAuthentication]
     permission_classes = []
 
     async def post(self, request, uuid):
+        """
+        Handle a POST request to stop video recording for a VM with a given UUID.
+
+        This method first checks if the user is authenticated or if there is an API key error.
+        If there's an API key error, it returns a JSON response with the error.
+        If the UUID is present in the recordings, it stops the recording by setting the corresponding value to False.
+        If the UUID is not present, it returns a HTTP 400 error.
+        Finally, it returns a JSON response confirming the stoppage of the recording.
+
+        Parameters:
+        ----------
+        request : django.http.HttpRequest
+            The request instance for the current request.
+        uuid : str
+            The UUID of the VM for which the recording should be stopped.
+
+        Returns:
+        -------
+        django.http.JsonResponse
+            A JsonResponse indicating the result of the operation.
+        """
         user, api_key_error = await sync_to_async(self.get_user_or_key_error)(request)
         if api_key_error:
             return api_key_error
@@ -561,6 +589,26 @@ class StopVideoRecordingVMView(View):
         return JsonResponse(result, status=status.HTTP_200_OK)
 
     def get_user_or_key_error(self, request):
+        """
+        Check if the user is authenticated or if there is an API key error.
+
+        This method checks if the user associated with the request is authenticated.
+        If the user is not authenticated, it checks if there's an API key in the request.
+        If the API key is valid and associated with an active user, the method returns this user.
+        If the API key is not valid or the user is not active, it returns a JSON response with the corresponding error.
+        If there's no API key at all, it returns a JSON response indicating that the API key is required.
+
+        Parameters:
+        ----------
+        request : django.http.HttpRequest
+            The request instance for the current request.
+
+        Returns:
+        -------
+        tuple
+            A tuple where the first element is the authenticated user or None,
+            and the second element is a JsonResponse with an error message or None.
+        """
         api_key = request.META.get('HTTP_X_API_KEY')
         user = getattr(request, 'user', None)
         if user and user.is_authenticated:
@@ -580,10 +628,36 @@ class StopVideoRecordingVMView(View):
 
 @method_decorator(csrf_exempt, name='dispatch')
 class CheckRecordingStatusVMView(View):
+    """
+    View to check the status of video recording.
+
+    The view uses session authentication and has no permission restrictions.
+    The get method is used to handle the checking of the video recording status for a VM with a given UUID.
+    """
     authentication_classes = [SessionAuthentication]
     permission_classes = []
 
     async def get(self, request, uuid):
+        """
+        Handle a GET request to check video recording status for a VM with a given UUID.
+
+        This method first checks if the user is authenticated or if there is an API key error.
+        If there's an API key error, it returns a JSON response with the error.
+        If the UUID is present in the recordings and is recording, it returns a JSON response indicating the recording is in progress.
+        If the UUID is not present or not recording, it returns a JSON response indicating no recording is in progress.
+
+        Parameters:
+        ----------
+        request : django.http.HttpRequest
+            The request instance for the current request.
+        uuid : str
+            The UUID of the VM for which the recording status should be checked.
+
+        Returns:
+        -------
+        django.http.JsonResponse
+            A JsonResponse indicating the result of the operation.
+        """
         user, api_key_error = await sync_to_async(self.get_user_or_key_error)(request)
         if api_key_error:
             return api_key_error
@@ -596,6 +670,26 @@ class CheckRecordingStatusVMView(View):
         return JsonResponse(result, status=status.HTTP_200_OK)
 
     def get_user_or_key_error(self, request):
+        """
+        Check if the user is authenticated or if there is an API key error.
+
+        This method checks if the user associated with the request is authenticated.
+        If the user is not authenticated, it checks if there's an API key in the request.
+        If the API key is valid and associated with an active user, the method returns this user.
+        If the API key is not valid or the user is not active, it returns a JSON response with the corresponding error.
+        If there's no API key at all, it returns a JSON response indicating that the API key is required.
+
+        Parameters:
+        ----------
+        request : django.http.HttpRequest
+            The request instance for the current request.
+
+        Returns:
+        -------
+        tuple
+            A tuple where the first element is the authenticated user or None,
+            and the second element is a JsonResponse with an error message or None.
+        """
         api_key = request.META.get('HTTP_X_API_KEY')
         user = getattr(request, 'user', None)
         if user and user.is_authenticated:
@@ -615,10 +709,36 @@ class CheckRecordingStatusVMView(View):
 
 @method_decorator(csrf_exempt, name='dispatch')
 class RemoveVMDateTimeView(View):
+    """
+    View to remove the datetime line from a VM's configuration.
+
+    The view has no authentication or permission restrictions.
+    The post method is used to handle the removal of the datetime line from the configuration of a VM with a given UUID.
+    """
     authentication_classes = []
     permission_classes = []
 
     async def post(self, request):
+        """
+        Handle a POST request to remove the datetime line from a VM's configuration.
+
+        This method first checks if the user is authenticated or if there is an API key error.
+        If there's an API key error, it returns a JSON response with the error.
+        The method then retrieves the UUID from the POST data.
+        It locates the .vnc configuration file for the VM with the provided UUID, reads its content, and removes any line containing the '-rtc base=' string.
+        If successful, the method returns a JSON response indicating the successful operation.
+        If there's an error, it returns a JSON response with the error message.
+
+        Parameters:
+        ----------
+        request : django.http.HttpRequest
+            The request instance for the current request.
+
+        Returns:
+        -------
+        django.http.JsonResponse
+            A JsonResponse indicating the result of the operation.
+        """
         api_key = request.META.get('HTTP_X_API_KEY')
 
         user = await sync_to_async(getattr)(request, 'user', None)  # Get the user in the request

@@ -780,10 +780,37 @@ class RemoveVMDateTimeView(View):
 
 @method_decorator(csrf_exempt, name='dispatch')
 class ChangeVMDateTimeView(View):
+    """
+    View to change the datetime in a VM's configuration.
+
+    The view has no authentication or permission restrictions.
+    The post method is used to handle the updating of the datetime in the configuration of a VM with a given UUID.
+    """
     authentication_classes = []
     permission_classes = []
 
     async def post(self, request):
+        """
+        Handle a POST request to change the datetime in a VM's configuration.
+
+        This method first checks if there is an API key error.
+        If there's an API key error, it returns a JSON response with the error.
+        The method then retrieves the UUID and the datetime from the POST data and validates the datetime format.
+        If the datetime format is invalid, it returns a JSON response indicating the error.
+        It locates the .sh configuration file for the VM with the provided UUID, reads its content, and changes or adds a line with the '-rtc base=' string and the new datetime.
+        If successful, the method returns a JSON response indicating the successful operation.
+        If there's an error, it returns a JSON response with the error message.
+
+        Parameters:
+        ----------
+        request : django.http.HttpRequest
+            The request instance for the current request.
+
+        Returns:
+        -------
+        django.http.JsonResponse
+            A JsonResponse indicating the result of the operation.
+        """
         api_key = request.META.get('HTTP_X_API_KEY')
         if api_key:
             try:
@@ -843,10 +870,38 @@ def validate_date(date_str):
 
 @method_decorator(csrf_exempt, name='dispatch')
 class DownloadNetworkPcapView(View):
+    """
+    View to download the pcap files of a VM.
+
+    The view has no authentication or permission restrictions.
+    The get method is used to handle the downloading of pcap files of a VM with a given UUID.
+    """
     authentication_classes = []
     permission_classes = []
 
     async def get(self, request, uuid):
+        """
+        Handle a GET request to download the pcap files of a VM.
+
+        This method first checks if there is an API key error.
+        If there's an API key error, it returns a JSON response with the error.
+        The method then checks if the VM with the provided UUID exists.
+        If the VM does not exist, it returns a JSON response indicating the error.
+        It creates a zip file of all pcap files associated with the VM.
+        If successful, the method returns a FileResponse with the created zip file.
+
+        Parameters:
+        ----------
+        request : django.http.HttpRequest
+            The request instance for the current request.
+        uuid : str
+            The UUID of the VM.
+
+        Returns:
+        -------
+        django.http.FileResponse
+            A FileResponse with the zip file of the pcap files of the VM.
+        """
         api_key = request.META.get('HTTP_X_API_KEY')
         if api_key:
             try:

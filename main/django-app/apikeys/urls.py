@@ -10,7 +10,7 @@ from .views import RecreateFoldersView, SnapshotListView, CreateSnapshotView, Ro
 from .views import MemorySizeView, ChangeMemorySizeView, GetAvailableMemoryView, StartTapInterfaceView, StopTapInterfaceView
 from .views import DownloadNetworkPcapView,CheckTapInterfaceView
 from .views import ChangeVMDateTimeView, RemoveVMDateTimeView
-from .views import RecordVideoVMView, StopVideoRecordingVMView, CheckRecordingStatusVMView
+from .views import RecordVideoVMView, StopVideoRecordingVMView, CheckRecordingStatusVMView, ListVideosView
 
 urlpatterns = [
     #path('run-script/', RunScriptView.as_view(), name='run_script'),
@@ -55,4 +55,5 @@ urlpatterns = [
     path('record_video/<str:uuid>/', RecordVideoVMView.as_view(), name='record_video'),
     path('stop_video/<str:uuid>/', StopVideoRecordingVMView.as_view(), name='stop_video'),
     path('check_recording/<str:uuid>/', CheckRecordingStatusVMView.as_view(), name='check_recording'),
+    path('list_videos/<str:uuid>/', ListVideosView.as_view(), name='list_videos'),
 ]

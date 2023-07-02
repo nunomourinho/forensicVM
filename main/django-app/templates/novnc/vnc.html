@@ -320,7 +320,6 @@ function removeMedia() {
     }
 }
 
-
 function recordVideo() {
   const uuid = getParameterByName('uuid');
 
@@ -345,6 +344,7 @@ function recordVideo() {
     .then(data => {
                    showAlert('Video saved (' + data.message + ')', "w3-green")
                    document.getElementById("rec-image").style.display = "none";  // Hide rec-image
+                   getVideoList()
                    console.log(data) 
                   })
     .catch(error => {
@@ -381,6 +381,37 @@ function stopVideo() {
                     });
 
 }
+
+function getVideoList() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const uuid = urlParams.get('uuid');
+    fetch('/api/list_videos/' + uuid, {
+      method: 'GET',
+      credentials: 'include', // Send the session cookie with the request
+    })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      return response.json();
+    })
+    .then(data => {
+      const select = document.getElementById('videoList');
+      data.video_files.forEach(file => {
+        const option = document.createElement('option');
+        option.value = file;
+        option.textContent = file;
+        select.appendChild(option);
+      });
+    })
+    .catch(error => {
+      console.error('Error:', error);
+    });
+}
+
+document.addEventListener('DOMContentLoaded', (event) => {
+    getVideoList()
+});
 
 function checkRecordingStatus() {
     const uuid = getParameterByName('uuid');
@@ -617,6 +648,8 @@ function showAlert(message, color = 'w3-green') {
 
            <div class="w3-container">
                 <p>Record video: Limited to one hour per video</p>
+                <select id="videoList">
+                </select>
            </div>
 
           <footer class="w3-container w3-blue">

@@ -48,6 +48,46 @@ import glob
 
 recordings = {}
 
+class ListVideosView(APIView):
+    authentication_classes = [SessionAuthentication]
+    permission_classes = []
+
+    def get(self, request, uuid):
+        user, api_key_error = self.get_user_or_key_error(request)
+        if api_key_error:
+            return api_key_error
+
+        video_dir = f"/forensicVM/mnt/vm/{uuid}/video"
+        #video_exists = os.path.exists(video_dir)
+
+        if not os.path.exists(video_dir):
+            return JsonResponse({'error': 'Video directory not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        video_files = []
+        for file in os.listdir(video_dir):
+            if file.endswith('.mp4'):
+                video_files.append(file)
+            video_files.sort()
+        return JsonResponse({'video_files': video_files}, status=status.HTTP_200_OK)
+
+    def get_user_or_key_error(self, request):
+        api_key = request.META.get('HTTP_X_API_KEY')
+        user = getattr(request, 'user', None)
+        if user and user.is_authenticated:
+            print("DEBUG: USER AUTHENTICATED")
+        elif api_key:
+            try:
+                api_key = ApiKey.objects.get(key=api_key)
+                user = getattr(api_key, 'user')
+                if not user.is_active:
+                    return None, JsonResponse({'error': 'User account is disabled.'}, status=status.HTTP_401_UNAUTHORIZED)
+            except ApiKey.DoesNotExist:
+                return None, JsonResponse({'error': 'Invalid API key'}, status=status.HTTP_401_UNAUTHORIZED)
+        else:
+            return None, JsonResponse({'error': 'API key required'}, status=status.HTTP_401_UNAUTHORIZED)
+        return user, None
+
+
 async def create_video(uuid):
     qmp = QMPClient('forensicVM')
     socket_path = f"/forensicVM/mnt/vm/{uuid}/run/qmp.sock"

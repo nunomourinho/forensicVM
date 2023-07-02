@@ -51,10 +51,45 @@ import cv2
 recordings = {}
 
 class CheckUserAuthenticatedView(View):
+    """
+    A Django View class for checking if a user is authenticated.
+
+    This class uses SessionAuthentication for user authentication.
+    It doesn't implement any specific permission classes.
+
+    Attributes:
+    ----------
+    authentication_classes : list
+        List of authentication classes the view uses. Here, it's SessionAuthentication.
+    permission_classes : list
+        List of permission classes the view uses. Here, it's an empty list.
+
+    Methods:
+    -------
+    get(request):
+        Returns a JsonResponse indicating if a user is authenticated.
+    """
     authentication_classes = [SessionAuthentication]
     permission_classes = []
 
     def get(self, request):
+        """
+        Handles GET request to the view.
+
+        This method retrieves a user from the request or an API key error if one occurred.
+        It then checks if the user is authenticated by checking if any API key error occurred.
+        If the user is authenticated, it returns a JSON response with the 'authenticated' key set to True.
+
+        Parameters:
+        ----------
+        request : django.http.HttpRequest
+            The request instance for the current request.
+
+        Returns:
+        -------
+        django.http.JsonResponse
+            A JsonResponse that indicates if the user is authenticated.
+        """
         user, api_key_error = self.get_user_or_key_error(request)
         if api_key_error:
             return api_key_error
@@ -62,6 +97,27 @@ class CheckUserAuthenticatedView(View):
             return JsonResponse({'authenticated': True}, status=status.HTTP_200_OK)
 
     def get_user_or_key_error(self, request):
+        """
+        Retrieves the authenticated user from the request or returns an API key error.
+
+        This method attempts to get an authenticated user from the request.
+        If the user is authenticated, it will return the user and None for the error.
+        If the user is not authenticated, it will attempt to authenticate the user using an API key provided in the request.
+        If the API key is valid and associated with an active user, it returns the user and None for the error.
+        If the API key is invalid or the user associated with the key is not active, it returns None for the user and a JsonResponse indicating the error.
+        If no API key is provided in the request, it returns None for the user and a JsonResponse indicating that an API key is required.
+
+        Parameters:
+        ----------
+        request : django.http.HttpRequest
+            The request instance for the current request.
+
+        Returns:
+        -------
+        tuple
+            A tuple where the first element is the authenticated user or None if no user could be authenticated,
+            and the second element is None or a JsonResponse containing an error message.
+        """
         api_key = request.META.get('HTTP_X_API_KEY')
         user = getattr(request, 'user', None)
         if user and user.is_authenticated:
@@ -79,10 +135,54 @@ class CheckUserAuthenticatedView(View):
         return user, None
 
 class DownloadVideoView(APIView):
+    """
+    A Django APIView class for downloading a video file.
+
+    This class uses SessionAuthentication for user authentication.
+    It doesn't implement any specific permission classes.
+
+    Attributes:
+    ----------
+    authentication_classes : list
+        List of authentication classes the view uses. Here, it's SessionAuthentication.
+    permission_classes : list
+        List of permission classes the view uses. Here, it's an empty list.
+
+    Methods:
+    -------
+    get(request, uuid, filename):
+        Returns a FileResponse to download a video file.
+    """
     authentication_classes = [SessionAuthentication]
     permission_classes = []
 
     def get(self, request, uuid, filename):
+        """
+        Handles GET request to download a video.
+
+        This method checks if the user is authenticated, validates the filename,
+        constructs the file path, checks if the file exists, and returns a FileResponse
+        for the client to download the video.
+
+        Parameters:
+        ----------
+        request : django.http.HttpRequest
+            The request instance for the current request.
+        uuid : str
+            The unique identifier for the video file's directory.
+        filename : str
+            The name of the video file to download.
+
+        Returns:
+        -------
+        django.http.FileResponse
+            A FileResponse that initiates the video file download.
+
+        Raises:
+        ------
+        Http404
+            If the video file does not exist.
+        """
         user, api_key_error = self.get_user_or_key_error(request)
         if api_key_error:
             return api_key_error
@@ -104,6 +204,27 @@ class DownloadVideoView(APIView):
         return response
 
     def get_user_or_key_error(self, request):
+        """
+        Retrieves the authenticated user from the request or returns an API key error.
+
+        This method attempts to get an authenticated user from the request.
+        If the user is authenticated, it will return the user and None for the error.
+        If the user is not authenticated, it will attempt to authenticate the user using an API key provided in the request.
+        If the API key is valid and associated with an active user, it returns the user and None for the error.
+        If the API key is invalid or the user associated with the key is not active, it returns None for the user and a JsonResponse indicating the error.
+        If no API key is provided in the request, it returns None for the user and a JsonResponse indicating that an API key is required.
+
+        Parameters:
+        ----------
+        request : django.http.HttpRequest
+            The request instance for the current request.
+
+        Returns:
+        -------
+        tuple
+            A tuple where the first element is the authenticated user or None if no user could be authenticated,
+            and the second element is None or a JsonResponse containing an error message.
+        """
         api_key = request.META.get('HTTP_X_API_KEY')
         user = getattr(request, 'user', None)
         if user and user.is_authenticated:
@@ -121,10 +242,47 @@ class DownloadVideoView(APIView):
         return user, None
 
 class ListVideosView(APIView):
+    """
+    A Django APIView class for listing all the .mp4 video files in a specific directory.
+
+    This class uses SessionAuthentication for user authentication.
+    It doesn't implement any specific permission classes.
+
+    Attributes:
+    ----------
+    authentication_classes : list
+        List of authentication classes the view uses. Here, it's SessionAuthentication.
+    permission_classes : list
+        List of permission classes the view uses. Here, it's an empty list.
+
+    Methods:
+    -------
+    get(request, uuid):
+        Returns a JsonResponse with a list of all .mp4 video files in the specified directory.
+    """
     authentication_classes = [SessionAuthentication]
     permission_classes = []
 
     def get(self, request, uuid):
+        """
+        Handles GET request to list all .mp4 video files in a specific directory.
+
+        This method checks if the user is authenticated, constructs the video directory path,
+        checks if the directory exists, and returns a JsonResponse containing a list of all .mp4 video files
+        in the directory, sorted in ascending order.
+
+        Parameters:
+        ----------
+        request : django.http.HttpRequest
+            The request instance for the current request.
+        uuid : str
+            The unique identifier for the video files' directory.
+
+        Returns:
+        -------
+        django.http.JsonResponse
+            A JsonResponse containing a list of all .mp4 video files in the specified directory.
+        """
         user, api_key_error = self.get_user_or_key_error(request)
         if api_key_error:
             return api_key_error

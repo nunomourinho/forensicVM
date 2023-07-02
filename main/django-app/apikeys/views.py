@@ -46,6 +46,7 @@ import glob
 from os.path import basename, join, isfile
 from django.http import Http404
 from urllib.parse import quote
+import cv2
 
 recordings = {}
 
@@ -130,34 +131,140 @@ class ListVideosView(APIView):
             return None, JsonResponse({'error': 'API key required'}, status=status.HTTP_401_UNAUTHORIZED)
         return user, None
 
+#
+#async def create_video(uuid):
+#    qmp = QMPClient('forensicVM')
+#    socket_path = f"/forensicVM/mnt/vm/{uuid}/run/qmp.sock"
+#    frames_path = f"/forensicVM/mnt/vm/{uuid}/frames/"
+#
+#    if not os.path.exists(frames_path):
+#        os.makedirs(frames_path)
+#
+#    existing_frames = sorted(glob.glob(f"{frames_path}/fr*.ppm"))
+#    next_frame_number = len(existing_frames) + 1
+#    next_frame_filename = f"fr{next_frame_number:05d}.ppm"
+#    next_frame_path = os.path.join(frames_path, next_frame_filename)
+#    try:
+#        await qmp.connect(socket_path)
+#        res = await qmp.execute('screendump', {"filename": next_frame_path})
+#        return next_frame_number
+#    except Exception as e:
+#        print(e)
+#    finally:
+#        await qmp.disconnect()
+#
+#    # check if recording is stopped for this VM
+#    print(recordings)
+#    if uuid in recordings:
+#        if not recordings[uuid]:
+#            scheduler.remove_job(f'create_video_job_{uuid}')
+#            del recordings[uuid]
+#
+#
+#@method_decorator(csrf_exempt, name='dispatch')
+#class RecordVideoVMView(View):
+#    authentication_classes = [SessionAuthentication]
+#    permission_classes = []
+#
+#    async def post(self, request, uuid):
+#        user, api_key_error = await sync_to_async(self.get_user_or_key_error)(request)
+#        if api_key_error:
+#            return api_key_error
+#
+#        vm_path = f"/forensicVM/mnt/vm/{uuid}"
+#        vm_exists = await sync_to_async(os.path.exists)(vm_path)
+#
+#        if not vm_exists:
+#            return JsonResponse({'error': f'VM with UUID {uuid} not found'}, status=status.HTTP_404_NOT_FOUND)
+#
+#        print(uuid)
+#        record = False
+#        if uuid not in recordings:
+#            record = True
+#            print("uuid not in the recordigs")
+#        elif uuid in recordings and not recordings[uuid]:
+#            record = True
+#            print("uuid is in the recordings, but not in the uuid")
+#
+#
+#        if record:
+#            output_video_path = f"/forensicVM/mnt/vm/{uuid}/video.mp4"
+#            frames_path = f"/forensicVM/mnt/vm/{uuid}/frames/"
+#            video_path = f"/forensicVM/mnt/vm/{uuid}/video/"
+#            if os.path.exists(frames_path):
+#                shutil.rmtree(frames_path)  # Delete the directory and its contents
+#            if not os.path.exists(frames_path):
+#                os.makedirs(frames_path)  # Recreate the empty directory
+#            if not os.path.exists(video_path):
+#                os.makedirs(video_path)  # Recreate the empty directory
+#            recordings[uuid] = True
+#            print('started schedule recording')
+#            scheduler = AsyncIOScheduler()
+#            scheduler.add_job(create_video, 'interval', seconds=0.04, id=f'create_video_job_{uuid}', args=[uuid], replace_existing=True)
+#            scheduler.start()
+#            for _ in range(3600):  # run the loop for 3600 interactions (one hour)
+#                await asyncio.sleep(1)  # sleep for 1 second
+#                if not recordings[uuid]:  # if recordings[uuid] is False, break the loop
+#                    break
+#
+#            scheduler.remove_job(f'create_video_job_{uuid}')
+#
+#            # use ffmpeg to convert the sequence of frames into a video
+#            ffmpeg_command = f"ffmpeg -y -r 25 -i {frames_path}/fr%05d.ppm -vcodec libx264 -pix_fmt yuv420p {output_video_path}"
+#            os.system(ffmpeg_command)
+#            # Move the video file to the video_path directory with sequential renaming
+#            video_count = len(os.listdir(video_path))
+#            new_video_path = os.path.join(video_path, f"video{video_count + 1:04d}.mp4")
+#            shutil.move(output_video_path, new_video_path)
+#
+#            result = {'video_recorded': True, 'message': f'Video recorded with the name video{video_count + 1:04d}.mp4'}
+#            recordings[uuid] = False
+#            return JsonResponse(result, status=status.HTTP_200_OK)
+#        else:
+#            return JsonResponse({'error': f'Recording for VM with UUID {uuid} has already started'}, status=status.HTTP_400_BAD_REQUEST)
+#
+#        result = {'video_recording_started': True, 'message': f'Video recording started for VM with UUID {uuid}'}
+#        return JsonResponse(result, status=status.HTTP_200_OK)
+#
 
-async def create_video(uuid):
+video_writers = {}
+
+
+async def create_video(uuid, output_video_path):
     qmp = QMPClient('forensicVM')
     socket_path = f"/forensicVM/mnt/vm/{uuid}/run/qmp.sock"
-    frames_path = f"/forensicVM/mnt/vm/{uuid}/frames/"
+    frame_path = f"/forensicVM/mnt/vm/{uuid}/frames"
+    screenshot_path = f"/forensicVM/mnt/vm/{uuid}/frames/screenshot.ppm"
 
-    if not os.path.exists(frames_path):
-        os.makedirs(frames_path)
+    if not os.path.exists(frame_path):
+        os.makedirs(frame_path)
 
-    existing_frames = sorted(glob.glob(f"{frames_path}/fr*.ppm"))
-    next_frame_number = len(existing_frames) + 1
-    next_frame_filename = f"fr{next_frame_number:05d}.ppm"
-    next_frame_path = os.path.join(frames_path, next_frame_filename)
     try:
         await qmp.connect(socket_path)
-        res = await qmp.execute('screendump', {"filename": next_frame_path})
-        return next_frame_number
+        res = await qmp.execute('screendump', {"filename": screenshot_path})
+
+        # Load screenshot as an image
+        img = cv2.imread(screenshot_path)
+
+        # If the video writer is not yet set up, initialize it with the size of the first frame
+        if uuid not in video_writers:
+            height, width, _ = img.shape
+            fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+            video_writers[uuid] = cv2.VideoWriter(output_video_path, fourcc, 25, (width, height))
+            print("Video writer defined")
+
+        # Write frame to video
+        video_writers[uuid].write(img)
+
+
+        # Remove screenshot
+        if os.path.exists(screenshot_path):
+            os.remove(screenshot_path)
     except Exception as e:
         print(e)
     finally:
         await qmp.disconnect()
 
-    # check if recording is stopped for this VM
-    print(recordings)
-    if uuid in recordings:
-        if not recordings[uuid]:
-            scheduler.remove_job(f'create_video_job_{uuid}')
-            del recordings[uuid]
 
 
 @method_decorator(csrf_exempt, name='dispatch')
@@ -174,56 +281,54 @@ class RecordVideoVMView(View):
         vm_exists = await sync_to_async(os.path.exists)(vm_path)
 
         if not vm_exists:
-            return JsonResponse({'error': f'VM with UUID {uuid} not found'}, status=status.HTTP_404_NOT_FOUND)
+            return JsonResponse({'error': f'VM with UUID {uuid} not found'}, status=404)
 
-        print(uuid)
-        record = False
-        if uuid not in recordings:
-            record = True
-            print("uuid not in the recordigs")
-        elif uuid in recordings and not recordings[uuid]:
-            record = True
-            print("uuid is in the recordings, but not in the uuid")
+        video_path = f"/forensicVM/mnt/vm/{uuid}/video/"
+        video_count = len(os.listdir(video_path))
+        output_video_path = os.path.join(video_path, f"video{video_count + 1:04d}.mp4")
+
+        video_writer = None  # Start with no video writer
+
+        try:
+            record = False
+            if uuid not in recordings:
+                record = True
+                print("uuid not in the recordigs")
+            elif uuid in recordings and not recordings[uuid]:
+                record = True
+                print("uuid is in the recordings, but not in the uuid")
 
 
-        if record:
-            output_video_path = f"/forensicVM/mnt/vm/{uuid}/video.mp4"
-            frames_path = f"/forensicVM/mnt/vm/{uuid}/frames/"
-            video_path = f"/forensicVM/mnt/vm/{uuid}/video/"
-            if os.path.exists(frames_path):
-                shutil.rmtree(frames_path)  # Delete the directory and its contents
-            if not os.path.exists(frames_path):
-                os.makedirs(frames_path)  # Recreate the empty directory
-            if not os.path.exists(video_path):
-                os.makedirs(video_path)  # Recreate the empty directory
-            recordings[uuid] = True
-            print('started schedule recording')
-            scheduler = AsyncIOScheduler()
-            scheduler.add_job(create_video, 'interval', seconds=0.04, id=f'create_video_job_{uuid}', args=[uuid], replace_existing=True)
-            scheduler.start()
-            for _ in range(3600):  # run the loop for 3600 interactions (one hour)
-                await asyncio.sleep(1)  # sleep for 1 second
-                if not recordings[uuid]:  # if recordings[uuid] is False, break the loop
-                    break
+            if record:
+            #if uuid not in recordings:
+                recordings[uuid] = True
+                scheduler = AsyncIOScheduler()
+                scheduler.add_job(create_video, 'interval', seconds=0.04, id=f'create_video_job_{uuid}', args=[uuid, output_video_path], replace_existing=True)
 
-            scheduler.remove_job(f'create_video_job_{uuid}')
+                #scheduler.add_job(create_video, 'interval', seconds=0.04, id=f'create_video_job_{uuid}', args=[uuid, output_video_path, video_writer], replace_existing=True)
+                scheduler.start()
 
-            # use ffmpeg to convert the sequence of frames into a video
-            ffmpeg_command = f"ffmpeg -y -r 25 -i {frames_path}/fr%05d.ppm -vcodec libx264 -pix_fmt yuv420p {output_video_path}"
-            os.system(ffmpeg_command)
-            # Move the video file to the video_path directory with sequential renaming
-            video_count = len(os.listdir(video_path))
-            new_video_path = os.path.join(video_path, f"video{video_count + 1:04d}.mp4")
-            shutil.move(output_video_path, new_video_path)
+                for _ in range(3600):  # run the loop for 3600 interactions (one hour)
+                    await asyncio.sleep(1)  # sleep for 1 second
+                    if not recordings[uuid]:  # if recordings[uuid] is False, break the loop
+                        break
 
-            result = {'video_recorded': True, 'message': f'Video recorded with the name video{video_count + 1:04d}.mp4'}
-            recordings[uuid] = False
-            return JsonResponse(result, status=status.HTTP_200_OK)
-        else:
-            return JsonResponse({'error': f'Recording for VM with UUID {uuid} has already started'}, status=status.HTTP_400_BAD_REQUEST)
+                scheduler.remove_job(f'create_video_job_{uuid}')
+                if uuid in video_writers:
+                    video_writers[uuid].release()
+                    del video_writers[uuid]  # remove the VideoWriter from the dictionary
 
-        result = {'video_recording_started': True, 'message': f'Video recording started for VM with UUID {uuid}'}
-        return JsonResponse(result, status=status.HTTP_200_OK)
+
+                result = {'video_recorded': True, 'message': f'Video recorded with the name video{video_count + 1:04d}.mp4'}
+                recordings[uuid] = False
+                return JsonResponse(result, status=status.HTTP_200_OK)
+
+                #return JsonResponse({"status": "Recording stopped"}, status=200)
+            else:
+                return JsonResponse({"error": "Recording already in progress"}, status=400)
+        except Exception as e:
+            print(e)
+
 
     def get_user_or_key_error(self, request):
         api_key = request.META.get('HTTP_X_API_KEY')
@@ -241,6 +346,7 @@ class RecordVideoVMView(View):
         else:
             return None, JsonResponse({'error': 'API key required'}, status=status.HTTP_401_UNAUTHORIZED)
         return user, None
+
 
 
 @method_decorator(csrf_exempt, name='dispatch')

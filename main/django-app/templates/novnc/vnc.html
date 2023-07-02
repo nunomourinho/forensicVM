@@ -413,6 +413,31 @@ document.addEventListener('DOMContentLoaded', (event) => {
     getVideoList()
 });
 
+function downloadVideo() {
+  const videoList = document.getElementById('videoList');
+  const filename = videoList.value;
+  const urlParams = new URLSearchParams(window.location.search);
+  const uuid = urlParams.get('uuid');
+
+
+  fetch('/api/download_video/' + uuid + '/' + filename, {
+      method: 'GET',
+      credentials: 'include', // Send session cookie with the request
+  })
+  .then(response => response.blob())
+  .then(blob => {
+      // Create a URL for the blob
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a); // we need to append the element to the dom -> otherwise it will not work in firefox
+      a.click();    
+      a.remove();  //afterwards we remove the element again         
+  });
+}
+
+
 function checkRecordingStatus() {
     const uuid = getParameterByName('uuid');
 
@@ -650,13 +675,14 @@ function showAlert(message, color = 'w3-green') {
                 <p>Record video: Limited to one hour per video</p>
                 <select id="videoList">
                 </select>
+                <button style="background: unset;" class="w3-button w3-round-large w3-green" onclick="downloadVideo()">Download</button>   
            </div>
 
           <footer class="w3-container w3-blue">
                <div class="w3-container w3-cell-middle w3-center">
                 <br>
-                <button style="background: unset;" class="w3-button w3-round-large w3-green w3-red" onclick="recordVideo()">Record Video</button>   
-                <button style="background: unset;" class="w3-button w3-round-large w3-purple w3-large" onClick="stopVideo()">Stop recording</button>
+                <button style="background: unset;" class="w3-button w3-round-large w3-red" onclick="recordVideo()">Record Video</button>   
+                <button style="background: unset;" class="w3-button w3-round-large w3-purple" onClick="stopVideo()">Stop recording</button>
                 <br>
                 <br>
                </div>

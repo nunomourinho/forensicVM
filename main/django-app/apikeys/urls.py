@@ -9,7 +9,7 @@ from .views import EjectCDROMView, InsertCDROMView, InsertNetworkCardView, ListP
 from .views import RecreateFoldersView, SnapshotListView, CreateSnapshotView, RollbackSnapshotView, DeleteSnapshotView
 from .views import MemorySizeView, ChangeMemorySizeView, GetAvailableMemoryView, StartTapInterfaceView, StopTapInterfaceView
 from .views import DownloadNetworkPcapView,CheckTapInterfaceView
-from .views import ChangeVMDateTimeView, RemoveVMDateTimeView
+from .views import ChangeVMDateTimeView, RemoveVMDateTimeView, DownloadVideoView
 from .views import RecordVideoVMView, StopVideoRecordingVMView, CheckRecordingStatusVMView, ListVideosView
 
 urlpatterns = [
@@ -56,4 +56,5 @@ urlpatterns = [
     path('stop_video/<str:uuid>/', StopVideoRecordingVMView.as_view(), name='stop_video'),
     path('check_recording/<str:uuid>/', CheckRecordingStatusVMView.as_view(), name='check_recording'),
     path('list_videos/<str:uuid>/', ListVideosView.as_view(), name='list_videos'),
+    path('download_video/<uuid:uuid>/<str:filename>/', DownloadVideoView.as_view(), name='download_video'),
 ]

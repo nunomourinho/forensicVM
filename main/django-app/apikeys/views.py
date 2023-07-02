@@ -18,7 +18,6 @@ from rest_framework.response import Response
 from rest_framework.authentication import SessionAuthentication
 from rest_framework import status
 from .models import ApiKey
-import os
 import json
 import shutil
 import psutil
@@ -44,9 +43,53 @@ from PIL import Image
 import datetime
 from datetime import datetime
 import glob
-
+from os.path import basename, join, isfile
+from django.http import Http404
+from urllib.parse import quote
 
 recordings = {}
+
+class DownloadVideoView(APIView):
+    authentication_classes = [SessionAuthentication]
+    permission_classes = []
+
+    def get(self, request, uuid, filename):
+        user, api_key_error = self.get_user_or_key_error(request)
+        if api_key_error:
+            return api_key_error
+
+        # Check filename to prevent directory traversal attacks
+        if not re.match('^[a-zA-Z0-9_.-]*$', filename):
+            return JsonResponse({'error': 'Invalid filename'}, status=status.HTTP_400_BAD_REQUEST)
+
+        video_dir = f"/forensicVM/mnt/vm/{uuid}/video"
+        filepath = join(video_dir, filename)
+
+        if not isfile(filepath):
+            raise Http404("Video does not exist")
+
+        video_file = open(filepath, 'rb')
+        response = FileResponse(video_file)
+        #response['Content-Disposition'] = f'attachment; filename*=UTF-8\'\'{urlquote(basename(filepath))}'
+        response['Content-Disposition'] = f'attachment; filename*=UTF-8\'\'{quote(basename(filepath))}'
+        return response
+
+    def get_user_or_key_error(self, request):
+        api_key = request.META.get('HTTP_X_API_KEY')
+        user = getattr(request, 'user', None)
+        if user and user.is_authenticated:
+            print("DEBUG: USER AUTHENTICATED")
+        elif api_key:
+            try:
+                api_key = ApiKey.objects.get(key=api_key)
+                user = getattr(api_key, 'user')
+                if not user.is_active:
+                    return None, JsonResponse({'error': 'User account is disabled.'}, status=status.HTTP_401_UNAUTHORIZED)
+            except ApiKey.DoesNotExist:
+                return None, JsonResponse({'error': 'Invalid API key'}, status=status.HTTP_401_UNAUTHORIZED)
+        else:
+            return None, JsonResponse({'error': 'API key required'}, status=status.HTTP_401_UNAUTHORIZED)
+        return user, None
 
 class ListVideosView(APIView):
     authentication_classes = [SessionAuthentication]

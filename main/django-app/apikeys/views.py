@@ -1903,10 +1903,39 @@ class RunPluginView(APIView):
 
 
 class ListPluginsView(APIView):
+    """
+    This is a Django REST Framework view that extends from the APIView base class.
+
+    The ListPluginsView class defines behavior for handling HTTP GET requests on the URL path associated with it.
+    The purpose of this class is to provide an endpoint that responds with a list of available forensic plugins.
+    The view uses Django's APIView, which means it can handle different types of HTTP requests.
+    It currently only implements handling of GET requests via the defined get() method.
+
+    Attributes:
+        authentication_classes (list): A list of authentication classes the view should use. Empty in this case.
+        permission_classes (list): A list of permissions the view should enforce. Empty in this case.
+    """
     authentication_classes = []
     permission_classes = []
 
     def get(self, request):
+        """
+        Handles GET requests to list all available forensic plugins.
+
+        The method retrieves the API key from the request headers and validates it. If the API key is invalid or
+        belongs to an inactive user, an error response is returned.
+
+        The method then reads the 'plugins' directory and looks for 'run.sh' files in each of the subdirectories.
+        For each such file found, it gets the plugin information by calling the get_plugin_info() function.
+
+        If the 'plugins' directory does not exist, an error response is returned.
+
+        Parameters:
+        request (HttpRequest): The request object that has triggered this method.
+
+        Returns:
+        JsonResponse: A JSON object containing a list of all available plugins with their names, descriptions and directories.
+        """
         api_key = request.META.get('HTTP_X_API_KEY')
         if api_key:
             try:
@@ -1938,6 +1967,16 @@ class ListPluginsView(APIView):
 
 
 def get_plugin_info(plugin_dir, info):
+    """
+    Runs the 'info' command of the plugin script and retrieves the specified information.
+
+    Parameters:
+    plugin_dir (str): The directory where the plugin script is located.
+    info (str): The type of information to retrieve (e.g. 'plugin_name', 'plugin_description').
+
+    Returns:
+    str: The requested information, or an empty string if the information could not be retrieved.
+    """
     run_script_path = os.path.join('/forensicVM/plugins', plugin_dir, 'run.sh')
     result = subprocess.run(['bash', run_script_path, 'info'], capture_output=True, text=True)
     output = result.stdout.strip()
@@ -1950,6 +1989,19 @@ def get_plugin_info(plugin_dir, info):
     return info_dict.get(info, '')
 
 async def insert_network_card(uuid, mac_address=None):
+    """
+    Asynchronously inserts a network card into a specified virtual machine.
+
+    This function first generates a random MAC address if none is provided. It then establishes a connection to
+    the QEMU Machine Protocol (QMP) and sends commands to add a new network device to the machine.
+
+    Parameters:
+    uuid (str): The unique identifier of the virtual machine.
+    mac_address (str, optional): The MAC address to assign to the network card.
+
+    Returns:
+    str: A confirmation message.
+    """
     if not mac_address:
         # Generate a random MAC address if not supplied
         mac_address = generate_random_mac_address()
@@ -1959,18 +2011,6 @@ async def insert_network_card(uuid, mac_address=None):
 
     try:
         await qmp.connect(socket_path)
-#        res = await qmp.execute("human-monitor-command",
-#                                {"command-line": f"device_add virtio-net-pci,netdev=net0,mac={mac_address}"})
-#        res = await qmp.execute("device_add",{"driver=e100 id=net1"})
-#        res = await qmp.execute("device_add",
-#                                { "driver": "virtio-net-pci",
-#                                  "id": "net0",
-#                                  "bus": "pci0.1",
-#                                  "mac": f"{mac_address}"})
-
-#        res = await qmp.execute("guest-exec",
-#                                { "path": "c:/windows/cmd.exe",
-#                                  "arg": "/p"})
 
         res = await qmp.execute("netdev_add",
                                 { "type": "user",
@@ -1981,9 +2021,6 @@ async def insert_network_card(uuid, mac_address=None):
         res = await qmp.execute("query-pci", {})
         print(res)
 
-#-netdev user,id=net0 -device virtio-net-pci,netdev=net0
-#{ "execute": "netdev_add", "arguments": { "type": "user", "id": "netdev1" } }
-
         print(f"Network card inserted with MAC address: {mac_address}")
     except Exception as e:
         print(e)
@@ -1993,8 +2030,15 @@ async def insert_network_card(uuid, mac_address=None):
     return "Network card inserted."
 
 def generate_random_mac_address():
-    # Generate a random MAC address using your preferred logic
-    # Example implementation:
+    """
+    Generates a random MAC address.
+
+    This function creates a MAC address with the locally administered and unicast bits set,
+    and with the rest of the bits randomized.
+
+    Returns:
+    str: The generated MAC address.
+    """
     import random
 
     mac = [0x52, 0x54, 0x00,
@@ -2007,10 +2051,34 @@ def generate_random_mac_address():
 
 @method_decorator(csrf_exempt, name='dispatch')
 class InsertNetworkCardView(View):
+    """
+    This is a Django view that provides an endpoint for inserting a network card into a virtual machine.
+
+    The InsertNetworkCardView class handles HTTP GET requests to insert a network card into a virtual machine
+    identified by its unique identifier (uuid). The class uses Django's View, which means it can handle different types
+    of HTTP requests. It currently only implements handling of GET requests via the defined get() method.
+
+    Attributes:
+        authentication_classes (list): A list of authentication classes the view should use. Empty in this case.
+        permission_classes (list): A list of permissions the view should enforce. Empty in this case.
+    """
     authentication_classes = []
     permission_classes = []
 
     async def get(self, request, uuid):
+        """
+        This method handles the GET request to insert a network card into a virtual machine.
+
+        It first validates the API key from the request. If the key is valid, it calls the asynchronous function
+        insert_network_card() to insert the network card and returns a confirmation message.
+
+        Parameters:
+        request (HttpRequest): The request object that has triggered this method.
+        uuid (str): The unique identifier of the virtual machine.
+
+        Returns:
+        JsonResponse: A JSON object containing a confirmation message or an error message with an HTTP status code.
+        """
         api_key = request.META.get('HTTP_X_API_KEY')
         if api_key:
             try:
@@ -2027,9 +2095,6 @@ class InsertNetworkCardView(View):
             print('api required')
             return JsonResponse({'error': 'API key required'}, status=status.HTTP_401_UNAUTHORIZED)
 
-        #uuid = request.GET.get('uuid')
-        #uuid = self.kwargs.get('uuid')
-
         if not uuid:
             print('uuid required')
             return JsonResponse({'error': 'UUID is required.'}, status=status.HTTP_400_BAD_REQUEST)
@@ -2045,6 +2110,19 @@ class InsertNetworkCardView(View):
 
 
 async def insert_cdrom(uuid, filename):
+    """
+    Asynchronously inserts a CD-ROM into a specified virtual machine.
+
+    This function establishes a connection to the QEMU Machine Protocol (QMP) and sends a command to change the medium
+    of the CD-ROM drive to the specified ISO file.
+
+    Parameters:
+    uuid (str): The unique identifier of the virtual machine.
+    filename (str): The name of the ISO file to insert into the CD-ROM drive.
+
+    Returns:
+    str: A confirmation message.
+    """
     qmp = QMPClient('forensicVM')
     socket_path = f"/forensicVM/mnt/vm/{uuid}/run/qmp.sock"
 
@@ -2065,32 +2143,38 @@ async def insert_cdrom(uuid, filename):
 
 @method_decorator(csrf_exempt, name='dispatch')
 class InsertCDROMView(View):
+    """
+    This is a Django view that provides an endpoint for inserting a CD-ROM into a virtual machine.
+
+    The InsertCDROMView class handles HTTP GET requests to insert a CD-ROM into a virtual machine
+    identified by its unique identifier (uuid) and the filename of the ISO image.
+
+    The class uses Django's View, which means it can handle different types of HTTP requests. It currently only
+    implements handling of GET requests via the defined get() method. It also supports authentication via sessions.
+
+    Attributes:
+        authentication_classes (list): A list of authentication classes the view should use.
+                                       It includes SessionAuthentication.
+        permission_classes (list): A list of permissions the view should enforce. Empty in this case.
+    """
     authentication_classes = [SessionAuthentication]
-    #authentication_classes = []
     permission_classes = []
 
     async def get(self, request, uuid, filename):
-        #api_key = request.META.get('HTTP_X_API_KEY')
+        """
+        This method handles the GET request to insert a CD-ROM into a virtual machine.
 
-        # Authenticate user using API key
-        #api_key = request.META.get('HTTP_X_API_KEY')
-        #user = getattr(request, 'user', None)                       # IF sync
-        #user = await sync_to_async(getattr)(request, 'user', None)  # ASYNC: Get the user in the request
-        #if user and user.is_authenticated:                          # User is authenticated via session
-        #    print("DEBUG: USER AUTHENTICATED")
-        #    pass                                                    # Add this extra block to the request
-        #elif api_key:
-        #if api_key:
-        #    try:
-        #        api_key = await sync_to_async(ApiKey.objects.get)(key=api_key)
-        #        user = await sync_to_async(getattr)(api_key, 'user')
-        #        if not user.is_active:
-        #            return JsonResponse({'error': 'User account is disabled.'}, status=status.HTTP_401_UNAUTHORIZED)
-        #    except ApiKey.DoesNotExist:
-        #        return JsonResponse({'error': 'Invalid API key'}, status=status.HTTP_401_UNAUTHORIZED)
-        #else:
-        #    return JsonResponse({'error': 'API key required'}, status=status.HTTP_401_UNAUTHORIZED)
+        It first validates the user or API key from the request. If the user is authenticated or the API key is valid,
+        it calls the asynchronous function insert_cdrom() to insert the CD-ROM and returns a confirmation message.
 
+        Parameters:
+        request (HttpRequest): The request object that has triggered this method.
+        uuid (str): The unique identifier of the virtual machine.
+        filename (str): The filename of the ISO image to insert into the CD-ROM drive.
+
+        Returns:
+        JsonResponse: A JSON object containing a confirmation message or an error message with an HTTP status code.
+        """
         user, api_key_error = await sync_to_async(self.get_user_or_key_error)(request)
         if api_key_error:
             return api_key_error
@@ -2099,6 +2183,18 @@ class InsertCDROMView(View):
         return JsonResponse({'message': cdrom_status}, status=status.HTTP_200_OK)
 
     def get_user_or_key_error(self, request):
+        """
+        This method handles the user authentication and API key validation.
+
+        It checks if the user is authenticated. If not, it validates the API key from the request. If the API key
+        is invalid or belongs to an inactive user, it returns a JSON response with an error message.
+
+        Parameters:
+        request (HttpRequest): The request object that has triggered this method.
+
+        Returns:
+        tuple: A tuple containing the user (if authenticated or API key is valid) and a JSON response (if any error occurs).
+        """
         api_key = request.META.get('HTTP_X_API_KEY')
         user = getattr(request, 'user', None)
         if user and user.is_authenticated:
@@ -2115,15 +2211,24 @@ class InsertCDROMView(View):
             return None, JsonResponse({'error': 'API key required'}, status=status.HTTP_401_UNAUTHORIZED)
         return user, None
 
-
 async def eject_cdrom(uuid):
+    """
+    Asynchronously ejects the CD-ROM from a specified virtual machine.
+
+    This function establishes a connection to the QEMU Machine Protocol (QMP) and sends a command to open the tray
+    of the CD-ROM drive, effectively ejecting the CD-ROM.
+
+    Parameters:
+    uuid (str): The unique identifier of the virtual machine.
+
+    Returns:
+    str: A confirmation message.
+    """
     qmp = QMPClient('forensicVM')
     socket_path = f"/forensicVM/mnt/vm/{uuid}/run/qmp.sock"
 
     try:
         await qmp.connect(socket_path)
-        #res = await qmp.execute("human-monitor-command",
-        #                        { "command-line": "eject ide0-0-0" })
         res = await qmp.execute("blockdev-open-tray",
                                 { "id": "ide0-0-0"})
         print(f"CD-ROM ejected.")
@@ -2136,24 +2241,37 @@ async def eject_cdrom(uuid):
 
 @method_decorator(csrf_exempt, name='dispatch')
 class EjectCDROMView(View):
-    #authentication_classes = []
+    """
+    This is a Django view that provides an endpoint for ejecting the CD-ROM from a virtual machine.
+
+    The EjectCDROMView class handles HTTP GET requests to eject the CD-ROM from a virtual machine
+    identified by its unique identifier (uuid).
+
+    The class uses Django's View, which means it can handle different types of HTTP requests. It currently only
+    implements handling of GET requests via the defined get() method. It also supports authentication via sessions.
+
+    Attributes:
+        authentication_classes (list): A list of authentication classes the view should use.
+                                       It includes SessionAuthentication.
+        permission_classes (list): A list of permissions the view should enforce. Empty in this case.
+    """
     authentication_classes = [SessionAuthentication]
     permission_classes = []
 
     async def get(self, request, uuid):
-#        api_key = request.META.get('HTTP_X_API_KEY')
-#        if api_key:
-#            try:
-#                api_key = await sync_to_async(ApiKey.objects.get)(key=api_key)
-#                user = await sync_to_async(getattr)(api_key, 'user')
-#                if not user.is_active:
-#                    return JsonResponse({'error': 'User account is disabled.'}, status=status.HTTP_401_UNAUTHORIZED)
-#            except ApiKey.DoesNotExist:
-#                return JsonResponse({'error': 'Invalid API key'}, status=status.HTTP_401_UNAUTHORIZED)
-#        else:
-#            return JsonResponse({'error': 'API key required'}, status=status.HTTP_401_UNAUTHORIZED)
+        """
+        This method handles the GET request to eject the CD-ROM from a virtual machine.
 
+        It first validates the user or API key from the request. If the user is authenticated or the API key is valid,
+        it calls the asynchronous function eject_cdrom() to eject the CD-ROM and returns a confirmation message.
 
+        Parameters:
+        request (HttpRequest): The request object that has triggered this method.
+        uuid (str): The unique identifier of the virtual machine.
+
+        Returns:
+        JsonResponse: A JSON object containing a confirmation message or an error message with an HTTP status code.
+        """
         user, api_key_error = await sync_to_async(self.get_user_or_key_error)(request)
         if api_key_error:
             return api_key_error
@@ -2162,6 +2280,18 @@ class EjectCDROMView(View):
         return JsonResponse({'message': cdrom_status}, status=status.HTTP_200_OK)
 
     def get_user_or_key_error(self, request):
+        """
+        This method handles the user authentication and API key validation.
+
+        It checks if the user is authenticated. If not, it validates the API key from the request. If the API key
+        is invalid or belongs to an inactive user, it returns a JSON response with an error message.
+
+        Parameters:
+        request (HttpRequest): The request object that has triggered this method.
+
+        Returns:
+        tuple: A tuple containing the user (if authenticated or API key is valid) and a JSON response (if any error occurs).
+        """
         api_key = request.META.get('HTTP_X_API_KEY')
         user = getattr(request, 'user', None)
         if user and user.is_authenticated:

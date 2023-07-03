@@ -297,7 +297,7 @@ class ListVideosView(APIView):
         for file in os.listdir(video_dir):
             if file.endswith('.mp4'):
                 video_files.append(file)
-            video_files.sort()
+            video_files.sort(reverse=True)
         return JsonResponse({'video_files': video_files}, status=status.HTTP_200_OK)
 
     def get_user_or_key_error(self, request):

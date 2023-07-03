@@ -421,6 +421,8 @@ function downloadVideo() {
   const uuid = urlParams.get('uuid');
 
   showAlert("Your video is beeing preparated. Please wait a couple of minutes for the download to begin...", "w3-teal")
+  document.getElementById('id03').style.display = 'none';
+  getVideoList();
   fetch('/api/download_video/' + uuid + '/' + filename, {
       method: 'GET',
       credentials: 'include', // Send session cookie with the request
@@ -699,6 +701,7 @@ function showAlert(message, color = 'w3-green') {
 
            <div class="w3-container">
                 <p>Record video: Limited to one hour per video</p>
+                Please select the video to download:
                 <select id="videoList">
                 </select>
                 <button style="background: unset;" class="w3-button w3-round-large w3-green" onclick="downloadVideo()">Download</button>   

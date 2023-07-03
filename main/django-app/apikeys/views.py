@@ -2311,10 +2311,36 @@ class EjectCDROMView(View):
 
 @method_decorator(csrf_exempt, name='dispatch')
 class DeleteISOFileView(View):
+    """
+    This is a Django view that provides an endpoint for deleting an ISO file from a specified directory.
+
+    The DeleteISOFileView class handles HTTP POST requests to delete an ISO file identified by its filename.
+
+    The class uses Django's View, which means it can handle different types of HTTP requests. It currently only
+    implements handling of POST requests via the defined post() method.
+
+    Attributes:
+        authentication_classes (list): A list of authentication classes the view should use. It's empty in this case.
+        permission_classes (list): A list of permissions the view should enforce. It's empty in this case.
+    """
     authentication_classes = []
     permission_classes = []
 
     def post(self, request, filename):
+        """
+        This method handles the POST request to delete an ISO file.
+
+        It first validates the API key from the request. If the API key is valid and belongs to an active user,
+        it checks if the ISO directory and the specified ISO file exist. If they do, it deletes the ISO file
+        and returns a confirmation message.
+
+        Parameters:
+        request (HttpRequest): The request object that has triggered this method.
+        filename (str): The name of the ISO file to be deleted.
+
+        Returns:
+        JsonResponse: A JSON object containing a confirmation message or an error message with an HTTP status code.
+        """
         api_key = request.META.get('HTTP_X_API_KEY')
         if api_key:
             try:
@@ -2342,10 +2368,35 @@ class DeleteISOFileView(View):
 
 @method_decorator(csrf_exempt, name='dispatch')
 class UploadISOView(View):
+    """
+    This is a Django view that provides an endpoint for uploading an ISO file to a specified directory.
+
+    The UploadISOView class handles HTTP POST requests to receive an ISO file and save it to the directory.
+
+    The class uses Django's View, which means it can handle different types of HTTP requests. It currently only
+    implements handling of POST requests via the defined post() method.
+
+    Attributes:
+        authentication_classes (list): A list of authentication classes the view should use. It's empty in this case.
+        permission_classes (list): A list of permissions the view should enforce. It's empty in this case.
+    """
     authentication_classes = []
     permission_classes = []
 
     def post(self, request):
+        """
+        This method handles the POST request to upload an ISO file.
+
+        It first validates the API key from the request. If the API key is valid and belongs to an active user,
+        it checks if an ISO file is provided in the request. If it is, it saves the ISO file
+        to a specified directory and returns a confirmation message.
+
+        Parameters:
+        request (HttpRequest): The request object that has triggered this method.
+
+        Returns:
+        JsonResponse: A JSON object containing a confirmation message or an error message with an HTTP status code.
+        """
         api_key = request.META.get('HTTP_X_API_KEY')
         if api_key:
             try:
@@ -2373,10 +2424,35 @@ class UploadISOView(View):
 
 
 class ListISOFilesView(APIView):
+    """
+    This is a Django view that provides an endpoint for retrieving a list of all ISO files in a specified directory.
+
+    The ListISOFilesView class handles HTTP GET requests to retrieve the ISO files.
+
+    The class uses Django's APIView, which allows it to handle different types of HTTP requests. It currently only
+    implements handling of GET requests via the defined get() method.
+
+    Attributes:
+        authentication_classes (list): A list of authentication classes the view should use. It's empty in this case.
+        permission_classes (list): A list of permissions the view should enforce. It's empty in this case.
+    """
     authentication_classes = []
     permission_classes = []
 
     def get(self, request):
+        """
+        This method handles the GET request to list all ISO files.
+
+        It first validates the API key from the request. If the API key is valid and belongs to an active user,
+        it checks if the ISO directory exists and retrieves a list of all ISO files in the directory. If the directory
+        does not exist, it returns an error message.
+
+        Parameters:
+        request (HttpRequest): The request object that has triggered this method.
+
+        Returns:
+        JsonResponse: A JSON object containing a list of all ISO files in the directory or an error message with an HTTP status code.
+        """
         api_key = request.META.get('HTTP_X_API_KEY')
         if api_key:
             try:
@@ -2401,7 +2477,19 @@ class ListISOFilesView(APIView):
 
 
 def change_qcow2(qcow2_file, folders):
+    """
+    This function creates new folders in a qcow2 disk image. It uses guestfish commands to interact with the disk image.
 
+    Parameters:
+    qcow2_file (str): Path to the qcow2 file that should be changed.
+    folders (list): List of folder names to be created in the qcow2 image.
+
+    Returns:
+    None
+
+    Raises:
+    subprocess.CalledProcessError: If a guestfish command fails.
+    """
     # Create a new NTFS partition with guestfish
     guestfish_commands = f"""
     launch
@@ -2416,8 +2504,6 @@ def change_qcow2(qcow2_file, folders):
     guestfish_commands += """
     umount /
     """
-
-
 
     command = f"guestfish --rw -a {qcow2_file} <<EOF\n{guestfish_commands}\nEOF\n"
     subprocess.run(command, shell=True, check=True)
@@ -2437,11 +2523,43 @@ def change_qcow2(qcow2_file, folders):
 
 
 @method_decorator(csrf_exempt, name='dispatch')
+
 class CreateFoldersView(View):
+    """
+      This class-based view handles the POST request to create specified folders in a qcow2 disk image.
+
+      The method checks the validity and activity status of the provided API key. If the API key is invalid or
+      belongs to an inactive user, it returns an error message.
+
+      It then retrieves the list of folders and the UUID path from the request data. It uses the UUID path to form
+      the path to the qcow2 file.
+
+      It checks if the qcow2 file exists. If it doesn't, it returns an error.
+
+      It calls the change_qcow2 function to create the folders in the qcow2 file. If successful, it returns a success
+      message. If an error occurs, it returns an error message.
+
+      Attributes:
+      authentication_classes (list): A list of authentication classes to use for the view.
+      permission_classes (list): A list of permission classes to use for the view.
+
+      Methods:
+      post(request): Asynchronously handles the POST request.
+      """
     authentication_classes = []
     permission_classes = []
 
     async def post(self, request):
+        """
+        Asynchronously handles the POST request to create folders in a qcow2 file.
+
+        Parameters:
+        request (HttpRequest): The request object that has triggered this method.
+
+        Returns:
+        JsonResponse: A JSON object containing a success message if the folders were created successfully,
+                       or an error message otherwise.
+        """
         api_key = request.META.get('HTTP_X_API_KEY')
         if api_key:
             try:
@@ -2464,19 +2582,6 @@ class CreateFoldersView(View):
             return JsonResponse({'error': f'QCOW2 file {qcow2_file} not found'}, status=status.HTTP_404_NOT_FOUND)
 
         try:
-            # Create the folders using guestfish
-            #guestfish_commands = '\n'.join([f'! mkdir /{folder} || true' for folder in folders])
-            ##command = f"""
-            #guestfish --rw -a {qcow2_file} <<EOF
-            #run
-            #ntfsfix /dev/sda1
-            #mount /dev/sda1 /
-            #{guestfish_commands}
-            #umount /
-            #EOF
-            #"""
-            #os.system(command)
-            #subprocess.run(command, shell=True, check=True)
             change_qcow2(qcow2_file, folders)
 
             return JsonResponse({'message': f'Folders {", ".join(folders)} created successfully in {qcow2_file}'}, status=status.HTTP_200_OK)
@@ -2484,16 +2589,45 @@ class CreateFoldersView(View):
             return JsonResponse({'error': f'Error executing guestfish: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-
-
-
-
 @method_decorator(csrf_exempt, name='dispatch')
 class DownloadEvidenceView(View):
+    """
+    This class-based view handles the GET request to download a VMDK evidence file related to a specific VM.
+
+    The method checks the validity and activity status of the provided API key. If the API key is invalid or
+    belongs to an inactive user, it returns an error message.
+
+    It uses the UUID from the URL parameters to form the path to the VM directory and checks if it exists.
+
+    It then forms the path to the qcow2 file and converts it to a VMDK file using qemu-img. If this process fails,
+    it returns an error message.
+
+    It checks if the VMDK evidence file exists. If it doesn't, it returns an error.
+
+    Finally, it returns the evidence file as a FileResponse, allowing the client to download it.
+
+    Attributes:
+    authentication_classes (list): A list of authentication classes to use for the view.
+    permission_classes (list): A list of permission classes to use for the view.
+
+    Methods:
+    get(request, uuid): Asynchronously handles the GET request.
+    """
     authentication_classes = []
     permission_classes = []
 
     async def get(self, request, uuid):
+        """
+        Asynchronously handles the GET request to download a VMDK evidence file.
+
+        Parameters:
+        request (HttpRequest): The request object that has triggered this method.
+        uuid (str): The UUID of the VM.
+
+        Returns:
+        FileResponse: A FileResponse object containing the VMDK evidence file,
+                      or a JsonResponse object containing an error message.
+        """
         api_key = request.META.get('HTTP_X_API_KEY')
         if api_key:
             try:
@@ -2532,6 +2666,24 @@ class DownloadEvidenceView(View):
         return response
 
 async def memory_snapshot(uuid):
+    """
+    This asynchronous function captures a snapshot of a VM's memory.
+
+    It establishes a connection with the QEMU Machine Protocol (QMP) running on the VM,
+    then uses the QMP command 'dump-guest-memory' to capture the memory snapshot.
+
+    The function saves the memory snapshot to the VM's directory, with a unique filename
+    based on the current number of existing snapshots.
+
+    Parameters:
+    uuid (str): The UUID of the VM.
+
+    Returns:
+    str: The path to the newly created memory snapshot file.
+
+    Raises:
+    Exception: If there's an error executing the 'dump-guest-memory' command or disconnecting from QMP.
+    """
     qmp = QMPClient('forensicVM')
     socket_path = f"/forensicVM/mnt/vm/{uuid}/run/qmp.sock"
     memory_snapshots_path = f"/forensicVM/mnt/vm/{uuid}/memory/"
@@ -2557,10 +2709,33 @@ async def memory_snapshot(uuid):
 
 @method_decorator(csrf_exempt, name='dispatch')
 class MemorySnapshotView(View):
+    """
+    This is an API view for creating a memory snapshot of a Virtual Machine (VM) and downloading it.
+    It requires the UUID of the VM to be specified as a path parameter in the URL.
+
+    Authentication is done via an API key which must be included in the request headers.
+
+    This view will attempt to create a memory snapshot of the VM and then return it as a file download.
+    """
     authentication_classes = []
     permission_classes = []
 
     async def get(self, request, uuid):
+        """
+        Handle the GET request to the MemorySnapshotView.
+
+        The function will first authenticate the user using the API key provided in the headers.
+        If the user is authenticated, it will proceed to create a memory snapshot of the VM
+        specified by the UUID in the URL and then return the snapshot file as a response.
+
+        Args:
+            request: The HTTP request.
+            uuid: The UUID of the VM to create a memory snapshot of.
+
+        Returns:
+            A FileResponse with the memory snapshot file. If an error occurs, a JsonResponse
+            with an error message will be returned.
+        """
         api_key = request.META.get('HTTP_X_API_KEY')
         if api_key:
             try:
@@ -2573,17 +2748,41 @@ class MemorySnapshotView(View):
         else:
             return JsonResponse({'error': 'API key required'}, status=status.HTTP_401_UNAUTHORIZED)
 
-        #snapshot_file = async_to_sync(memory_snapshot)(uuid)
         snapshot_file = await memory_snapshot(uuid)
         response = FileResponse(open(snapshot_file, 'rb'), content_type='application/octet-stream', as_attachment=True, filename=os.path.basename(snapshot_file))
         return response
 
 @method_decorator(csrf_exempt, name='dispatch')
 class DownloadScreenshotsView(View):
+    """
+    This is an API view for downloading all the screenshots of a Virtual Machine (VM) as a ZIP file.
+    It requires the UUID of the VM to be specified as a path parameter in the URL.
+
+    Authentication is done via an API key which must be included in the request headers.
+
+    This view will attempt to collect all the screenshots of the VM, convert them to JPG format if necessary,
+    compress them into a ZIP file, and then return it as a file download.
+    """
     authentication_classes = []
     permission_classes = []
 
     async def get(self, request, uuid):
+        """
+        Handle the GET request to the DownloadScreenshotsView.
+
+        The function will first authenticate the user using the API key provided in the headers.
+        If the user is authenticated, it will proceed to collect all the screenshots of the VM specified by
+        the UUID in the URL, convert them to JPG format, compress them into a ZIP file, and then return the
+        ZIP file as a response.
+
+        Args:
+            request: The HTTP request.
+            uuid: The UUID of the VM to download the screenshots from.
+
+        Returns:
+            A FileResponse with the ZIP file containing all screenshots. If an error occurs, a JsonResponse
+            with an error message will be returned.
+        """
         api_key = request.META.get('HTTP_X_API_KEY')
         if api_key:
             try:
@@ -2621,9 +2820,24 @@ class DownloadScreenshotsView(View):
         response['Content-Disposition'] = f'attachment; filename="{os.path.basename(zip_file_path)}"'
         return response
 
-
-
 async def screendump(uuid):
+    """
+    Capture a screenshot of a Virtual Machine (VM) and save it as a PNG file.
+
+    This function uses the QEMU Machine Protocol (QMP) to communicate with the VM and issue the 'screendump' command,
+    which captures a screenshot of the current state of the VM's display. The screenshot is saved to a directory
+    named 'screenshots' within the VM's directory, and the file is named 'sc' followed by a five-digit number,
+    with leading zeroes as necessary.
+
+    Args:
+        uuid: The UUID of the VM to capture a screenshot from.
+
+    Returns:
+        The number of the screenshot that was taken, as an integer.
+
+    Raises:
+        Prints an exception error if the QMP connection or command execution fails.
+    """
     qmp = QMPClient('forensicVM')
     socket_path = f"/forensicVM/mnt/vm/{uuid}/run/qmp.sock"
     screenshots_path = f"/forensicVM/mnt/vm/{uuid}/screenshots/"
@@ -2645,44 +2859,42 @@ async def screendump(uuid):
         print(e)
     finally:
         await qmp.disconnect()
-#
-#@method_decorator(csrf_exempt, name='dispatch')
-#class ScreenshotVMView(View):
-#    authentication_classes = []
-#    permission_classes = []
-#
-#    async def post(self, request, uuid):
-#        api_key = request.META.get('HTTP_X_API_KEY')
-#        if api_key:
-#            try:
-#                api_key = await sync_to_async(ApiKey.objects.get)(key=api_key)
-#                user = await sync_to_async(getattr)(api_key, 'user')
-#                if not user.is_active:
-#                    return JsonResponse({'error': 'User account is disabled.'}, status=status.HTTP_401_UNAUTHORIZED)
-#            except ApiKey.DoesNotExist:
-#                return JsonResponse({'error': 'Invalid API key'}, status=status.HTTP_401_UNAUTHORIZED)
-#        else:
-#            return JsonResponse({'error': 'API key required'}, status=status.HTTP_401_UNAUTHORIZED)
-#
-#        vm_path = f"/forensicVM/mnt/vm/{uuid}"
-#        vm_exists = os.path.exists(vm_path)
-#
-#        if not vm_exists:
-#            return JsonResponse({'error': f'VM with UUID {uuid} not found'}, status=status.HTTP_404_NOT_FOUND)
-#
-#        await screendump(uuid)
-#
-#        result = {'screenshot_taken': True, 'message': f'Screenshot taken for VM with UUID {uuid}'}
-#
-#        return JsonResponse(result, status=status.HTTP_200_OK)
 
 @method_decorator(csrf_exempt, name='dispatch')
 class ScreenshotVMView(View):
+    """
+    A View class to handle the capture of screenshots from a Virtual Machine (VM).
+
+    This View supports an asynchronous POST request, which initiates the capture of a screenshot from the VM.
+    The VM is identified by its UUID, which is passed in the URL.
+
+    Authentication is required to access this View. It supports both session-based authentication and API key
+    authentication.
+
+    """
     authentication_classes = [SessionAuthentication]                # ADDED
-    #authentication_classes = []
     permission_classes = []
 
     async def post(self, request, uuid):
+        """
+        Handles a POST request to capture a screenshot from a VM.
+
+        The VM is identified by its UUID, which is passed in the URL.
+
+        The request must be authenticated. This can be done either through session-based authentication or
+        by including an 'X-API-KEY' header in the request.
+
+        Args:
+            request: The Django request object.
+            uuid: The UUID of the VM.
+
+        Returns:
+            A JsonResponse containing the status of the screenshot operation. If the operation is successful,
+            the response will include a 'screenshot_taken' key with a value of True, and a 'message' key with the
+            screenshot number.
+
+            If an error occurs, the JsonResponse will contain an 'error' key with a description of the error.
+        """
         user, api_key_error = await sync_to_async(self.get_user_or_key_error)(request)
         if api_key_error:
             return api_key_error
@@ -2701,6 +2913,23 @@ class ScreenshotVMView(View):
 
 
     def get_user_or_key_error(self, request):
+        """
+        Helper method to retrieve the authenticated user from the request, or return an error response if
+        the request is not authenticated.
+
+        The request can be authenticated either through session-based authentication or by including an
+        'X-API-KEY' header in the request.
+
+        Args:
+            request: The Django request object.
+
+        Returns:
+            If the request is authenticated, returns a tuple where the first element is the authenticated user
+            and the second element is None.
+
+            If the request is not authenticated, returns a tuple where the first element is None and the second
+            element is a JsonResponse with an error message.
+        """
         api_key = request.META.get('HTTP_X_API_KEY')
         user = getattr(request, 'user', None)
         if user and user.is_authenticated:
@@ -2718,8 +2947,17 @@ class ScreenshotVMView(View):
         return user, None
 
 
-
 async def system_shutdown(uuid):
+    """
+    This function sends a shutdown command to a VM specified by its UUID. It uses QEMU's QMP (QEMU Machine Protocol)
+    to interact with the VM.
+
+    Args:
+        uuid (str): The UUID of the VM to be shutdown.
+
+    Raises:
+        Exception: If there's an error while trying to interact with the VM, an exception will be raised.
+    """
     qmp = QMPClient('forensicVM')
     socket_path = f"/forensicVM/mnt/vm/{uuid}/run/qmp.sock"
     try:
@@ -2733,49 +2971,30 @@ async def system_shutdown(uuid):
     print(res)
 
     await qmp.disconnect()
-#
-#@method_decorator(csrf_exempt, name='dispatch')
-#class ShutdownVMView(View):
-#    authentication_classes = [SessionAuthentication]                # ADDED
-#    permission_classes = []
-#
-#    async def post(self, request, uuid):
-#        api_key = request.META.get('HTTP_X_API_KEY')
-#        user = getattr(request, 'user', None)                       # IF sync
-#        #user = await sync_to_async(getattr)(request, 'user', None)  # ASYNC: Get the user in the request
-#        if user and user.is_authenticated:                          # User is authenticated via session
-#            print("DEBUG: USER AUTHENTICATED")
-#            pass                                                    # Add this extra block to the request
-#        elif api_key:                                               # <--- Changed
-#            try:
-#                api_key = await sync_to_async(ApiKey.objects.get)(key=api_key)
-#                user = await sync_to_async(getattr)(api_key, 'user')
-#                if not user.is_active:
-#                    return JsonResponse({'error': 'User account is disabled.'}, status=status.HTTP_401_UNAUTHORIZED)
-#            except ApiKey.DoesNotExist:
-#                return JsonResponse({'error': 'Invalid API key'}, status=status.HTTP_401_UNAUTHORIZED)
-#        else:
-#            return JsonResponse({'error': 'API key required'}, status=status.HTTP_401_UNAUTHORIZED)
-#
-#        vm_path = f"/forensicVM/mnt/vm/{uuid}"
-#        vm_exists = os.path.exists(vm_path)
-#
-#        if not vm_exists:
-#            return JsonResponse({'error': f'VM with UUID {uuid} not found'}, status=status.HTTP_404_NOT_FOUND)
-#
-#        await system_shutdown(uuid)
-#
-#        result = {'vm_shutdown': True, 'message': f'Shutdown command sent to VM with UUID {uuid}'}
-#
-#        return JsonResponse(result, status=status.HTTP_200_OK)
-#
 
 @method_decorator(csrf_exempt, name='dispatch')
 class ShutdownVMView(View):
+    """
+    This Django View handles POST requests to shutdown a VM. It authenticates the request and then uses the
+    `system_shutdown` function to send a shutdown command to the VM.
+
+    The VM is identified by its UUID, which should be included in the URL of the request.
+    """
     authentication_classes = [SessionAuthentication]
     permission_classes = []
 
     async def post(self, request, uuid):
+        """
+        This method handles the POST request to shut down a VM. It checks for user authentication, verifies the
+        existence of the VM, and then sends the shutdown command.
+
+        Args:
+            request (django.http.HttpRequest): The request instance.
+            uuid (str): The UUID of the VM to be shutdown.
+
+        Returns:
+            django.http.JsonResponse: A JSON response with the result of the operation.
+        """
         user, api_key_error = await sync_to_async(self.get_user_or_key_error)(request)
         if api_key_error:
             return api_key_error
@@ -2793,6 +3012,23 @@ class ShutdownVMView(View):
         return JsonResponse(result, status=status.HTTP_200_OK)
 
     def get_user_or_key_error(self, request):
+        """
+        Helper method to retrieve the authenticated user from the request, or return an error response if
+        the request is not authenticated.
+
+        The request can be authenticated either through session-based authentication or by including an
+        'X-API-KEY' header in the request.
+
+        Args:
+            request: The Django request object.
+
+        Returns:
+            If the request is authenticated, returns a tuple where the first element is the authenticated user
+            and the second element is None.
+
+            If the request is not authenticated, returns a tuple where the first element is None and the second
+            element is a JsonResponse with an error message.
+        """
         api_key = request.META.get('HTTP_X_API_KEY')
         user = getattr(request, 'user', None)
         if user and user.is_authenticated:
@@ -2811,6 +3047,16 @@ class ShutdownVMView(View):
 
 
 async def system_reset(uuid):
+    """
+    This function sends a reset command to a VM specified by its UUID. It uses QEMU's QMP (QEMU Machine Protocol)
+    to interact with the VM.
+
+    Args:
+        uuid (str): The UUID of the VM to be reset.
+
+    Raises:
+        Exception: If there's an error while trying to interact with the VM, an exception will be raised.
+    """
     qmp = QMPClient('forensicVM')
     socket_path = f"/forensicVM/mnt/vm/{uuid}/run/qmp.sock"
     try:
@@ -2827,49 +3073,30 @@ async def system_reset(uuid):
         print(res)
     await qmp.disconnect()
 
-#@method_decorator(csrf_exempt, name='dispatch')
-#class ResetVMView(View):
-#    authentication_classes = [SessionAuthentication]                # ADDED
-#    permission_classes = []
-#
-#    async def post(self, request, uuid):
-#        api_key = request.META.get('HTTP_X_API_KEY')
-#        #user = getattr(request, 'user', None)                       # IF sync
-#        user = await sync_to_async(getattr)(request, 'user', None)  # ASYNC: Get the user in the request
-#        if user and user.is_authenticated:                          # User is authenticated via session
-#            print("DEBUG: USER AUTHENTICATED")
-#            pass                                                    # Add this extra block to the request
-#        elif api_key:                                               # <--- Changed
-#        #if api_key:
-#            try:
-#                api_key = await sync_to_async(ApiKey.objects.get)(key=api_key)
-#                user = await sync_to_async(getattr)(api_key, 'user')
-#                #user = api_key.user
-#                if not user.is_active:
-#                    return JsonResponse({'error': 'User account is disabled.'}, status=status.HTTP_401_UNAUTHORIZED)
-#            except ApiKey.DoesNotExist:
-#                return JsonResponse({'error': 'Invalid API key'}, status=status.HTTP_401_UNAUTHORIZED)
-#        else:
-#            return JsonResponse({'error': 'API key required'}, status=status.HTTP_401_UNAUTHORIZED)
-#
-#        vm_path = f"/forensicVM/mnt/vm/{uuid}"
-#        vm_exists = os.path.exists(vm_path)
-#
-#        if not vm_exists:
-#            return JsonResponse({'error': f'VM with UUID {uuid} not found'}, status=status.HTTP_404_NOT_FOUND)
-#
-#        await system_reset(uuid)
-#
-#        result = {'vm_reset': True, 'message': f'Reset command sent to VM with UUID {uuid}'}
-#
-#        return JsonResponse(result, status=status.HTTP_200_OK)
 
 @method_decorator(csrf_exempt, name='dispatch')
 class ResetVMView(View):
+    """
+    This Django View handles POST requests to reset a VM. It authenticates the request and then uses the
+    `system_reset` function to send a reset command to the VM.
+
+    The VM is identified by its UUID, which should be included in the URL of the request.
+    """
     authentication_classes = [SessionAuthentication]
     permission_classes = []
 
     async def post(self, request, uuid):
+        """
+        This method handles the POST request to reset a VM. It checks for user authentication, verifies the
+        existence of the VM, and then sends the reset command.
+
+        Args:
+            request (django.http.HttpRequest): The request instance.
+            uuid (str): The UUID of the VM to be reset.
+
+        Returns:
+            django.http.JsonResponse: A JSON response with the result of the operation.
+        """
         user, api_key_error = await sync_to_async(self.get_user_or_key_error)(request)
         if api_key_error:
             return api_key_error
@@ -2887,6 +3114,23 @@ class ResetVMView(View):
         return JsonResponse(result, status=status.HTTP_200_OK)
 
     def get_user_or_key_error(self, request):
+        """
+        Helper method to retrieve the authenticated user from the request, or return an error response if
+        the request is not authenticated.
+
+        The request can be authenticated either through session-based authentication or by including an
+        'X-API-KEY' header in the request.
+
+        Args:
+            request: The Django request object.
+
+        Returns:
+            If the request is authenticated, returns a tuple where the first element is the authenticated user
+            and the second element is None.
+
+            If the request is not authenticated, returns a tuple where the first element is None and the second
+            element is a JsonResponse with an error message.
+        """
         api_key = request.META.get('HTTP_X_API_KEY')
         user = getattr(request, 'user', None)
         if user and user.is_authenticated:
@@ -2903,12 +3147,30 @@ class ResetVMView(View):
             return None, JsonResponse({'error': 'API key required'}, status=status.HTTP_401_UNAUTHORIZED)
         return user, None
 
-
 class MountFolderView(APIView):
+    """
+    This Django View handles POST requests to mount a folder in a VM. It authenticates the request and then executes
+    a mount command to bind the specified folder to a location within the VM's filesystem.
+
+    The VM is identified by its UUID, which should be included in the URL of the request.
+
+    The folder to be mounted should be specified in the request's JSON body using the 'folder' key.
+    """
     authentication_classes = []
     permission_classes = []
 
     def post(self, request, uuid):
+        """
+        This method handles the POST request to mount a folder in a VM. It checks for user authentication, verifies the
+        input folder path, and then sends the mount command.
+
+        Args:
+            request (django.http.HttpRequest): The request instance.
+            uuid (str): The UUID of the VM where the folder is to be mounted.
+
+        Returns:
+            rest_framework.response.Response: A JSON response with the result of the operation.
+        """
         api_key = request.META.get('HTTP_X_API_KEY')
         if api_key:
             try:
@@ -2937,10 +3199,27 @@ class MountFolderView(APIView):
             return Response({'error': f"Error mounting folder: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class DeleteVMView(APIView):
+    """
+    This Django View handles POST requests to delete a VM. It authenticates the request and then removes the specified VM's
+    directory from the filesystem.
+
+    The VM is identified by its UUID, which should be included in the URL of the request.
+    """
     authentication_classes = []
     permission_classes = []
 
     def post(self, request, uuid):
+        """
+        This method handles the POST request to delete a VM. It checks for user authentication, verifies the
+        existence of the VM, and then deletes the VM's directory.
+
+        Args:
+            request (django.http.HttpRequest): The request instance.
+            uuid (str): The UUID of the VM to be deleted.
+
+        Returns:
+            rest_framework.response.Response: A JSON response with the result of the operation.
+        """
         api_key = request.META.get('HTTP_X_API_KEY')
         if api_key:
             try:
@@ -2967,10 +3246,27 @@ class DeleteVMView(APIView):
         return Response(result, status=status.HTTP_200_OK)
 
 class CheckVMExistsView(APIView):
+    """
+    This Django View handles GET requests to check if a VM exists. It authenticates the request and then checks the
+    existence of the specified VM's directory in the filesystem.
+
+    The VM is identified by its UUID, which should be included in the URL of the request.
+    """
     authentication_classes = []
     permission_classes = []
 
     def get(self, request, uuid):
+        """
+        This method handles the GET request to check if a VM exists. It checks for user authentication, verifies the
+        existence of the VM, and then returns a JSON response with the result.
+
+        Args:
+            request (django.http.HttpRequest): The request instance.
+            uuid (str): The UUID of the VM to be checked.
+
+        Returns:
+            rest_framework.response.Response: A JSON response indicating whether the VM exists.
+        """
         api_key = request.META.get('HTTP_X_API_KEY')
         if api_key:
             try:
@@ -2983,7 +3279,6 @@ class CheckVMExistsView(APIView):
         else:
             return Response({'error': 'API key required'}, status=status.HTTP_401_UNAUTHORIZED)
 
-        #vm_path = f"/forensicVM/mnt/vm/{uuid}"
         vm_path = f"/forensicVM/mnt/vm/{uuid}/mode"
         vm_exists = os.path.exists(vm_path)
 
@@ -2992,6 +3287,18 @@ class CheckVMExistsView(APIView):
         return Response(result, status=status.HTTP_200_OK)
 
 def find_available_port(start_port):
+    """
+    This function finds two available, sequential TCP ports to use, starting from the given `start_port`.
+
+    Args:
+        start_port (int): The port number from which to start checking for availability.
+
+    Returns:
+        tuple: A pair of two available, sequential TCP port numbers.
+
+    Raises:
+        OSError: If an error occurs that is not related to a port being in use (e.g., permission denied, etc.)
+    """
     port = start_port
     while True:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
@@ -3006,10 +3313,28 @@ def find_available_port(start_port):
                     raise e
 
 class StopVMView(APIView):
+    """
+    API endpoint that allows VMs to be stopped via POST requests.
+
+    This view accepts a POST request with a UUID and attempts to stop the corresponding screen session of the VM.
+    If successful, it returns a 200 OK response with a JSON body indicating the VM has been stopped.
+    If the screen session cannot be found, it returns a 404 Not Found error.
+    An API key is required for authentication.
+    """
     authentication_classes = [SessionAuthentication]                # ADDED
     permission_classes = []
 
     def post(self, request, uuid):
+        """
+        Stops the VM specified by the UUID.
+
+        Args:
+            request: The POST request received by the server.
+            uuid: The UUID of the VM to be stopped.
+
+        Returns:
+            Response: A Django Response object.
+        """
         # Authenticate user using API key
         api_key = request.META.get('HTTP_X_API_KEY')
         user = getattr(request, 'user', None)                       # IF sync
@@ -3045,10 +3370,28 @@ class StopVMView(APIView):
 
 
 class StartVMView(APIView):
+    """
+    API endpoint that allows VMs to be started via POST requests.
+
+    This view accepts a POST request with a UUID and attempts to start the corresponding VM.
+    If successful, it returns a 200 OK response with a JSON body indicating the VM has been started and provides the VNC and WebSocket ports.
+    If the VM path or VNC script cannot be found, it returns a 404 Not Found error.
+    An API key or session-based authentication is required.
+    """
     authentication_classes = [SessionAuthentication]                # ADDED
     permission_classes = []
 
     def post(self, request, uuid):
+        """
+        Starts the VM specified by the UUID.
+
+        Args:
+            request: The POST request received by the server.
+            uuid: The UUID of the VM to be started.
+
+        Returns:
+            Response: A Django Response object.
+        """
         api_key = request.META.get('HTTP_X_API_KEY')
         user = getattr(request, 'user', None)                       # IF sync
         #user = await sync_to_async(getattr)(request, 'user', None)  # ASYNC: Get the user in the request
@@ -3096,11 +3439,28 @@ class StartVMView(APIView):
         return Response(result, status=status.HTTP_200_OK)
 
 class ForensicImageVMStatus(APIView):
+    """
+    API endpoint that allows retrieval of the status of a forensic image VM via GET requests.
+
+    This view accepts a GET request with a UUID and returns the status of the corresponding forensic image VM.
+    If the VM path or mode file cannot be found, it returns a 404 Not Found error.
+    An API key or session-based authentication is required.
+    """
     authentication_classes = [SessionAuthentication]                # ADDED
     #authentication_classes = []
     permission_classes = []
 
     def get(self, request, uuid):
+        """
+        Retrieves the status of the forensic image VM specified by the UUID.
+
+        Args:
+            request: The GET request received by the server.
+            uuid: The UUID of the forensic image VM.
+
+        Returns:
+            Response: A Django Response object containing the VM status and related information.
+        """
         api_key = request.META.get('HTTP_X_API_KEY')
         user = getattr(request, 'user', None)                       # IF sync
         #user = await sync_to_async(getattr)(request, 'user', None)  # ASYNC: Get the user in the request
@@ -3172,10 +3532,25 @@ class ForensicImageVMStatus(APIView):
             return Response(result, status=status.HTTP_200_OK)
 
 class CreateSshKeysView(APIView):
+    """
+    API endpoint that allows the creation of SSH keys by adding a public key to the authorized keys file of the forensic investigator user.
+
+    This view accepts a POST request with a public key as a parameter. The public key is added to the authorized keys file of the forensic investigator user.
+    An API key or session-based authentication is required.
+    """
     authentication_classes = []
     permission_classes = []
 
     def post(self, request):
+        """
+        Adds a public key to the authorized keys file of the forensic investigator user.
+
+        Args:
+            request: The POST request received by the server.
+
+        Returns:
+            Response: A Django Response object containing the result of adding the public key to the authorized keys file.
+        """
         api_key = request.META.get('HTTP_X_API_KEY')
         if api_key:
             try:
@@ -3212,10 +3587,26 @@ class CreateSshKeysView(APIView):
 
 
 class ProtectedView(APIView):
+    """
+    API endpoint that creates a protected view requiring an API key for access.
+
+    This view accepts a GET request and checks for the presence of an API key in the request headers.
+    If a valid API key is found, the access is granted and a success message is returned.
+    An API key is required for accessing this view.
+    """
     authentication_classes = []
     permission_classes = []
 
     def get(self, request):
+        """
+        Handles the GET request and checks for the presence of a valid API key.
+
+        Args:
+            request: The GET request received by the server.
+
+        Returns:
+            Response: A Django Response object indicating the result of the access check.
+        """
         api_key = request.META.get('HTTP_X_API_KEY')
         if api_key:
             try:
@@ -3232,10 +3623,28 @@ class ProtectedView(APIView):
 
 
 class RunScriptView(APIView):
+    """
+    API endpoint for running a script.
+
+    This view accepts a POST request and expects an API key to be provided in the request headers.
+    The request should contain a 'script' parameter in the data payload, which contains the script to be executed.
+    The script is executed using the subprocess module, and the output and error code are returned in the response.
+
+    Note: This view does not perform any authentication or permission checks beyond validating the API key.
+    """
     authentication_classes = []
     permission_classes = []
 
     def post(self, request):
+        """
+        Handles the POST request to execute a script.
+
+        Args:
+            request: The POST request received by the server.
+
+        Returns:
+            Response: A Django Response object containing the script output and error code.
+        """
         api_key = request.META.get('HTTP_X_API_KEY')
         if api_key:
             try:

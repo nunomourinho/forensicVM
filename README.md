@@ -1,6 +1,6 @@
 # Welcome to the forensicVM
 
-[![Documentation Status](https://readthedocs.org/projects/forensicvm-server-and-client-documentation/badge/?version=latest)](https://forensicvm-server-and-client-documentation.readthedocs.io/en/latest/?badge=latest)
+Latest documentation on: [![Documentation Status](https://readthedocs.org/projects/forensicvm-server-and-client-documentation/badge/?version=latest)](https://forensicvm-server-and-client-documentation.readthedocs.io/en/latest/?badge=latest)
 
 ForensicVM is a comprehensive project designed to assist forensic investigators in the virtualization of forensic images. By utilizing advanced technologies and tools, ForensicVM simplifies the process of analyzing and examining digital evidence in a virtualized environment.
 

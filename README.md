@@ -16,6 +16,6 @@ Once the server is up and running, you can explore the various capabilities and 
 
 Additionally, if you require a deeper understanding of the technical aspects and functionalities of ForensicVM, the :doc:`api` section is available. It offers an in-depth exploration of the project's application programming interface, empowering advanced users to leverage the full potential of the platform.
 
-We would like to emphasize that ForensicVM is an actively developed project. Our team is continuously working on enhancing its capabilities, improving performance, and adding new features. Stay tuned for updates and exciting developments as we strive to deliver the most effective and reliable forensic virtualization solution available.
+I would like to emphasize that ForensicVM is an actively developed project. I am continuously working on enhancing its capabilities, improving performance, and adding new features. Stay tuned for updates and exciting developments as we strive to deliver the most effective and reliable forensic virtualization solution available.
 
 Thank you for choosing ForensicVM. We are confident that it will greatly streamline your forensic investigations and contribute to the success of your work. The first step is to install the server. 

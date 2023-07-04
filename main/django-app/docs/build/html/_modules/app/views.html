@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>app.views &#8212; ForensicVM 1.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css" />
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/sphinx_highlight.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for app.views</h1><div class="highlight"><pre>
+<span></span><span class="c1"># coding=utf-8</span>
+<span class="kn">from</span> <span class="nn">django.conf</span> <span class="kn">import</span> <span class="n">settings</span>
+<span class="kn">from</span> <span class="nn">django.http</span> <span class="kn">import</span> <span class="n">HttpResponse</span><span class="p">,</span> <span class="n">JsonResponse</span>
+<span class="kn">from</span> <span class="nn">django.template</span> <span class="kn">import</span> <span class="n">loader</span><span class="p">,</span> <span class="n">Context</span>
+<span class="kn">from</span> <span class="nn">django.core.exceptions</span> <span class="kn">import</span> <span class="n">ValidationError</span>
+<span class="kn">from</span> <span class="nn">revproxy.views</span> <span class="kn">import</span> <span class="n">ProxyView</span>
+<span class="kn">from</span> <span class="nn">.models</span> <span class="kn">import</span> <span class="n">Server</span>
+<span class="kn">from</span> <span class="nn">django.contrib.auth.forms</span> <span class="kn">import</span> <span class="n">UserCreationForm</span>
+<span class="kn">from</span> <span class="nn">django.contrib.auth</span> <span class="kn">import</span> <span class="n">login</span>
+<span class="kn">from</span> <span class="nn">django.shortcuts</span> <span class="kn">import</span> <span class="n">render</span><span class="p">,</span> <span class="n">redirect</span>
+<span class="kn">from</span> <span class="nn">django.utils.decorators</span> <span class="kn">import</span> <span class="n">method_decorator</span>
+<span class="kn">from</span> <span class="nn">django.contrib.auth.decorators</span> <span class="kn">import</span> <span class="n">login_required</span><span class="p">,</span> <span class="n">permission_required</span>
+<span class="kn">from</span> <span class="nn">django.contrib.auth.mixins</span> <span class="kn">import</span> <span class="n">LoginRequiredMixin</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">xml.etree.ElementTree</span> <span class="k">as</span> <span class="nn">ET</span>
+<span class="kn">from</span> <span class="nn">django.views</span> <span class="kn">import</span> <span class="n">View</span>
+
+
+<div class="viewcode-block" id="register"><a class="viewcode-back" href="../../app.html#app.views.register">[docs]</a><span class="k">def</span> <span class="nf">register</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;POST&#39;</span><span class="p">:</span>
+        <span class="n">form</span> <span class="o">=</span> <span class="n">UserCreationForm</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">POST</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">form</span><span class="o">.</span><span class="n">is_valid</span><span class="p">():</span>
+            <span class="n">user</span> <span class="o">=</span> <span class="n">form</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+            <span class="n">login</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">user</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">redirect</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)</span> <span class="c1"># or where you want to redirect after successful registration</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">form</span> <span class="o">=</span> <span class="n">UserCreationForm</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">render</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="s1">&#39;register.html&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;form&#39;</span><span class="p">:</span> <span class="n">form</span><span class="p">})</span></div>
+
+
+
+<div class="viewcode-block" id="vnc_proxy"><a class="viewcode-back" href="../../app.html#app.views.vnc_proxy">[docs]</a><span class="k">def</span> <span class="nf">vnc_proxy</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;VNC agente de controlo remoto&quot;&quot;&quot;</span>
+
+    <span class="n">token</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;token&#39;</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">obj</span> <span class="o">=</span> <span class="n">Server</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">pk</span><span class="o">=</span><span class="n">token</span><span class="p">)</span>
+
+    <span class="k">except</span> <span class="n">Server</span><span class="o">.</span><span class="n">DoesNotExist</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">ValidationError</span><span class="p">(</span><span class="s1">&#39;identificador errado&#39;</span><span class="p">,</span> <span class="n">code</span><span class="o">=</span><span class="mi">404</span><span class="p">)</span>
+
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">ValidationError</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">),</span> <span class="n">code</span><span class="o">=</span><span class="mi">500</span><span class="p">)</span>
+
+    <span class="n">host</span> <span class="o">=</span> <span class="n">settings</span><span class="o">.</span><span class="n">VNC_PROXY_HOST</span>
+    <span class="n">port</span> <span class="o">=</span> <span class="n">settings</span><span class="o">.</span><span class="n">VNC_PROXY_PORT</span>
+    <span class="c1"># password = obj.vnc_password</span>
+
+    <span class="k">return</span> <span class="n">JsonResponse</span><span class="p">({</span>
+        <span class="s1">&#39;token&#39;</span><span class="p">:</span> <span class="n">token</span><span class="p">,</span>
+        <span class="s1">&#39;host&#39;</span><span class="p">:</span> <span class="n">host</span><span class="p">,</span>
+        <span class="s1">&#39;port&#39;</span><span class="p">:</span> <span class="n">port</span><span class="p">,</span>
+        <span class="c1"># &#39;password&#39;: password,</span>
+        <span class="s1">&#39;password&#39;</span><span class="p">:</span> <span class="s1">&#39;os9527&#39;</span>
+    <span class="p">})</span></div>
+
+<div class="viewcode-block" id="vnc_proxy_http"><a class="viewcode-back" href="../../app.html#app.views.vnc_proxy_http">[docs]</a><span class="nd">@login_required</span>
+<span class="k">def</span> <span class="nf">vnc_proxy_http</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;VNC agente de controlo remoto&quot;&quot;&quot;</span>
+
+    <span class="c1">#token = request.GET.get(&#39;token&#39;)</span>
+
+
+    <span class="c1">#host = settings.VNC_PROXY_HOST</span>
+    <span class="c1">#port = settings.VNC_PROXY_PORT</span>
+
+    <span class="c1">#template = loader.get_template(&#39;novnc/vnc.html&#39;)</span>
+    <span class="c1">#context = {</span>
+    <span class="c1">#    &quot;token&quot;: &quot;&quot;,</span>
+    <span class="c1">#    &quot;host&quot;: &quot;localhost&quot;,</span>
+    <span class="c1">#    &quot;port&quot;: 5901,        </span>
+    <span class="c1">#    &quot;password&quot;: &#39;&#39;</span>
+    <span class="c1">#}</span>
+
+
+    <span class="n">iso_dir</span> <span class="o">=</span> <span class="s1">&#39;/forensicVM/mnt/iso&#39;</span>
+
+    <span class="n">iso_files</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">iso_dir</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">file</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.iso&#39;</span><span class="p">):</span>
+            <span class="n">iso_files</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
+
+    <span class="n">iso_files</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">render</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="s1">&#39;novnc/vnc.html&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;iso_files&#39;</span><span class="p">:</span> <span class="n">iso_files</span><span class="p">})</span></div>
+
+    <span class="c1">#return HttpResponse(template.render(context))</span>
+
+
+
+<div class="viewcode-block" id="ProxyNetdata"><a class="viewcode-back" href="../../app.html#app.views.ProxyNetdata">[docs]</a><span class="k">class</span> <span class="nc">ProxyNetdata</span><span class="p">(</span><span class="n">LoginRequiredMixin</span><span class="p">,</span> <span class="n">ProxyView</span><span class="p">):</span>
+    <span class="n">login_url</span> <span class="o">=</span> <span class="s1">&#39;/login/&#39;</span>  <span class="c1"># Replace with your login URL</span>
+    <span class="n">redirect_field_name</span> <span class="o">=</span> <span class="s1">&#39;next&#39;</span>
+    <span class="n">upstream</span> <span class="o">=</span> <span class="s1">&#39;http://localhost:19999&#39;</span></div>
+
+<div class="viewcode-block" id="ProxyShellbox"><a class="viewcode-back" href="../../app.html#app.views.ProxyShellbox">[docs]</a><span class="k">class</span> <span class="nc">ProxyShellbox</span><span class="p">(</span><span class="n">LoginRequiredMixin</span><span class="p">,</span> <span class="n">ProxyView</span><span class="p">):</span>
+    <span class="n">login_url</span> <span class="o">=</span> <span class="s1">&#39;/login/&#39;</span>  <span class="c1"># Replace with your login URL</span>
+    <span class="n">redirect_field_name</span> <span class="o">=</span> <span class="s1">&#39;next&#39;</span>
+    <span class="n">upstream</span> <span class="o">=</span> <span class="s1">&#39;http://localhost:4200&#39;</span></div>
+
+<span class="c1">#@login_required</span>
+<span class="c1">#class ProxyNetdata(ProxyView):</span>
+<span class="c1">#    upstream = &#39;http://localhost:19999&#39;</span>
+
+<span class="c1">#@login_required</span>
+<span class="c1">#class ProxyShellbox(ProxyView):</span>
+<span class="c1">#    upstream = &#39;http://localhost:4200&#39;</span>
+
+<span class="c1">#class ProxyMeo(ProxyView):</span>
+<span class="c1">#    upstream = &#39;https://192.168.1.254&#39;</span>
+
+<div class="viewcode-block" id="VMListView"><a class="viewcode-back" href="../../app.html#app.views.VMListView">[docs]</a><span class="k">class</span> <span class="nc">VMListView</span><span class="p">(</span><span class="n">View</span><span class="p">):</span>
+<div class="viewcode-block" id="VMListView.get"><a class="viewcode-back" href="../../app.html#app.views.VMListView.get">[docs]</a>    <span class="nd">@method_decorator</span><span class="p">(</span><span class="n">login_required</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
+        <span class="n">vm_path</span> <span class="o">=</span> <span class="s2">&quot;/forensicVM/mnt/vm/&quot;</span>
+        <span class="n">vm_exists</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">vm_path</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">vm_exists</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">JsonResponse</span><span class="p">({</span><span class="s1">&#39;error&#39;</span><span class="p">:</span> <span class="s1">&#39;VM path not found&#39;</span><span class="p">},</span> <span class="n">status</span><span class="o">=</span><span class="mi">404</span><span class="p">)</span>
+
+        <span class="n">folders</span> <span class="o">=</span> <span class="p">[</span><span class="n">f</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">vm_path</span><span class="p">)</span> <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">vm_path</span><span class="p">,</span> <span class="n">f</span><span class="p">))]</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">folder</span> <span class="ow">in</span> <span class="n">folders</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">info_name</span> <span class="o">=</span> <span class="n">folder</span> <span class="o">+</span> <span class="s2">&quot;.info&quot;</span>
+                <span class="nb">print</span><span class="p">(</span><span class="n">info_name</span><span class="p">)</span>
+                <span class="n">info_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">vm_path</span><span class="p">,</span> <span class="n">folder</span><span class="p">,</span> <span class="n">info_name</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">info_file</span><span class="p">):</span>
+                   <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">process_info_file</span><span class="p">(</span><span class="n">info_file</span><span class="p">,</span> <span class="n">folder</span><span class="p">))</span>
+                <span class="k">else</span><span class="p">:</span>
+                   <span class="n">data_item</span> <span class="o">=</span> <span class="p">{</span>
+                       <span class="s1">&#39;uuid&#39;</span><span class="p">:</span> <span class="n">folder</span><span class="p">,</span>
+                       <span class="s1">&#39;distro&#39;</span><span class="p">:</span> <span class="s1">&#39;---&#39;</span><span class="p">,</span>
+                       <span class="s1">&#39;hostname&#39;</span><span class="p">:</span> <span class="s1">&#39;---&#39;</span><span class="p">,</span>
+                       <span class="s1">&#39;osinfo&#39;</span><span class="p">:</span> <span class="s1">&#39;---&#39;</span><span class="p">,</span>
+                       <span class="s1">&#39;product_name&#39;</span><span class="p">:</span> <span class="s1">&#39;---&#39;</span>
+                   <span class="p">}</span>
+                   <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">data_item</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">data_item</span> <span class="o">=</span> <span class="p">{</span>
+                        <span class="s1">&#39;uuid&#39;</span><span class="p">:</span> <span class="n">folder</span><span class="p">,</span>
+                        <span class="s1">&#39;distro&#39;</span><span class="p">:</span> <span class="s1">&#39;---&#39;</span><span class="p">,</span>
+                        <span class="s1">&#39;hostname&#39;</span><span class="p">:</span> <span class="s1">&#39;---&#39;</span><span class="p">,</span>
+                        <span class="s1">&#39;osinfo&#39;</span><span class="p">:</span> <span class="s1">&#39;---&#39;</span><span class="p">,</span>
+                        <span class="s1">&#39;product_name&#39;</span><span class="p">:</span> <span class="s1">&#39;---&#39;</span>
+                    <span class="p">}</span>
+                    <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">data_item</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">render</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="s1">&#39;vm_list.html&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;data&#39;</span><span class="p">:</span> <span class="n">data</span><span class="p">})</span></div>
+
+<div class="viewcode-block" id="VMListView.process_info_file"><a class="viewcode-back" href="../../app.html#app.views.VMListView.process_info_file">[docs]</a>    <span class="k">def</span> <span class="nf">process_info_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">info_file</span><span class="p">,</span> <span class="n">uuid</span><span class="p">):</span>
+        <span class="n">tree</span> <span class="o">=</span> <span class="n">ET</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">info_file</span><span class="p">)</span>
+        <span class="n">root</span> <span class="o">=</span> <span class="n">tree</span><span class="o">.</span><span class="n">getroot</span><span class="p">()</span>
+        <span class="n">os_data</span> <span class="o">=</span> <span class="n">root</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;operatingsystem&#39;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s1">&#39;uuid&#39;</span><span class="p">:</span> <span class="n">uuid</span><span class="p">,</span>
+            <span class="s1">&#39;distro&#39;</span><span class="p">:</span> <span class="n">os_data</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;distro&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">text</span><span class="p">,</span>
+            <span class="s1">&#39;hostname&#39;</span><span class="p">:</span> <span class="n">os_data</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;hostname&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">text</span><span class="p">,</span>
+            <span class="s1">&#39;osinfo&#39;</span><span class="p">:</span> <span class="n">os_data</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;osinfo&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">text</span><span class="p">,</span>
+            <span class="s1">&#39;product_name&#39;</span><span class="p">:</span> <span class="n">os_data</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;product_name&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">text</span>
+        <span class="p">}</span></div></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">ForensicVM</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2023, Nuno Mourinho.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.0.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.13</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

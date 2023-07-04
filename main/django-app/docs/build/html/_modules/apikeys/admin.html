@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>apikeys.admin &#8212; ForensicVM 1.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css" />
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/sphinx_highlight.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for apikeys.admin</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">django</span> <span class="kn">import</span> <span class="n">forms</span>
+<span class="kn">from</span> <span class="nn">django.contrib</span> <span class="kn">import</span> <span class="n">admin</span>
+<span class="kn">from</span> <span class="nn">django.utils.html</span> <span class="kn">import</span> <span class="n">format_html</span>
+<span class="kn">from</span> <span class="nn">django.contrib</span> <span class="kn">import</span> <span class="n">messages</span>
+<span class="kn">from</span> <span class="nn">.models</span> <span class="kn">import</span> <span class="n">ApiKey</span>
+
+<div class="viewcode-block" id="MaskedInput"><a class="viewcode-back" href="../../apikeys.html#apikeys.admin.MaskedInput">[docs]</a><span class="k">class</span> <span class="nc">MaskedInput</span><span class="p">(</span><span class="n">forms</span><span class="o">.</span><span class="n">TextInput</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A custom form input widget that masks the input value.</span>
+
+<span class="sd">    This widget replaces the actual value with a masked version for display purposes.</span>
+<span class="sd">    The masked value consists of a configurable mask character repeated for the length</span>
+<span class="sd">    of the value minus a specified mask length. The remaining characters at the end of</span>
+<span class="sd">    the value are displayed as is.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attrs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mask_char</span><span class="o">=</span><span class="s1">&#39;*&#39;</span><span class="p">,</span> <span class="n">mask_length</span><span class="o">=</span><span class="mi">4</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize the MaskedInput widget.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            attrs (dict, optional): HTML attributes to be added to the rendered widget.</span>
+<span class="sd">            mask_char (str, optional): The character used for masking the input value.</span>
+<span class="sd">                Defaults to &#39;*&#39;.</span>
+<span class="sd">            mask_length (int, optional): The number of characters to be masked at the</span>
+<span class="sd">                beginning of the input value. Defaults to 4.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mask_char</span> <span class="o">=</span> <span class="n">mask_char</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mask_length</span> <span class="o">=</span> <span class="n">mask_length</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">attrs</span><span class="p">)</span>
+
+<div class="viewcode-block" id="MaskedInput.format_value"><a class="viewcode-back" href="../../apikeys.html#apikeys.admin.MaskedInput.format_value">[docs]</a>    <span class="k">def</span> <span class="nf">format_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Formats the input value with masking.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            value (str): The input value to be formatted.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            str: The masked value.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="n">masked_value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mask_char</span> <span class="o">*</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">mask_length</span><span class="p">)</span>
+        <span class="n">masked_value</span> <span class="o">+=</span> <span class="n">value</span><span class="p">[</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">mask_length</span><span class="p">:]</span>
+        <span class="k">return</span> <span class="n">masked_value</span></div></div>
+
+<div class="viewcode-block" id="ApiKeyForm"><a class="viewcode-back" href="../../apikeys.html#apikeys.admin.ApiKeyForm">[docs]</a><span class="k">class</span> <span class="nc">ApiKeyForm</span><span class="p">(</span><span class="n">forms</span><span class="o">.</span><span class="n">ModelForm</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A form for the ApiKey model.</span>
+
+<span class="sd">    This form specifies the model, fields, and any exclusions for the ApiKey model.</span>
+<span class="sd">    It also defines a custom widget for the &#39;key&#39; field to display a masked input.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="ApiKeyForm.Meta"><a class="viewcode-back" href="../../apikeys.html#apikeys.admin.ApiKeyForm.Meta">[docs]</a>    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">ApiKey</span>
+        <span class="n">fields</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;user&#39;</span><span class="p">]</span>
+        <span class="n">exclude</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;key&#39;</span><span class="p">]</span></div></div>
+
+
+<div class="viewcode-block" id="ApiKeyAdmin"><a class="viewcode-back" href="../../apikeys.html#apikeys.admin.ApiKeyAdmin">[docs]</a><span class="nd">@admin</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">ApiKey</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">ApiKeyAdmin</span><span class="p">(</span><span class="n">admin</span><span class="o">.</span><span class="n">ModelAdmin</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    ModelAdmin for the ApiKey model.</span>
+
+<span class="sd">    This ModelAdmin provides customizations for the admin interface for the ApiKey model.</span>
+<span class="sd">    It specifies the form to use, the list display fields, and additional methods.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">form</span> <span class="o">=</span> <span class="n">ApiKeyForm</span>
+    <span class="n">list_display</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;masked_key&#39;</span><span class="p">,</span> <span class="s1">&#39;created_at&#39;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="ApiKeyAdmin.masked_key"><a class="viewcode-back" href="../../apikeys.html#apikeys.admin.ApiKeyAdmin.masked_key">[docs]</a>    <span class="k">def</span> <span class="nf">masked_key</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the masked version of the API key.</span>
+
+<span class="sd">        This method takes an ApiKey object and returns a masked version of the API key.</span>
+<span class="sd">        The masked version replaces most characters with a mask character, except for the</span>
+<span class="sd">        last few characters which are displayed as is.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">masked_key_length</span> <span class="o">=</span> <span class="mi">4</span>
+        <span class="k">if</span> <span class="n">obj</span><span class="o">.</span><span class="n">key</span><span class="p">:</span>
+            <span class="n">key</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">key</span><span class="p">)</span>
+            <span class="k">return</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">key</span><span class="p">[:</span><span class="n">masked_key_length</span><span class="p">]</span><span class="si">}{</span><span class="s2">&quot;*&quot;</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">key</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">masked_key_length</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">&quot;&quot;</span></div>
+
+    <span class="n">masked_key</span><span class="o">.</span><span class="n">short_description</span> <span class="o">=</span> <span class="s1">&#39;Key&#39;</span>
+
+<div class="viewcode-block" id="ApiKeyAdmin.get_queryset"><a class="viewcode-back" href="../../apikeys.html#apikeys.admin.ApiKeyAdmin.get_queryset">[docs]</a>    <span class="k">def</span> <span class="nf">get_queryset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the queryset of ApiKey objects.</span>
+
+<span class="sd">        This method is used to filter the queryset of ApiKey objects based on the user&#39;s</span>
+<span class="sd">        privileges. If the user is a superuser, all objects are returned. Otherwise, only</span>
+<span class="sd">        the objects belonging to the user are returned.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">qs</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">get_queryset</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">is_superuser</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">qs</span>
+        <span class="k">return</span> <span class="n">qs</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">user</span><span class="o">=</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ApiKeyAdmin.save_model"><a class="viewcode-back" href="../../apikeys.html#apikeys.admin.ApiKeyAdmin.save_model">[docs]</a>    <span class="k">def</span> <span class="nf">save_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">obj</span><span class="p">,</span> <span class="n">form</span><span class="p">,</span> <span class="n">change</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Saves the ApiKey object.</span>
+
+<span class="sd">        This method is called when saving an ApiKey object through the admin interface.</span>
+<span class="sd">        It sets the user attribute of the object to the current user and then saves the object.</span>
+<span class="sd">        Additionally, it displays a success message with the generated API key.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">obj</span><span class="o">.</span><span class="n">user</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">save_model</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">obj</span><span class="p">,</span> <span class="n">form</span><span class="p">,</span> <span class="n">change</span><span class="p">)</span>
+
+        <span class="n">message</span> <span class="o">=</span> <span class="n">format_html</span><span class="p">(</span><span class="s1">&#39;New API key generated: &lt;strong&gt;&lt;h2&gt;</span><span class="si">{}</span><span class="s1">&lt;/h2&gt;&lt;/strong&gt;   Please copy it to the clipboard. This is the only time that this key is visible&#39;</span><span class="p">,</span> <span class="n">obj</span><span class="o">.</span><span class="n">key</span><span class="p">)</span>
+        <span class="n">messages</span><span class="o">.</span><span class="n">success</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span></div></div>
+
+
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">ForensicVM</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2023, Nuno Mourinho.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.0.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.13</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -813,6 +813,7 @@ function showAlert(message, color = 'w3-green') {
             <!-- RecodVideo icon -->
             <i id="RecordIcon" class="material-icons w3-text-white noVNC_button" onclick="document.getElementById('id03').style.display='block'">videocam</i>
 
+
             <!-- Settings -->
             <input type="image" alt="Settings" src="{% static 'novnc/' %}app/images/settings.svg"
                 id="noVNC_settings_button" class="noVNC_button"
@@ -931,8 +932,14 @@ function showAlert(message, color = 'w3-green') {
                 id="noVNC_disconnect_button" class="noVNC_button"
                 title="Disconnect">
 
+            <!-- Logout icon -->
+            <i id="LogoutIcon" class="material-icons w3-text-white noVNC_button" onclick="location.href='logout'">logout</i>
+
             </div>
+
+
         </div>
+
 
         <div id="noVNC_control_bar_hint"></div>
 
@@ -953,6 +960,8 @@ function showAlert(message, color = 'w3-green') {
          <!-- Test start button -->
         </div>
     </div>
+
+
 
     <!-- Server Key Verification Dialog -->
     <div class="noVNC_center noVNC_connect_layer">

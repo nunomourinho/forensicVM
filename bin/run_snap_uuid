@@ -1,0 +1,180 @@
+#!/bin/bash
+
+if [[ -z $1 ]] || [[ -z $2 ]]; then
+    echo "Syntax: run-snap <forensic-image> <name>"
+    exit 1
+fi
+
+start_time=$(date +%s)
+
+get_first_free_nbd() {
+    for nbd_device in /dev/nbd*; do
+        if ! $(lsblk -l | grep -q "^${nbd_device#/dev/}"); then
+            echo "$nbd_device"
+            return
+        fi
+    done
+    echo ""
+}
+
+first_nbd=$(get_first_free_nbd)
+echo $first_nbd
+
+check_disk_partitions() {
+  local image_file="$1"
+
+  if fdisk -lu "$image_file" | grep -q "not in disk order"; then
+    echo "Invalid partitions detected in $image_file"
+    return 1
+  else
+    echo "No invalid partitions found in $image_file"
+    return 0
+  fi
+}
+
+imagemanager=""
+qemu-img info "$1" | grep "file format" | grep qcow2
+if [[ $? -eq 0 ]]; then
+    imagemanager="qemu"
+else
+  ewfinfo "$1"
+  if [[ $? -eq 0 ]]; then
+      imagemanager="ewf"
+  else
+      affinfo "$1"
+      if [[ $? -eq 0 ]]; then
+         imagemanager="aff"
+      else
+          qemu-img info "$1"
+          if [[ $? -eq 0 ]]; then
+             imagemanager="qemu"
+          else
+             echo "Image format not detected. Aborting"
+             exit 1
+          fi
+      fi
+  fi
+fi
+
+echo "Converting using utility: $imagemanager"
+
+image=$1
+name=$2
+mode="snap"
+
+image_ewf_mnt=/forensicVM/mnt/vm/$name/ewf
+image_aff_mnt=/forensicVM/mnt/vm/$name/aff
+win_mount=/forensicVM/mnt/vm/$name/win
+run_mount=/forensicVM/mnt/vm/$name/run
+evidence_disk=/forensicVM/mnt/vm/$name/evidence.qcow2
+
+vm_mount=/forensicVM/mnt/vm
+tmp_mount=$vm_mount
+vm_name=/forensicVM/mnt/vm/$name
+
+cd "$vm_name"
+function DismountImage {
+     qemu-nbd --disconnect $first_nbd
+     if [ $imagemanager == "ewf" ]; then
+        umount "$image_ewf_mnt"
+        echo "Dismounted $image_ewf_mnt"
+     fi
+     if [ $imagemanager == "aff" ]; then
+        umount "$image_aff_mnt"
+        echo "Dismounted $image_aff_mnt"
+     fi
+     sleep 5
+}
+
+function CleanUpINT {
+     echo "CleanUp on errors"
+     qemu-nbd --disconnect $first_nbd
+     if [ $imagemanager == "ewf" ]; then
+        umount "$image_ewf_mnt"
+     fi
+     if [ $imagemanager == "aff" ]; then
+        umount "$image_aff_mnt"
+     fi
+     rm "${vm_name}/S0001-P0000.qcow2-sda"
+     exit 1
+}
+
+function CleanUpEXIT {
+     echo "Normal CleanUp"
+     end_time=$(date +%s)
+     elapsed_time=$(($end_time - $start_time))
+     days=$(($elapsed_time / 86400))
+     hours=$(($elapsed_time / 3600 % 24))
+     minutes=$(($elapsed_time / 60 % 60))
+     seconds=$(($elapsed_time % 60))
+     echo "Elapsed time: $days days, $hours hours, $minutes minutes, $seconds seconds"
+     exit 0
+}
+
+trap CleanUpINT INT
+trap CleanUpEXIT EXIT
+
+echo "1) Access forensic image location"
+echo "2) Mount forensic image"
+
+if [ $imagemanager == "ewf" ]; then
+   ewfmount "$image" "$image_ewf_mnt"/
+fi
+
+if [ $imagemanager == "aff" ]; then
+   affuse -o direct_io "$image" "$image_aff_mnt"/
+   if [[ $? -eq 0 ]]; then
+       affrawmnt="${image_aff_mnt}/$(ls $image_aff_mnt)"
+       echo "Image mounted on: $affrawmnt"
+   else
+       echo "Error: could not mount $image"
+       exit 1
+   fi
+fi
+
+echo "3) Get image information"
+
+if [ $imagemanager == "qemu" ]; then
+   virt-inspector "$1" > ${info_name}
+fi
+
+echo "4) Create backing file snapshot"
+cd "$vm_name"
+forensic_source=""
+
+if [ $imagemanager == "ewf" ]; then
+   qemu-img create -f qcow2 -b "$image_ewf_mnt"/ewf1 -F raw S0001-P0000.qcow2-sda
+   forensic_source="$image_ewf_mnt"/ewf1
+fi
+
+if [ $imagemanager == "aff" ]; then
+   echo "$affrawmnt"
+   ls "$affrawmnt"
+   qemu-img create -f qcow2 -b "$affrawmnt" -F raw S0001-P0000.qcow2-sda
+   forensic_source="$affrawmnt"
+fi
+
+if [ $imagemanager == "qemu" ]; then
+   qemu-img create -f qcow2 -b "$1" -F qcow2 S0001-P0000.qcow2-sda
+   forensic_source="$1"
+fi
+
+"$vm_name/S0002-P0001.qcow2-vnc.sh"
+
+if [ $mode != "snap" ]; then
+  echo "9) Umounting paths"
+  cd ..
+  if [ $imagemanager =="ewf" ]; then
+    umount "$image_ewf_mnt"
+    echo "Unmounted $image_ewf_mnt"
+  fi
+
+  if [ $imagemanager == "aff" ]; then
+    umount "$image_aff_mnt"
+    echo "Unmounted $image_aff_mnt"
+  fi
+  qemu-nbd --disconnect $first_nbd
+fi
+
+exit 0
+

@@ -108,9 +108,10 @@ AUTH_PASSWORD_VALIDATORS = [
 
 # Internationalization
 
-LANGUAGE_CODE = 'pt-PT'
+#LANGUAGE_CODE = 'pt-PT'
+LANGUAGE_CODE = 'en-US'
 
-# TIME_ZONE = 'Greenwitch'
+#TIME_ZONE = 'Greenwitch'
 TIME_ZONE = 'Europe/Lisbon'
 
 

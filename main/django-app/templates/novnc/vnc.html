@@ -396,6 +396,7 @@ function getVideoList() {
       return response.json();
     })
     .then(data => {
+      document.getElementById('videoList').innerHTML = '';
       const select = document.getElementById('videoList');
       data.video_files.forEach(file => {
         const option = document.createElement('option');

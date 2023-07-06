@@ -3481,7 +3481,7 @@ class ForensicImageVMStatus(APIView):
         vm_path = f"/forensicVM/mnt/vm/{uuid}"
         run_path = os.path.join(vm_path, "run")
         pid_file = os.path.join(run_path, "run.pid")
-        mode_file = os.path.join(run_path, "mode")
+        mode_file = os.path.join(vm_path, "mode")
 
         #if not os.path.exists(mode_file):
         if not os.path.exists(vm_path):
@@ -3489,6 +3489,12 @@ class ForensicImageVMStatus(APIView):
             return Response({'PATH': 'not_exist'}, status=status.HTTP_404_NOT_FOUND)
         else:
             result = {'PATH': 'exists'}
+
+            mode = None
+            if os.path.exists(mode_file):
+                with open(mode_file, 'r') as f:
+                    mode = f.read().strip()
+            result['running_mode'] = mode
 
             if os.path.exists(pid_file):
                 with open(pid_file, 'r') as f:
@@ -3501,11 +3507,6 @@ class ForensicImageVMStatus(APIView):
                 if output:
                     result['vm_status'] = 'running'
 
-                    mode = None
-                    if os.path.exists(mode_file):
-                        with open(mode_file, 'r') as f:
-                            mode = f.read().strip()
-                    result['running_mode'] = mode
 
                     qemu_cmd = output.decode("utf-8").strip()
                     vnc_port = re.search(r'-display vnc=0.0.0.0:(\d+)', qemu_cmd)

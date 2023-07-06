@@ -802,16 +802,16 @@ function showAlert(message, color = 'w3-green') {
                 title="Full Screen">
 
             <!-- Screenshot Photo camera icon -->
-            <i id="cameraIcon" class="material-icons w3-text-white noVNC_button" onclick="screenshotVM()">photo_camera</i>
+            <i id="cameraIcon" class="material-icons w3-text-white noVNC_button" title="Take a Screenshot" onclick="screenshotVM()">photo_camera</i>
 
             <!-- Network control icon -->
-            <i id="networkIcon" class="material-icons w3-text-white noVNC_button" onclick="document.getElementById('id01').style.display='block'">lan</i>
+            <i id="networkIcon" class="material-icons w3-text-white noVNC_button" title="Enable or disable network card" onclick="document.getElementById('id01').style.display='block'">lan</i>
 
             <!-- DVD control icon -->
-            <i id="dvdIcon" class="material-icons w3-text-white noVNC_button" onclick="document.getElementById('id02').style.display='block'">eject</i>
+            <i id="dvdIcon" class="material-icons w3-text-white noVNC_button" title="Insert or eject media" onclick="document.getElementById('id02').style.display='block'">eject</i>
 
             <!-- RecodVideo icon -->
-            <i id="RecordIcon" class="material-icons w3-text-white noVNC_button" onclick="document.getElementById('id03').style.display='block'">videocam</i>
+            <i id="RecordIcon" class="material-icons w3-text-white noVNC_button" title="Video recording" onclick="document.getElementById('id03').style.display='block'">videocam</i>
 
 
             <!-- Settings -->
@@ -933,7 +933,7 @@ function showAlert(message, color = 'w3-green') {
                 title="Disconnect">
 
             <!-- Logout icon -->
-            <i id="LogoutIcon" class="material-icons w3-text-white noVNC_button" onclick="location.href='logout'">logout</i>
+            <i id="LogoutIcon" class="material-icons w3-text-white noVNC_button" title="Logout" onclick="location.href='logout'">logout</i>
 
             </div>
 

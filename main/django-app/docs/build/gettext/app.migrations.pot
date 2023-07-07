@@ -1,0 +1,42 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2023, Nuno Mourinho
+# This file is distributed under the same license as the ForensicVM package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: ForensicVM \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2023-07-07 07:26+0100\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: ../../source/app.migrations.rst:2
+msgid "app.migrations package"
+msgstr ""
+
+#: ../../source/app.migrations.rst:5
+msgid "Submodules"
+msgstr ""
+
+#: ../../source/app.migrations.rst:8
+msgid "app.migrations.0001\\_initial module"
+msgstr ""
+
+#: ../../../app/migrations/0001_initial.py:docstring of app.migrations.0001_initial.Migration:1
+#: ../../../app/migrations/0002_forensicvm.py:docstring of app.migrations.0002_forensicvm.Migration:1
+msgid "Bases: :py:class:`~django.db.migrations.migration.Migration`"
+msgstr ""
+
+#: ../../source/app.migrations.rst:16
+msgid "app.migrations.0002\\_forensicvm module"
+msgstr ""
+
+#: ../../source/app.migrations.rst:24
+msgid "Module contents"
+msgstr ""

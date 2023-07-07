@@ -1,0 +1,52 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2023, Nuno Mourinho
+# This file is distributed under the same license as the ForensicVM package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: ForensicVM \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2023-07-07 07:26+0100\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: ../../source/apikeys.migrations.rst:2
+msgid "apikeys.migrations package"
+msgstr ""
+
+#: ../../source/apikeys.migrations.rst:5
+msgid "Submodules"
+msgstr ""
+
+#: ../../source/apikeys.migrations.rst:8
+msgid "apikeys.migrations.0001\\_initial module"
+msgstr ""
+
+#: ../../../apikeys/migrations/0001_initial.py:docstring of apikeys.migrations.0001_initial.Migration:1
+#: ../../../apikeys/migrations/0002_alter_apikey_key.py:docstring of apikeys.migrations.0002_alter_apikey_key.Migration:1
+#: ../../../apikeys/migrations/0003_alter_apikey_key.py:docstring of apikeys.migrations.0003_alter_apikey_key.Migration:1
+#: ../../../apikeys/migrations/0004_alter_apikey_key.py:docstring of apikeys.migrations.0004_alter_apikey_key.Migration:1
+msgid "Bases: :py:class:`~django.db.migrations.migration.Migration`"
+msgstr ""
+
+#: ../../source/apikeys.migrations.rst:16
+msgid "apikeys.migrations.0002\\_alter\\_apikey\\_key module"
+msgstr ""
+
+#: ../../source/apikeys.migrations.rst:24
+msgid "apikeys.migrations.0003\\_alter\\_apikey\\_key module"
+msgstr ""
+
+#: ../../source/apikeys.migrations.rst:32
+msgid "apikeys.migrations.0004\\_alter\\_apikey\\_key module"
+msgstr ""
+
+#: ../../source/apikeys.migrations.rst:40
+msgid "Module contents"
+msgstr ""

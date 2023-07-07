@@ -1,0 +1,103 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2023, Nuno Mourinho
+# This file is distributed under the same license as the ForensicVM package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: ForensicVM \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2023-07-07 07:26+0100\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: ../../source/app.rst:2
+msgid "app package"
+msgstr ""
+
+#: ../../source/app.rst:5
+msgid "Subpackages"
+msgstr ""
+
+#: ../../source/app.rst:13
+msgid "Submodules"
+msgstr ""
+
+#: ../../source/app.rst:16
+msgid "app.admin module"
+msgstr ""
+
+#: ../../../app/admin.py:docstring of app.admin.ArticleAdmin:1
+msgid "Bases: :py:class:`~django.contrib.admin.options.ModelAdmin`"
+msgstr ""
+
+#: ../../source/app.rst:24
+msgid "app.apps module"
+msgstr ""
+
+#: ../../../app/apps.py:docstring of app.apps.AppConfig:1
+msgid "Bases: :py:class:`~django.apps.config.AppConfig`"
+msgstr ""
+
+#: ../../source/app.rst:32
+msgid "app.models module"
+msgstr ""
+
+#: ../../../app/models.py:docstring of app.models.Server:1
+#: ../../../app/models.py:docstring of app.models.forensicVM:1
+msgid "Bases: :py:class:`~django.db.models.base.Model`"
+msgstr ""
+
+#: ../../../app/models.py:docstring of app.models.Server.DoesNotExist:1
+#: ../../../app/models.py:docstring of app.models.forensicVM.DoesNotExist:1
+msgid "Bases: :py:class:`~django.core.exceptions.ObjectDoesNotExist`"
+msgstr ""
+
+#: ../../../app/models.py:docstring of app.models.Server.MultipleObjectsReturned:1
+#: ../../../app/models.py:docstring of app.models.forensicVM.MultipleObjectsReturned:1
+msgid "Bases: :py:class:`~django.core.exceptions.MultipleObjectsReturned`"
+msgstr ""
+
+#: ../../docstring of app.models.Server.id:1
+#: ../../docstring of app.models.Server.name:1
+#: ../../docstring of app.models.Server.token:1
+#: ../../docstring of app.models.Server.vnc_password:1
+#: ../../docstring of app.models.forensicVM.forensicImage:1
+#: ../../docstring of app.models.forensicVM.id:1
+#: ../../docstring of app.models.forensicVM.name:1
+#: ../../docstring of app.models.forensicVM.osDetected:1
+#: ../../docstring of app.models.forensicVM.vncHost:1
+#: ../../docstring of app.models.forensicVM.vncPort:1
+msgid "A wrapper for a deferred-loading field. When the value is read from this object the first time, the query is executed."
+msgstr ""
+
+#: ../../source/app.rst:40
+msgid "app.tests module"
+msgstr ""
+
+#: ../../source/app.rst:48
+msgid "app.views module"
+msgstr ""
+
+#: ../../../app/views.py:docstring of app.views.ProxyNetdata:1
+#: ../../../app/views.py:docstring of app.views.ProxyShellbox:1
+msgid "Bases: :py:class:`~django.contrib.auth.mixins.LoginRequiredMixin`, :py:class:`~revproxy.views.ProxyView`"
+msgstr ""
+
+#: ../../../app/views.py:docstring of app.views.VMListView:1
+msgid "Bases: :py:class:`~django.views.generic.base.View`"
+msgstr ""
+
+#: ../../../app/views.py:docstring of app.views.vnc_proxy:1
+#: ../../../app/views.py:docstring of app.views.vnc_proxy_http:1
+msgid "VNC agente de controlo remoto"
+msgstr ""
+
+#: ../../source/app.rst:56
+msgid "Module contents"
+msgstr ""

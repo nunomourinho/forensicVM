@@ -1524,7 +1524,6 @@ class RollbackSnapshotView(View):
         rollback_status = await rollback_snapshot(uuid, snapshot_name)
         return JsonResponse({'message': rollback_status}, status=200)
 
-
 async def create_snapshot(uuid):
     """
     Asynchronously creates a snapshot of a specific VM.
@@ -1541,12 +1540,25 @@ async def create_snapshot(uuid):
     qmp = QMPClient('forensicVM')
     socket_path = f"/forensicVM/mnt/vm/{uuid}/run/qmp.sock"
 
+    print(socket_path)
     try:
         await qmp.connect(socket_path)
-        snapshot_name = datetime.datetime.now().strftime("snap-%Y-%m-%d_%H:%M:%S")
-        await qmp.execute("human-monitor-command", {
+
+        res = await qmp.execute('query-status')
+        print(res)
+        print(f"VM status: {res['status']}")
+        status = res['status']
+
+        snapshot_name = datetime.now().strftime("snap-%Y-%m-%d_%H%M%S")
+
+        print(snapshot_name)
+
+        res = await qmp.execute("human-monitor-command", {
             "command-line": f"savevm {snapshot_name}"
         })
+
+        print(f"Snapshot '{snapshot_name}' created.")
+
         return snapshot_name
     except Exception as e:
         print(e)

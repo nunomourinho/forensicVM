@@ -595,10 +595,12 @@ function showAlert(message, color = 'w3-green') {
         top: 0;
         width: 100%;
         z-index: 9998;
+        pointer-events: none;
      }
 
      .alert.show {
        opacity: 0.75;
+       pointer-events: none;
     }
 
     .alert-message {

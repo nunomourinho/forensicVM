@@ -11,10 +11,10 @@ Package-List:
  forensic-vm deb misc optional arch=amd64
 Checksums-Sha1:
  0ac19c13ac866bec387c22f1c26049f0cae5ddf4 184 forensic-vm_1.0.orig.tar.xz
- 3fd9dd070e3c2bd51fbd794a9e15f2c1faeedd15 7960 forensic-vm_1.0-1.debian.tar.xz
+ 3d1166a68fc311759b2ad2e57df6440d01340a2e 28940 forensic-vm_1.0-1.debian.tar.xz
 Checksums-Sha256:
  096c9f38f7a82d26ee7075f3d090d9108a6125ee16b6402132bf90d91a0d5c90 184 forensic-vm_1.0.orig.tar.xz
- 5df783ee3a6b0f5a7d70856bea3c4c58c8ab9efea4c46d7eb246d6ce3b273300 7960 forensic-vm_1.0-1.debian.tar.xz
+ cfcb95aa8afae188470750e77fdaafe58aa15e3e1879064df01ef4ec03220b1a 28940 forensic-vm_1.0-1.debian.tar.xz
 Files:
  72b3ba1e91a426eb98d485b0cff0b3de 184 forensic-vm_1.0.orig.tar.xz
- ebeee4a031fd04835bb0aa5d79f3fdb9 7960 forensic-vm_1.0-1.debian.tar.xz
+ 8116fdcb00bb2c537ebe65e262e8376a 28940 forensic-vm_1.0-1.debian.tar.xz

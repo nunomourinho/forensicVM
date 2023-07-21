@@ -1,0 +1,34 @@
+Format: 1.8
+Date: Fri, 21 Jul 2023 14:53:54 +0100
+Source: forensic-vm
+Binary: forensic-vm
+Architecture: source amd64
+Version: 1.0-1
+Distribution: unstable
+Urgency: medium
+Maintainer: Nuno Mourinho <nuno.mourinho+forensic-vm@gmail.com>
+Changed-By: root <root@v2v-forensicVM>
+Description:
+ forensic-vm - ForensicVM Server
+Changes:
+ forensic-vm (1.0-1) unstable; urgency=medium
+ .
+   * Initial release (Closes: #nnnn)  <nnnn is the bug number of your ITP>
+Checksums-Sha1:
+ 3ac3d49b60e4993204eb41aa7aa933a599e41939 863 forensic-vm_1.0-1.dsc
+ 0ac19c13ac866bec387c22f1c26049f0cae5ddf4 184 forensic-vm_1.0.orig.tar.xz
+ 3d1166a68fc311759b2ad2e57df6440d01340a2e 28940 forensic-vm_1.0-1.debian.tar.xz
+ f3e4ea2295486df3d36e20310ee8780f6659a8ff 5197 forensic-vm_1.0-1_amd64.buildinfo
+ 997cf191fb6b78191d5f222fa5138bb89033f7a2 22896 forensic-vm_1.0-1_amd64.deb
+Checksums-Sha256:
+ cc2db49ccea1744bd4f58ee8dcd78644bf6907caf07290e1592f393c892cca07 863 forensic-vm_1.0-1.dsc
+ 096c9f38f7a82d26ee7075f3d090d9108a6125ee16b6402132bf90d91a0d5c90 184 forensic-vm_1.0.orig.tar.xz
+ cfcb95aa8afae188470750e77fdaafe58aa15e3e1879064df01ef4ec03220b1a 28940 forensic-vm_1.0-1.debian.tar.xz
+ 2c60c3fa39515b2f3040697e62a46076861daff0f7e379d0588a527950663a0b 5197 forensic-vm_1.0-1_amd64.buildinfo
+ 96a117a866682472b9638d7e33208f4431c64f543f87c83b9a7a81be39b8e53a 22896 forensic-vm_1.0-1_amd64.deb
+Files:
+ db778e1d5f326197fa8b3beae43cc163 863 misc optional forensic-vm_1.0-1.dsc
+ 72b3ba1e91a426eb98d485b0cff0b3de 184 misc optional forensic-vm_1.0.orig.tar.xz
+ 8116fdcb00bb2c537ebe65e262e8376a 28940 misc optional forensic-vm_1.0-1.debian.tar.xz
+ 11163976ae6eecbed45f9d25e9601c88 5197 misc optional forensic-vm_1.0-1_amd64.buildinfo
+ e8e6ec744746a49944ca2f0a3b1777b3 22896 misc optional forensic-vm_1.0-1_amd64.deb

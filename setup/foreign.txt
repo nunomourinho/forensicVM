@@ -1,0 +1,1 @@
+apt-clone (>= 0.4.3+nmu1~bpo11+1) (Backports), mkcert (>= 1.4.3-1~bpo11+1) (Backports), virt-v2v (>= 1.44.2-1~bpo11+1) (Backports)

@@ -1,0 +1,5 @@
+forensic-vm (1.0-1) unstable; urgency=medium
+
+  * Initial release (Closes: #nnnn)  <nnnn is the bug number of your ITP>
+
+ -- root <root@v2v-forensicVM>  Fri, 21 Jul 2023 14:53:54 +0100

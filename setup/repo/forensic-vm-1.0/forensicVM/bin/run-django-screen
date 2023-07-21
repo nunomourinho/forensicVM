@@ -1,0 +1,2 @@
+cd /forensicVM/bin
+screen -dmS forensicVM-screen bash run-django

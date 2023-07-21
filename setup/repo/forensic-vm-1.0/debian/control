@@ -1,0 +1,16 @@
+Source: forensic-vm
+Section: misc
+Priority: optional
+Maintainer: Nuno Mourinho <nuno.mourinho+forensic-vm@gmail.com>
+Build-Depends: debhelper-compat (= 13)
+Standards-Version: 4.5.1
+Homepage: <insert the upstream URL, if relevant>
+#Vcs-Browser: https://salsa.debian.org/debian/forensic-vm
+#Vcs-Git: https://salsa.debian.org/debian/forensic-vm.git
+Rules-Requires-Root: no
+
+Package: forensic-vm
+Architecture: amd64
+Depends: ${misc:Depends}
+Description: ForensicVM Server
+ This package will install the forensicVM Server and all dependecies

@@ -1,4 +1,6 @@
 ./forensicVM/bin/activate_venv
+./forensicVM/bin/compile_django.py
+./forensicVM/bin/compile_django.sh
 ./forensicVM/bin/convert_to_mbr.sh
 ./forensicVM/bin/copy_vnc.sh
 ./forensicVM/bin/create-windows-partition.sh
@@ -16,3 +18,5 @@
 ./forensicVM/bin/run_snap_2
 ./forensicVM/bin/start_tap.sh
 ./forensicVM/bin/virt-diff-test.sh
+./forensicVM/bin/win10_mbr_backup.bin
+./forensicVM/bin/win10bootp1.raw

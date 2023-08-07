@@ -1,4 +1,6 @@
 908683ffad5fa76d02bba7b681a6023e  forensicVM/bin/activate_venv
+963a619b9594e61a5c681c10ff4b839d  forensicVM/bin/compile_django.py
+f3a66a58d0caf5798053642bdcd0882d  forensicVM/bin/compile_django.sh
 b8b08cf37177dd387acb98cc07ab1c12  forensicVM/bin/convert_to_mbr.sh
 8d39ca657f431f34e6463a2b17eb4219  forensicVM/bin/copy_vnc.sh
 cd73b42dc94b254ec10874c78b77229c  forensicVM/bin/create-windows-partition.sh
@@ -16,6 +18,8 @@ d845058b511d30a47a677a9755594d7b  forensicVM/bin/run-or-convert.sh
 ee6038553a136225c7f6385d4b68a2f9  forensicVM/bin/run_snap_2
 4a1d0a5096f5316b07963fbc14dd35d4  forensicVM/bin/start_tap.sh
 d55f79e2a29072fe627be503ac305338  forensicVM/bin/virt-diff-test.sh
+b0d8bc2b0ced3384824ea7cfc732f1e2  forensicVM/bin/win10_mbr_backup.bin
+18075eb4bf9e29c3d4716aa1651b8161  forensicVM/bin/win10bootp1.raw
 33ce70f031ae7101c10f884f58703c3d  usr/share/doc/forensic-vm/README.Debian
-9a64948432dc8a2cbd9d60d15ea0361e  usr/share/doc/forensic-vm/changelog.Debian.gz
+e2cc6a5f1f1d169e53cd5999c60b0c5f  usr/share/doc/forensic-vm/changelog.Debian.gz
 7e969d2c710c148cd67b650215badb3b  usr/share/doc/forensic-vm/copyright

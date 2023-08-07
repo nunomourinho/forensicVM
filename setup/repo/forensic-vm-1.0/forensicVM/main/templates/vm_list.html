@@ -1,0 +1,362 @@
+{% extends 'main.html' %}
+
+{% block header %}
+    <script>
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    // Does this cookie string begin with the name we want?
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        function getParameterByName(name, url) {
+            if (!url) url = window.location.href;
+            name = name.replace(/[\[\]]/g, '\\$&');
+            var regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)'),
+                results = regex.exec(url);
+            if (!results) return null;
+            if (!results[2]) return '';
+            return decodeURIComponent(results[2].replace(/\+/g, ' '));
+        }
+
+
+        function updateBrowseUrl(uuid, port = 5900) {
+        if (uuid) {
+             const browseButton = document.getElementById("browse_" + uuid);
+             browseButton.onclick = function() {
+                                                 browseVM(uuid, port);
+                                               };
+                  }
+        }
+
+
+       function browseVM(uuid, port) {
+           if (uuid) {               
+               var url = new URL('screen', window.location.href);
+               url.searchParams.set('uuid', uuid);
+               url.searchParams.set('port', port);
+               window.open(url.toString(), '_blank');
+           }
+       }
+
+
+
+
+        function updateButtonStatus(uuid, state=false) {
+           const startButton = document.getElementById("start_" + uuid)
+           startButton.disabled = state
+
+           const browseButton = document.getElementById("browse_" + uuid)
+           browseButton.disabled = !state
+
+           const stopButton = document.getElementById("stop_" + uuid)
+           stopButton.disabled = !state
+
+           const shutdownButton = document.getElementById("shutdown_" + uuid)
+           shutdownButton.disabled = !state
+
+           const resetButton = document.getElementById("reset_" + uuid)
+           resetButton.disabled = !state
+           console.log('Update vm buttons')
+        }
+
+
+
+        function startVM(uuid) {
+            if (uuid) {
+                fetch('/api/start-vm/' + uuid + '/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    credentials: 'include'
+                })
+                //.then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                    throw new Error('Error: ' + response.status);
+                 }
+                    return response.json();
+                })
+                .then(data => {
+                    showAlert('Start sent...','w3-blue')                    
+                    updateButtonStatus(uuid, data.vm_running)
+                    updateBrowseUrl(uuid, data.websocket_port)
+                    console.log(data);
+                })
+                .catch((error) => {
+                    console.error('Error:', error);
+                    location.reload();
+                });
+            }
+        }
+
+       function stopVM(uuid) {
+            if (uuid) {
+                fetch('/api/stop-vm/' + uuid + '/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    credentials: 'include'
+                })
+                //.then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                    throw new Error('Error: ' + response.status);
+                }
+                    return response.json();
+                })
+                .then(data => {
+                    showAlert('Stop sent...','w3-orange')
+                    updateButtonStatus(uuid, !data.vm_stopped)
+                    console.log(data);
+                })
+                .catch((error) => {
+                    console.error('Error:', error);
+                    location.reload();
+                });
+            }
+        }
+
+       function resetVM(uuid) {
+            if (uuid) {
+                fetch('/api/reset-vm/' + uuid + '/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    credentials: 'include'
+                })
+                //.then(response => response.json())
+               .then(response => {
+                    if (!response.ok) {
+                    throw new Error('Error: ' + response.status);
+                }
+                    return response.json();
+                })
+                .then(data => {
+                    showAlert('Reset sent...','w3-orange')
+                    console.log(data);
+                })
+                .catch((error) => {
+                    console.error('Error:', error);
+                    location.reload();
+                });
+            }
+        }
+
+       function shutdownVM(uuid) {
+            if (uuid) {
+                fetch('/api/shutdown-vm/' + uuid + '/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    credentials: 'include'
+                })
+                //.then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                    showAlert('Error in machine shutdown', 'w3-red')
+                    throw new Error('Error: ' + response.status);
+                }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log(data);
+                    showAlert('Shutdown sent...','w3-blue')
+                })
+                .catch((error) => {
+                    console.error('Error:', error);
+                    location.reload();
+                });
+            }
+        }
+        var uuid_array = new Array()
+        {% for item in data %}
+          uuid_array.push('{{ item.uuid }}')
+        {% endfor %}
+
+        console.log(uuid_array)
+
+
+/*
+function getVmStatus(uuid) {
+  return new Promise(function(resolve, reject) {
+    if (uuid) {
+      fetch('/api/forensic-image-vm-status/' + uuid + '/', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+          },
+          credentials: 'include'
+        })
+        .then(function(response) {
+          if (!response.ok) {
+            throw new Error('Error: ' + response.status);
+          }
+          return response.json();
+        })
+        .then(function(data) {
+          var running = (data.vm_status === 'running');
+          if (running) {
+		var port=data.websocket_port
+	  } else {
+		var port=0
+          }	
+          console.log(data);
+          resolve(running,port);
+        })
+        .catch(function(error) {
+          console.error('Error:', error);
+          reject(error);
+        });
+    } else {
+      reject(new Error('UUID is missing.'));
+    }
+  });
+}
+        
+
+function updateTable() {
+  for (var uuid of uuid_array) {
+    (function(uuid) {
+      getVmStatus(uuid)
+        .then(function(running, port) {
+          if (running) {
+            console.log(uuid + " " + running);
+            updateButtonStatus(uuid, running);
+            updateBrowseUrl(uuid, port);
+          } else {
+            console.log(uuid + " " + running);
+          }
+        })
+        .catch(function(error) {
+          console.error('Error:', error);
+        });
+    })(uuid);
+  }
+}
+
+*/
+
+function getVmStatus(uuid) {
+  return new Promise(function(resolve, reject) {
+    if (uuid) {
+      fetch('/api/forensic-image-vm-status/' + uuid + '/', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+          },
+          credentials: 'include'
+        })
+        .then(function(response) {
+          if (!response.ok) {
+            throw new Error('Error: ' + response.status);
+          }
+          return response.json();
+        })
+        .then(function(data) {
+          var running = (data.vm_status === 'running');
+          var port = running ? data.websocket_port : 0;
+          console.log(data);
+          resolve({ running: running, port: port });
+        })
+        .catch(function(error) {
+          console.error('Error:', error);
+          reject(error);
+        });
+    } else {
+      reject(new Error('UUID is missing.'));
+    }
+  });
+}
+
+
+function updateTable() {
+  for (var uuid of uuid_array) {
+    (function(uuid) {
+      getVmStatus(uuid)
+        .then(function(result) {
+          var running = result.running;
+          var port = result.port;
+          console.log(running)
+          if (running) {
+            console.log(uuid + " " + running);
+            updateButtonStatus(uuid, running);
+            updateBrowseUrl(uuid, port);
+          } else {
+            console.log(uuid + " " + running);
+            updateButtonStatus(uuid, running);
+          }
+        })
+        .catch(function(error) {
+          console.error('Error:', error);
+        });
+    })(uuid);
+  }
+}
+
+
+
+
+setInterval(updateTable, 5000);
+updateTable()
+
+</script>
+{% endblock %}
+
+{% block content %}
+  <div class="w3-container">
+    <div class="w3-responsive">
+      <table class="w3-table w3-striped w3-border w3-hoverable">
+        <thead>
+          <tr class="w3-light-grey">
+            <th>UUID</th>
+            <th>Hostname</th>
+            <th>Distro</th>
+            <th>Product Name</th>
+            <th>OS Info</th>
+            <th>Start</th>
+            <th>Stop</th>
+            <th>Shutdown</th>
+            <th>Reset</th>
+            <th>Browse</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in data %}
+          <tr>
+            <td>{{ item.uuid }}</td>
+            <td>{{ item.hostname }}</td>
+            <td>{{ item.distro }}</td>
+            <td>{{ item.product_name }}</td>
+            <td>{{ item.osinfo }}</td>
+            <td><button id="start_{{ item.uuid }}" class="w3-button w3-ripple w3-green" disabled onclick="startVM('{{ item.uuid }}')" >Start</button></td>
+            <td><button id="stop_{{ item.uuid }}" class="w3-button w3-orange" disabled onclick="stopVM('{{ item.uuid }}')">Stop</button></td>
+            <td><button id="shutdown_{{ item.uuid }}" class="w3-button w3-red" disabled onclick="shutdownVM('{{ item.uuid }}')">Shutdown</button></td>
+            <td><button id="reset_{{ item.uuid }}" class="w3-button w3-blue" disabled onclick="resetVM('{{ item.uuid }}')">Reset</button></td>
+            <td><button id="browse_{{ item.uuid }}" class="w3-button w3-purple" disabled onclick="browseVM('{{ item.uuid }}')">Browse</button></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+{% endblock %}

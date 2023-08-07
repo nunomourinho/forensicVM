@@ -15,20 +15,20 @@ Changes:
  .
    * Initial release (Closes: #nnnn)  <nnnn is the bug number of your ITP>
 Checksums-Sha1:
- 3ac3d49b60e4993204eb41aa7aa933a599e41939 863 forensic-vm_1.0-1.dsc
+ 8c2d830f8cafdb8d54dd52e89e0abffc6a7cfddd 875 forensic-vm_1.0-1.dsc
  0ac19c13ac866bec387c22f1c26049f0cae5ddf4 184 forensic-vm_1.0.orig.tar.xz
- 3d1166a68fc311759b2ad2e57df6440d01340a2e 28940 forensic-vm_1.0-1.debian.tar.xz
- f3e4ea2295486df3d36e20310ee8780f6659a8ff 5197 forensic-vm_1.0-1_amd64.buildinfo
- 997cf191fb6b78191d5f222fa5138bb89033f7a2 22896 forensic-vm_1.0-1_amd64.deb
+ 822ea16b3f684edef4ff7778d0fc8b811909cd41 316575120 forensic-vm_1.0-1.debian.tar.xz
+ 755d7b93de3b3edec0e0ac102e6bd1a75d04f1a3 5209 forensic-vm_1.0-1_amd64.buildinfo
+ 7e7ab95e2ff5ed79cc977786778ff65f2246c005 312973500 forensic-vm_1.0-1_amd64.deb
 Checksums-Sha256:
- cc2db49ccea1744bd4f58ee8dcd78644bf6907caf07290e1592f393c892cca07 863 forensic-vm_1.0-1.dsc
+ 2ef494b47bb8129de623c4bf55dc9f9d0d4632f5d17fc168f26dac1cc80a671a 875 forensic-vm_1.0-1.dsc
  096c9f38f7a82d26ee7075f3d090d9108a6125ee16b6402132bf90d91a0d5c90 184 forensic-vm_1.0.orig.tar.xz
- cfcb95aa8afae188470750e77fdaafe58aa15e3e1879064df01ef4ec03220b1a 28940 forensic-vm_1.0-1.debian.tar.xz
- 2c60c3fa39515b2f3040697e62a46076861daff0f7e379d0588a527950663a0b 5197 forensic-vm_1.0-1_amd64.buildinfo
- 96a117a866682472b9638d7e33208f4431c64f543f87c83b9a7a81be39b8e53a 22896 forensic-vm_1.0-1_amd64.deb
+ 0e08bcd732b230012ad2c5978ddbceb8e9d1237500d373f39233dc5db2ae39e3 316575120 forensic-vm_1.0-1.debian.tar.xz
+ 190ed6b244f4590d598480872595354f40b9e3878c257e98bee5d02fc0e9fec4 5209 forensic-vm_1.0-1_amd64.buildinfo
+ 6fcf76987fd91b247baabcfa8dc45c6879c107785c7e6e739e908142995d047b 312973500 forensic-vm_1.0-1_amd64.deb
 Files:
- db778e1d5f326197fa8b3beae43cc163 863 misc optional forensic-vm_1.0-1.dsc
+ d5a8886079e5ffa410d0c4c14ac92f07 875 misc optional forensic-vm_1.0-1.dsc
  72b3ba1e91a426eb98d485b0cff0b3de 184 misc optional forensic-vm_1.0.orig.tar.xz
- 8116fdcb00bb2c537ebe65e262e8376a 28940 misc optional forensic-vm_1.0-1.debian.tar.xz
- 11163976ae6eecbed45f9d25e9601c88 5197 misc optional forensic-vm_1.0-1_amd64.buildinfo
- e8e6ec744746a49944ca2f0a3b1777b3 22896 misc optional forensic-vm_1.0-1_amd64.deb
+ 9f714f5af24c539064d9a087f12324b2 316575120 misc optional forensic-vm_1.0-1.debian.tar.xz
+ 44decc11aaf07d7d2e0ea678405196ac 5209 misc optional forensic-vm_1.0-1_amd64.buildinfo
+ 23a081cbabf6abbed4e59087f3ba498b 312973500 misc optional forensic-vm_1.0-1_amd64.deb

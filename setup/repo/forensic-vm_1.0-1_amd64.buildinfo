@@ -4,17 +4,17 @@ Binary: forensic-vm
 Architecture: amd64 source
 Version: 1.0-1
 Checksums-Md5:
- db778e1d5f326197fa8b3beae43cc163 863 forensic-vm_1.0-1.dsc
- e8e6ec744746a49944ca2f0a3b1777b3 22896 forensic-vm_1.0-1_amd64.deb
+ d5a8886079e5ffa410d0c4c14ac92f07 875 forensic-vm_1.0-1.dsc
+ 23a081cbabf6abbed4e59087f3ba498b 312973500 forensic-vm_1.0-1_amd64.deb
 Checksums-Sha1:
- 3ac3d49b60e4993204eb41aa7aa933a599e41939 863 forensic-vm_1.0-1.dsc
- 997cf191fb6b78191d5f222fa5138bb89033f7a2 22896 forensic-vm_1.0-1_amd64.deb
+ 8c2d830f8cafdb8d54dd52e89e0abffc6a7cfddd 875 forensic-vm_1.0-1.dsc
+ 7e7ab95e2ff5ed79cc977786778ff65f2246c005 312973500 forensic-vm_1.0-1_amd64.deb
 Checksums-Sha256:
- cc2db49ccea1744bd4f58ee8dcd78644bf6907caf07290e1592f393c892cca07 863 forensic-vm_1.0-1.dsc
- 96a117a866682472b9638d7e33208f4431c64f543f87c83b9a7a81be39b8e53a 22896 forensic-vm_1.0-1_amd64.deb
+ 2ef494b47bb8129de623c4bf55dc9f9d0d4632f5d17fc168f26dac1cc80a671a 875 forensic-vm_1.0-1.dsc
+ 6fcf76987fd91b247baabcfa8dc45c6879c107785c7e6e739e908142995d047b 312973500 forensic-vm_1.0-1_amd64.deb
 Build-Origin: Debian
 Build-Architecture: amd64
-Build-Date: Fri, 21 Jul 2023 16:05:23 +0100
+Build-Date: Mon, 24 Jul 2023 11:23:44 +0100
 Build-Tainted-By:
  merged-usr-via-aliased-dirs
  usr-local-has-includes

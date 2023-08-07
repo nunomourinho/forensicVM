@@ -1,0 +1,1050 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt_PT" class="noVNC_loading">
+<head>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script>
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    // Does this cookie string begin with the name we want?
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        function getParameterByName(name, url) {
+            if (!url) url = window.location.href;
+            name = name.replace(/[\[\]]/g, '\\$&');
+            var regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)'),
+                results = regex.exec(url);
+            if (!results) return null;
+            if (!results[2]) return '';
+            return decodeURIComponent(results[2].replace(/\+/g, ' '));
+        }
+
+
+        function startVM() {
+            const uuid = getParameterByName('uuid');
+            if (uuid) {
+                fetch('/api/start-vm/' + uuid + '/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken') 
+                    },
+                    credentials: 'include'
+                })
+                //.then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                    throw new Error('Error: ' + response.status);
+                 }
+                    return response.json();
+                })
+                .then(data => {
+                    showAlert('Start sent...','w3-blue')
+                    console.log(data);
+                })
+                .catch((error) => {
+                    console.error('Error:', error);
+                    location.reload();
+                });
+            }
+        }
+
+
+       function stopVM() {
+            const uuid = getParameterByName('uuid');
+            if (uuid) {
+                fetch('/api/stop-vm/' + uuid + '/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    credentials: 'include'
+                })
+                //.then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                    throw new Error('Error: ' + response.status);
+                }
+                    return response.json();
+                })
+                .then(data => {
+                    showAlert('Stop sent...','w3-orange')
+                    console.log(data);
+                })
+                .catch((error) => {
+                    console.error('Error:', error);
+                    location.reload();
+                });
+            }
+        }
+
+       function resetVM() {
+            const uuid = getParameterByName('uuid');
+            if (uuid) {
+                fetch('/api/reset-vm/' + uuid + '/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    credentials: 'include'
+                })
+                //.then(response => response.json())
+               .then(response => {
+                    if (!response.ok) {
+                    throw new Error('Error: ' + response.status);
+                }
+                    return response.json();
+                })
+                .then(data => {
+                    showAlert('Reset sent...','w3-orange')
+                    console.log(data);
+                })
+                .catch((error) => {
+                    console.error('Error:', error);
+                    location.reload();
+                });
+            }
+        }
+
+       function shutdownVM() {
+            const uuid = getParameterByName('uuid');
+            if (uuid) {
+                fetch('/api/shutdown-vm/' + uuid + '/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    credentials: 'include'
+                })
+                //.then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                    showAlert('Error in machine shutdown', 'w3-red')
+                    throw new Error('Error: ' + response.status);
+                }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log(data);
+                    showAlert('Shutdown sent...','w3-blue')
+                })
+                .catch((error) => {
+                    console.error('Error:', error);
+                    location.reload();
+                });
+            }
+        }
+
+
+function screenshotVM() {
+    const uuid = getParameterByName('uuid');
+    if (uuid) {
+        fetch('/api/screenshot-vm/' + uuid + '/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            credentials: 'include'
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Error: ' + response.status);
+            }
+            return response.json();
+        })
+        .then(data => {
+            showAlert('Screenshot with success (' + data.message + ')')
+            console.log(data);
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+            location.reload();
+        });
+    }
+}
+
+
+function enableNetwork() {
+            let uuid = getParameterByName('uuid');
+            if (uuid) {
+                let formData = new FormData();
+                formData.append('uuid', uuid);       
+                fetch('/api/start_tap/', {
+                    method: 'POST',
+                    headers: {
+                        //'Content-Type': 'application/json',
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: new URLSearchParams(formData).toString(),
+                    //body: formData,
+                    credentials: 'include'
+                })
+                //.then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                    throw new Error('Error: ' + response.status);
+                }
+                    return response.json();
+                })
+                .then(data => {
+                    showAlert('Enable network sent', 'w3-orange');
+                    document.getElementById('id01').style.display='none';
+                    console.log(data);
+                })
+                .catch((error) => {
+                    console.log('UUID:', uuid);
+                    console.log('CSRF Token:', getCookie('csrftoken'));
+                    console.error('Error:', error);
+                    showAlert('Error enabling network', 'w3-red'); // Show error message to the user
+                    //location.reload();
+                });
+            }
+
+}
+
+function disableNetwork() {
+  let uuid = getParameterByName('uuid');
+  let formData = new FormData();
+  formData.append('uuid', uuid);       
+  if (uuid) {
+    fetch('/api/stop_tap/', {
+      method: 'POST',
+      headers: {
+        //'Content-Type': 'application/json',
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'X-CSRFToken': getCookie('csrftoken')
+      },
+      body: new URLSearchParams(formData).toString(),
+      //body: formData,
+      credentials: 'include'
+    })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Error: ' + response.status);
+      }
+      return response.json();
+    })
+    .then(data => {
+      showAlert('Disable network sent', 'w3-teal')
+      document.getElementById('id01').style.display = 'none';
+      console.log(data);
+    })
+    .catch((error) => {
+      console.error('Error:', error);
+      console.log('UUID:', uuid);
+      console.log('CSRF Token:', getCookie('csrftoken'));
+      showAlert('Error disabling network', 'w3-red'); // Show error message to the user
+      //location.reload();
+    });
+  }
+}
+
+
+function insertMedia() {
+  const cdromDropdown = document.getElementById('cdrom');
+  const filename = cdromDropdown.value;
+  let uuid = getParameterByName('uuid');
+  const url = `/api/insert-cdrom/${uuid}/${filename}/`;
+  console.log(url)
+  fetch(url, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': getCookie('csrftoken')
+    },
+    credentials: 'include'
+  })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Error: ' + response.status);
+      }
+      return response.json();
+    })
+    .then(data => {
+      // Handle successful response
+      showAlert('Insert media sent', 'w3-teal')
+      document.getElementById('id02').style.display = 'none';
+      console.log(data);
+    })
+    .catch(error => {
+      // Handle error
+      showAlert('Error inserting media', 'w3-red')
+      console.error('Error:', error);
+    });
+}
+
+function removeMedia() {
+    const uuid = getParameterByName('uuid');
+    if (uuid) {
+        fetch('/api/eject-cdrom/' + uuid + '/', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            credentials: 'include'
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Error: ' + response.status);
+            }
+            return response.json();
+        })
+        .then(data => {
+            showAlert('Eject media sent', 'w3-teal')
+            document.getElementById('id02').style.display = 'none';
+            console.log(data);
+        })
+        .catch((error) => {
+            showAlert('Eject media sent', 'w3-red')
+            console.error('Error:', error);
+            document.getElementById('id02').style.display = 'none';
+            //location.reload();
+        });
+    }
+}
+
+function recordVideo() {
+  const uuid = getParameterByName('uuid');
+
+  if (!uuid) {
+    console.error('UUID is not provided.');
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append('uuid', uuid);
+
+  showAlert("Record Video sent")
+  document.getElementById("rec-image").style.display = "block";  // Show rec-image
+  document.getElementById('id03').style.display = 'none';
+  fetch('/api/record_video/' + uuid + '/', {
+
+  method: 'POST',
+  credentials: 'include',
+  body: formData
+  })
+    .then(response => response.json())
+    .then(data => {
+                   showAlert('Video saved (' + data.message + ')', "w3-green")
+                   document.getElementById("rec-image").style.display = "none";  // Hide rec-image
+                   getVideoList()
+                   console.log(data) 
+                  })
+    .catch(error => {
+                    showAlert("Error recording video", "w3-red")
+                    document.getElementById("rec-image").style.display = "none";  // Hide rec-image
+                    console.error(error)
+                    });
+
+}
+
+function stopVideo() {
+    const uuid = getParameterByName('uuid');
+
+    if(!uuid){
+        console.error('UUID is not provided.');
+        return;
+    }
+
+    document.getElementById('id03').style.display = 'none';
+    fetch('/api/stop_video/' + uuid + '/', {
+    method: 'POST',
+    credentials: 'include'
+    })
+    .then(response => response.json())
+    .then(data => {
+                   showAlert("Sent stop video recording", "w3-teal")
+                   document.getElementById("rec-image").style.display = "none";  // Hide rec-image
+                   console.log(data) 
+                  })
+    .catch(error => {
+                    showAlert("Error stopping video recording", "w3-red")
+                    document.getElementById("rec-image").style.display = "none";  // Hide rec-image
+                    console.error(error)
+                    });
+
+}
+
+function getVideoList() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const uuid = urlParams.get('uuid');
+    fetch('/api/list_videos/' + uuid, {
+      method: 'GET',
+      credentials: 'include', // Send the session cookie with the request
+    })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      return response.json();
+    })
+    .then(data => {
+      document.getElementById('videoList').innerHTML = '';
+      const select = document.getElementById('videoList');
+      data.video_files.forEach(file => {
+        const option = document.createElement('option');
+        option.value = file;
+        option.textContent = file;
+        select.appendChild(option);
+      });
+    })
+    .catch(error => {
+      console.error('Error:', error);
+    });
+}
+
+document.addEventListener('DOMContentLoaded', (event) => {
+    getVideoList();
+    checkRecordingStatus();
+});
+
+function downloadVideo() {
+  const videoList = document.getElementById('videoList');
+  const filename = videoList.value;
+  const urlParams = new URLSearchParams(window.location.search);
+  const uuid = urlParams.get('uuid');
+
+  showAlert("Your video is beeing preparated. Please wait a couple of minutes for the download to begin...", "w3-teal")
+  document.getElementById('id03').style.display = 'none';
+  getVideoList();
+  fetch('/api/download_video/' + uuid + '/' + filename, {
+      method: 'GET',
+      credentials: 'include', // Send session cookie with the request
+  })
+  .then(response => response.blob())
+  .then(blob => {
+      // Create a URL for the blob
+      showAlert("Download started", "w3-teal")
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a); // we need to append the element to the dom -> otherwise it will not work in firefox
+      a.click();    
+      a.remove();  //afterwards we remove the element again         
+  });
+}
+
+
+function checkRecordingStatus() {
+    const uuid = getParameterByName('uuid');
+
+    if(!uuid){
+        console.error('UUID is not provided.');
+        return;
+    }
+
+    fetch('/api/check_recording/' + uuid + '/', {
+
+    //fetch(`/api/check_recording/${uuid}/`, {
+        method: 'GET',
+        credentials: 'include'
+    })
+    .then(response => response.json())
+    .then(data => {
+                   console.log(data);
+                   if (data.is_recording) {
+                   	document.getElementById("rec-image").style.display = "block";  // Show rec-image
+                   }
+     })
+    .catch(error => console.error(error));
+}
+
+
+
+function showAlert(message, color = 'w3-green') {
+      var alertContainer = document.getElementById('alertContainer');
+      var alertElement = document.createElement('div');
+      alertElement.classList.add('alert');
+      alertElement.classList.add('w3-panel');
+      alertElement.classList.add(color);
+      alertElement.classList.add('w3-display-container');
+
+      var closeButton = document.createElement('span');
+      closeButton.classList.add('w3-button');
+      closeButton.classList.add('w3-display-topright');
+      closeButton.textContent = '×';
+      closeButton.onclick = function() {
+        alertElement.classList.remove('show');
+      };
+
+      var messageElement = document.createElement('p');
+      messageElement.classList.add('alert-message');
+      messageElement.textContent = message;
+
+      alertElement.appendChild(closeButton);
+      alertElement.appendChild(messageElement);
+
+      alertContainer.appendChild(alertElement);
+
+      // Calculate the top position for the alert
+      var alertHeight = alertElement.offsetHeight;
+      var alertCount = alertContainer.getElementsByClassName('alert').length;
+      var alertTop = (alertCount - 1) * (alertHeight+2)-20;
+
+      // Set the top position dynamically
+      alertElement.style.top = alertTop + 'px';
+
+      setTimeout(function() {
+        alertElement.classList.add('show');
+      }, 10);
+
+      setTimeout(function() {
+        alertElement.classList.remove('show');
+        setTimeout(function() {
+          alertContainer.removeChild(alertElement);
+        }, 300);
+      }, 3000);
+    }
+
+  setInterval(function() {
+    fetch('/api/check-authenticated/', {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        credentials: 'include'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (!data.authenticated) {
+            location.reload();
+        }
+    })
+    .catch((error) => {
+        console.error('Error:', error);
+    });
+  }, 60000); 
+  </script>
+    <!--
+    Connect parameters are provided in query string:
+        http://example.com/?host=HOST&port=PORT&encrypt=1
+    or the fragment:
+        http://example.com/#host=HOST&port=PORT&encrypt=1
+    -->
+    <title>ForensicVM</title>
+    <meta charset="utf-8">
+    
+
+    <!-- Icons (see app/images/icons/Makefile for what the sizes are for) -->
+    <link rel="icon" sizes="16x16" type="image/png" href="{% static 'novnc/' %}app/images/icons/ForensicVM-16x16.png">
+    <link rel="icon" sizes="24x24" type="image/png" href="{% static 'novnc/' %}app/images/icons/ForensicVM-24x24.png">
+    <link rel="icon" sizes="32x32" type="image/png" href="{% static 'novnc/' %}app/images/icons/ForensicVM-32x32.png">
+    <link rel="icon" sizes="48x48" type="image/png" href="{% static 'novnc/' %}app/images/icons/ForensicVM-48x48.png">
+    <link rel="icon" sizes="60x60" type="image/png" href="{% static 'novnc/' %}app/images/icons/ForensicVM-60x60.png">
+    <link rel="icon" sizes="64x64" type="image/png" href="{% static 'novnc/' %}app/images/icons/ForensicVM-64x64.png">
+    <link rel="icon" sizes="72x72" type="image/png" href="{% static 'novnc/' %}app/images/icons/ForensicVM-72x72.png">
+    <link rel="icon" sizes="76x76" type="image/png" href="{% static 'novnc/' %}app/images/icons/ForensicVM-76x76.png">
+    <link rel="icon" sizes="96x96" type="image/png" href="{% static 'novnc/' %}app/images/icons/ForensicVM-96x96.png">
+    <link rel="icon" sizes="120x120" type="image/png" href="{% static 'novnc/' %}app/images/icons/ForensicVM-120x120.png">
+    <link rel="icon" sizes="144x144" type="image/png" href="{% static 'novnc/' %}app/images/icons/ForensicVM-144x144.png">
+    <link rel="icon" sizes="152x152" type="image/png" href="{% static 'novnc/' %}app/images/icons/ForensicVM-152x152.png">
+    <link rel="icon" sizes="192x192" type="image/png" href="{% static 'novnc/' %}app/images/icons/ForensicVM-192x192.png">
+    <!-- Firefox currently mishandles SVG, see #1419039
+    <link rel="icon" sizes="any" type="image/svg+xml" href="{% static 'novnc/' %}app/images/icons/novnc-icon.svg">
+    -->
+    <!-- Repeated last so that legacy handling will pick this -->
+    <link rel="icon" sizes="16x16" type="image/png" href="{% static 'novnc/' %}app/images/icons/ForensicVM-16x16.png">
+
+    <!-- Apple iOS Safari settings -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <!-- Home Screen Icons (favourites and bookmarks use the normal icons) -->
+    <link rel="apple-touch-icon" sizes="60x60" type="image/png" href="{% static 'novnc/' %}app/images/icons/ForensicVM-60x60.png">
+    <link rel="apple-touch-icon" sizes="76x76" type="image/png" href="{% static 'novnc/' %}app/images/icons/ForensicVM-76x76.png">
+    <link rel="apple-touch-icon" sizes="120x120" type="image/png" href="{% static 'novnc/' %}app/images/icons/ForensicVM-120x120.png">
+    <link rel="apple-touch-icon" sizes="152x152" type="image/png" href="{% static 'novnc/' %}app/images/icons/ForensicVM-152x152.png">
+
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="{% static 'novnc/' %}app/styles/base.css">
+    <link rel="stylesheet" href="{% static 'novnc/' %}app/styles/input.css">
+
+    <!-- Images that will later appear via CSS -->
+    <link rel="preload" as="image" href="{% static 'novnc/' %}app/images/info.svg">
+    <link rel="preload" as="image" href="{% static 'novnc/' %}app/images/error.svg">
+    <link rel="preload" as="image" href="{% static 'novnc/' %}app/images/warning.svg">
+    <link rel="preload" as="image" href="{% static 'novnc/' %}images/record.gif">
+
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <script type="module" crossorigin="anonymous" src="{% static 'novnc/' %}app/error-handler.js"></script>
+    <script type="module" crossorigin="anonymous" src="{% static 'novnc/' %}app/ui.js"></script>
+    <style>
+      .alert {
+        opacity: 0;
+        transition: opacity 0.3s;
+        position: fixed;
+        top: 0;
+        width: 100%;
+        z-index: 9998;
+        pointer-events: none;
+     }
+
+     .alert.show {
+       opacity: 0.75;
+       pointer-events: none;
+    }
+
+    .alert-message {
+      font-size: 14px;
+    }
+    .rec-image {
+         position: fixed;
+         right: 5px;
+         top: 5px;
+         opacity: 0.90;
+         width: 100px;
+         pointer-events: none;
+    }
+  </style>
+
+</head>
+
+<body>
+<img id="rec-image" style="display: none;" class="rec-image" src="{% static 'novnc/' %}images/record.gif"></img>
+
+<div id="alertContainer"></div>
+
+<!-- Network control -->
+<div id="id01" style="position: fixed;" class="w3-modal w3-animate-top w3-animate-opacity">
+    <div class="w3-modal-content">
+         <div class="w3-card-4">
+
+           <span onclick="document.getElementById('id01').style.display='none'" class="w3-button w3-display-topright">&times;</span>
+
+           <header class="w3-container w3-blue">
+                  <h1>Network control</h1>
+           </header>
+
+           <div class="w3-container">
+                <p>After activating the network, all network trafic will be recorded. When you stop the network interface, the recording stops.</p>
+                <p>Warning: This network interface was a basic firewall. It will avoid network trafic to reach your local network. But, because
+                   of is nature, it is possible for a malicious actor(hacker) to use this network to get your external ip address, and is possible to make a local network scan using TCP Sync. So
+                   please use it at your own risk. </p>
+           </div>
+
+          <footer class="w3-container w3-blue">
+               <div class="w3-container w3-cell-middle w3-center">
+                <br>
+                <button style="background: unset;" class="w3-button w3-round-large w3-red w3-large" onclick="enableNetwork()">Enable network (caution!)</button>   
+                <button style="background: unset;" class="w3-button w3-round-large w3-green w3-large" onClick="disableNetwork()">Disable network</button>
+                <br>
+                <br>
+               </div>
+         </footer>
+        </div>
+    </div>
+</div>
+
+<!-- Media control -->
+<div id="id02" style="position: fixed;" class="w3-modal w3-animate-top w3-animate-opacity">
+    <div class="w3-modal-content">
+         <div class="w3-card-4">
+
+           <span onclick="document.getElementById('id02').style.display='none'" class="w3-button w3-display-topright">&times;</span>
+
+           <header class="w3-container w3-blue">
+                  <h1>Media Control</h1>
+           </header>
+
+           <div class="w3-container">
+                <p>Please boot before inserting media.</p>
+                <div class="w3-container w3-center">
+                <select id="cdrom" name="cdrom">
+                   {% for item in iso_files %}
+                   <option value="{{ item }}">{{ item }}</option>
+                   {% endfor %}
+                </select>
+                <br>
+                </div>
+           </div>
+
+          <footer class="w3-container w3-blue">
+               <div class="w3-container w3-cell-middle w3-center">
+                <br>
+                <button style="background: unset;" class="w3-button w3-round-large w3-green w3-large" onclick="insertMedia()">Insert media</button>   
+                <button style="background: unset;" class="w3-button w3-round-large w3-purple w3-large" onClick="removeMedia()">Remove Media</button>
+                <br>
+                <br>
+               </div>
+         </footer>
+        </div>
+    </div>
+</div>
+
+
+<!-- Video control -->
+<div id="id03" style="position: fixed;" class="w3-modal w3-animate-top w3-animate-opacity">
+    <div class="w3-modal-content">
+         <div class="w3-card-4">
+
+           <span onclick="document.getElementById('id03').style.display='none'" class="w3-button w3-display-topright">&times;</span>
+
+           <header class="w3-container w3-blue">
+                  <h1>Video Control</h1>
+           </header>
+
+           <div class="w3-container">
+                <p>Record video: Limited to one hour per video</p>
+                Please select the video to download:
+                <select id="videoList">
+                </select>
+                <button style="background: unset;" class="w3-button w3-round-large w3-green" onclick="downloadVideo()">Download</button>   
+           </div>
+
+          <footer class="w3-container w3-blue">
+               <div class="w3-container w3-cell-middle w3-center">
+                <br>
+                <button style="background: unset;" class="w3-button w3-round-large w3-red" onclick="recordVideo()">Record Video</button>   
+                <button style="background: unset;" class="w3-button w3-round-large w3-purple" onClick="stopVideo()">Stop recording</button>
+                <br>
+                <br>
+               </div>
+         </footer>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+</div> <div id="noVNC_fallback_error" class="noVNC_center">
+        <div>
+            <div>noVNC encountered an error:</div>
+            <br>
+            <div id="noVNC_fallback_errormsg"></div>
+        </div>
+    </div>
+
+    <!-- noVNC Control Bar -->
+    <div id="noVNC_control_bar_anchor" class="noVNC_vcenter">
+
+        <div id="noVNC_control_bar">
+            <div id="noVNC_control_bar_handle" title="Hide/Show the control bar"><div></div></div>
+
+            <div class="noVNC_scroll">
+
+            <h1 class="noVNC_logo" translate="no"> </h1>
+
+            <!-- Drag/Pan the viewport -->
+            <input type="image" alt="Drag" src="{% static 'novnc/' %}app/images/drag.svg"
+                id="noVNC_view_drag_button" class="noVNC_button noVNC_hidden"
+                title="Move/Drag Viewport">
+
+            <!--noVNC Touch Device only buttons-->
+            <div id="noVNC_mobile_buttons">
+                <input type="image" alt="Keyboard" src="{% static 'novnc/' %}app/images/keyboard.svg"
+                    id="noVNC_keyboard_button" class="noVNC_button" title="Show Keyboard">
+            </div>
+
+            <!-- Extra manual keys -->
+            <input type="image" alt="Extra keys" src="{% static 'novnc/' %}app/images/toggleextrakeys.svg"
+                id="noVNC_toggle_extra_keys_button" class="noVNC_button"
+                title="Show Extra Keys">
+            <div class="noVNC_vcenter">
+            <div id="noVNC_modifiers" class="noVNC_panel">
+                <input type="image" alt="Ctrl" src="{% static 'novnc/' %}app/images/ctrl.svg"
+                    id="noVNC_toggle_ctrl_button" class="noVNC_button"
+                    title="Toggle Ctrl">
+                <input type="image" alt="Alt" src="{% static 'novnc/' %}app/images/alt.svg"
+                    id="noVNC_toggle_alt_button" class="noVNC_button"
+                    title="Toggle Alt">
+                <input type="image" alt="Windows" src="{% static 'novnc/' %}app/images/windows.svg"
+                    id="noVNC_toggle_windows_button" class="noVNC_button"
+                    title="Toggle Windows">
+                <input type="image" alt="Tab" src="{% static 'novnc/' %}app/images/tab.svg"
+                    id="noVNC_send_tab_button" class="noVNC_button"
+                    title="Send Tab">
+                <input type="image" alt="Esc" src="{% static 'novnc/' %}app/images/esc.svg"
+                    id="noVNC_send_esc_button" class="noVNC_button"
+                    title="Send Escape">
+                <input type="image" alt="Ctrl+Alt+Del" src="{% static 'novnc/' %}app/images/ctrlaltdel.svg"
+                    id="noVNC_send_ctrl_alt_del_button" class="noVNC_button"
+                    title="Send Ctrl-Alt-Del">
+            </div>
+            </div>
+
+     
+            <!-- Clipboard -->
+            <input type="image" alt="Clipboard" src="{% static 'novnc/' %}app/images/clipboard.svg"
+                id="noVNC_clipboard_button" class="noVNC_button"
+                title="Clipboard">
+            <div class="noVNC_vcenter">
+            <div id="noVNC_clipboard" class="noVNC_panel">
+                <div class="noVNC_heading">
+                    <img alt="" src="{% static 'novnc/' %}app/images/clipboard.svg"> Clipboard
+                </div>
+                <textarea id="noVNC_clipboard_text" rows=5></textarea>
+            </div>
+            </div>
+
+
+
+            <!-- Toggle fullscreen -->
+            <input type="image" alt="Full Screen" src="{% static 'novnc/' %}app/images/fullscreen.svg"
+                id="noVNC_fullscreen_button" class="noVNC_button noVNC_hidden"
+                title="Full Screen">
+
+            <!-- Screenshot Photo camera icon -->
+            <i id="cameraIcon" class="material-icons w3-text-white noVNC_button" title="Take a Screenshot" onclick="screenshotVM()">photo_camera</i>
+
+            <!-- Network control icon -->
+            <i id="networkIcon" class="material-icons w3-text-white noVNC_button" title="Enable or disable network card" onclick="document.getElementById('id01').style.display='block'">lan</i>
+
+            <!-- DVD control icon -->
+            <i id="dvdIcon" class="material-icons w3-text-white noVNC_button" title="Insert or eject media" onclick="document.getElementById('id02').style.display='block'">eject</i>
+
+            <!-- RecodVideo icon -->
+            <i id="RecordIcon" class="material-icons w3-text-white noVNC_button" title="Video recording" onclick="document.getElementById('id03').style.display='block'">videocam</i>
+
+
+            <!-- Settings -->
+            <input type="image" alt="Settings" src="{% static 'novnc/' %}app/images/settings.svg"
+                id="noVNC_settings_button" class="noVNC_button"
+                title="Settings">
+            <div class="noVNC_vcenter">
+            <div id="noVNC_settings" class="noVNC_panel">
+                <div class="noVNC_heading">
+                    <img alt="" src="{% static 'novnc/' %}app/images/settings.svg"> Settings
+                </div>
+                <ul>
+                    <li>
+                        <label><input id="noVNC_setting_shared" type="checkbox"> Shared Mode</label>
+                    </li>
+                    <li>
+                        <label><input id="noVNC_setting_view_only" type="checkbox"> View Only</label>
+                    </li>
+                    <li><hr></li>
+                    <li>
+                        <label><input id="noVNC_setting_view_clip" type="checkbox"> Clip to Window</label>
+                    </li>
+                    <li>
+                        <label for="noVNC_setting_resize">Scaling Mode:</label>
+                        <select id="noVNC_setting_resize" name="vncResize">                            
+                            <option value="scale">Local Scaling</option>
+                            <option value="remote">Remote Resizing</option>
+                            <option value="off">None</option>
+                        </select>
+                    </li>
+                    <li><hr></li>
+                    <li>
+                        <div class="noVNC_expander">Advanced</div>
+                        <div><ul>
+                            <li>
+                                <label for="noVNC_setting_quality">Quality:</label>
+                                <input id="noVNC_setting_quality" type="range" min="0" max="9" value="6">
+                            </li>
+                            <li>
+                                <label for="noVNC_setting_compression">Compression level:</label>
+                                <input id="noVNC_setting_compression" type="range" min="0" max="9" value="2">
+                            </li>
+                            <li><hr></li>
+                            <li>
+                                <label for="noVNC_setting_repeaterID">Repeater ID:</label>
+                                <input id="noVNC_setting_repeaterID" type="text" value="">
+                            </li>
+                            <li>
+                                <div class="noVNC_expander">WebSocket</div>
+                                <div><ul>
+                                    <li>
+                                        <label><input id="noVNC_setting_encrypt" type="checkbox"> Encrypt</label>
+                                    </li>
+                                    <li>
+                                        <label for="noVNC_setting_host">Host:</label>
+                                        <input id="noVNC_setting_host">
+                                    </li>
+                                    <li>
+                                        <label for="noVNC_setting_port">Port:</label>
+                                        <input id="noVNC_setting_port" type="number">
+                                    </li>
+                                    <li>
+                                        <label for="noVNC_setting_path">Path:</label>
+                                        <input id="noVNC_setting_path" type="text" value="websockify">
+                                    </li>
+                                </ul></div>
+                            </li>
+                            <li><hr></li>
+                            <li>
+                                <label><input id="noVNC_setting_reconnect" type="checkbox"> Automatic Reconnect</label>
+                            </li>
+                            <li>
+                                <label for="noVNC_setting_reconnect_delay">Reconnect Delay (ms):</label>
+                                <input id="noVNC_setting_reconnect_delay" type="number">
+                            </li>
+                            <li><hr></li>
+                            <li>
+                                <label><input id="noVNC_setting_show_dot" type="checkbox"> Show Dot when No Cursor</label>
+                            </li>
+                            <li><hr></li>
+                            <!-- Logging selection dropdown -->
+                            <li>
+                                <label>Logging:
+                                    <select id="noVNC_setting_logging" name="vncLogging">
+                                    </select>
+                                </label>
+                            </li>
+                        </ul></div>
+                    </li>
+                    <li class="noVNC_version_separator"><hr></li>
+                    <li class="noVNC_version_wrapper">
+                        <span>Version:</span>
+                        <span class="noVNC_version"></span>
+                    </li>
+                </ul>
+            </div>
+            </div>                        
+
+            <!-- Shutdown/Reboot -->
+			
+            <input type="image" alt="Shutdown/Reboot" src="{% static 'novnc/' %}app/images/power.svg"
+                id="noVNC_power_button" class="noVNC_button"
+                title="Shutdown/Reboot...">
+            <div class="noVNC_vcenter">
+            <div id="noVNC_power" class="noVNC_panel">
+                <div class="noVNC_heading" style="display: none;">
+                    <img alt="" src="{% static 'novnc/' %}app/images/power.svg" style="display: none;"> Power
+                </div>				
+                <input type="button" id="noVNC_shutdown_button" value="Shutdown" onclick="shutdownVM()">
+                <input type="button" id="noVNC_reboot_button" value="Stop" onclick="stopVM()">
+                <input type="button" id="noVNC_reset_button" value="Reset" onclick="resetVM()">                                				
+            </div>
+            </div>
+            
+			
+            <!-- Connection Controls -->
+            <input type="image" alt="Disconnect" src="{% static 'novnc/' %}app/images/disconnect.svg"
+                id="noVNC_disconnect_button" class="noVNC_button"
+                title="Disconnect">
+
+            <!-- Logout icon -->
+            <i id="LogoutIcon" class="material-icons w3-text-white noVNC_button" title="Logout" onclick="location.href='logout'">logout</i>
+
+            </div>
+
+
+        </div>
+
+
+        <div id="noVNC_control_bar_hint"></div>
+
+    </div> <!-- End of noVNC_control_bar -->
+    <!-- Status Dialog -->
+    <div id="noVNC_status"></div>
+
+    <!-- Connect button -->
+    <div class="noVNC_center">
+        <div id="noVNC_connect_dlg">
+            <div class="noVNC_logo" translate="no">
+			<img alt="Forensic VM" src="{% static 'novnc/' %}images/ForensicVM.png">
+			</div>
+            <div id="noVNC_connect_button"><div>
+                <img alt="" src="{% static 'novnc/' %}app/images/connect.svg"> Connect /
+                <input type="button" value="Start" onclick="startVM()">
+            </div></div>
+         <!-- Test start button -->
+        </div>
+    </div>
+
+
+
+    <!-- Server Key Verification Dialog -->
+    <div class="noVNC_center noVNC_connect_layer">
+    <div id="noVNC_verify_server_dlg" class="noVNC_panel"><form>
+        <div class="noVNC_heading">
+            Server identity
+        </div>
+        <div>
+            The server has provided the following identifying information:
+        </div>
+        <div id="noVNC_fingerprint_block">
+            <b>Fingerprint:</b>
+            <span id="noVNC_fingerprint"></span>
+        </div>
+        <div>
+            Please verify that the information is correct and press
+            "Approve". Otherwise press "Reject".
+        </div>
+        <div>
+            <input id="noVNC_approve_server_button" type="submit" value="Approve" class="noVNC_submit">
+            <input id="noVNC_reject_server_button" type="button" value="Reject" class="noVNC_submit">
+        </div>
+    </form></div>
+    </div>
+
+    <!-- Password Dialog -->
+    <div class="noVNC_center noVNC_connect_layer">
+    <div id="noVNC_credentials_dlg" class="noVNC_panel"><form>
+        <div class="noVNC_heading">
+            Credentials
+        </div>
+        <div id="noVNC_username_block">
+            <label for="noVNC_username_input">Username:</label>
+            <input id="noVNC_username_input">
+        </div>
+        <div id="noVNC_password_block">
+            <label for="noVNC_password_input">Password:</label>
+            <input id="noVNC_password_input" type="password">
+        </div>
+        <div>
+            <input id="noVNC_credentials_button" type="submit" value="Send Credentials" class="noVNC_submit">
+        </div>
+    </form></div>
+    </div>
+
+    <!-- Transition Screens -->
+    <div id="noVNC_transition">
+        <div id="noVNC_transition_text"></div>
+        <div>
+        <input type="button" id="noVNC_cancel_reconnect_button" value="Cancel" class="noVNC_submit">
+        </div>
+        <div class="noVNC_spinner"></div>
+    </div>
+
+    <!-- This is where the RFB elements will attach -->
+    <div id="noVNC_container">
+        <!-- Note that Google Chrome on Android doesn't respect any of these,
+             html attributes which attempt to disable text suggestions on the
+             on-screen keyboard. Let's hope Chrome implements the ime-mode
+             style for example -->
+        <textarea id="noVNC_keyboardinput" autocapitalize="off"
+            autocomplete="off" spellcheck="false" tabindex="-1"></textarea>
+    </div>
+
+
+    <audio id="noVNC_bell">
+        <source src="{% static 'novnc/' %}app/sounds/bell.oga" type="audio/ogg">
+        <source src="{% static 'novnc/' %}app/sounds/bell.mp3" type="audio/mpeg">
+    </audio>
+
+ </body>
+
+<!-- JavaScript -->
+<script>
+document.addEventListener('keydown', function(event) {
+  // Check if the shortcut key is pressed (e.g., Shift+F12)
+  if (event.shiftKey && event.key === 'F12') {
+    screenshotVM();
+  }
+});
+
+</script> 
+</html>

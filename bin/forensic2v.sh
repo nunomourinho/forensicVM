@@ -83,12 +83,13 @@ tapInterface=\$(find_next_available \"tap\")
 echo \$tapInterface > $5/tap.interface
 "
    if [ -f "$1" ]; then
-      vmconfig=$(cat "$1" | grep -v bash | grep -v /bin/sh | grep -v net0 | grep -v display | grep -v qxl | grep -v balloon | grep -v viosock | sed 's|format=raw|format=qcow2|g' | sed "s|cp '/usr/share/OVMF/OVMF_VARS.fd'|cp -n '/forensicVM/usr/share/qemu/OVMF_VARS.qcow2'|" | sed 's|/usr/share/OVMF/OVMF_CODE.fd|/forensicVM/usr/share/qemu/OVMF_CODE.qcow2|' | sed "s|\$uefi_vars|$5/OVMF_VARS.qcow2|")
+      vmconfig=$(cat "$1" | grep -v stdio | grep -v bash | grep -v /bin/sh | grep -v net0 | grep -v display | grep -v qxl | grep -v balloon | grep -v viosock | sed 's|format=raw|format=qcow2|g' | sed "s|cp '/usr/share/OVMF/OVMF_VARS.fd'|cp -n '/forensicVM/usr/share/qemu/OVMF_VARS.qcow2'|" | sed 's|/usr/share/OVMF/OVMF_CODE.fd|/forensicVM/usr/share/qemu/OVMF_CODE.qcow2|' | sed "s|\$uefi_vars|$5/OVMF_VARS.qcow2|")
    else
 	vmconfig=$missingScript
         echo "Appending extra qemu init"
    fi
    extra_parameters="-display vnc=0.0.0.0:\$1,websocket=\$2 \\
+    -serial stdio \\
     -qmp unix:$3,server,nowait \\
     -pidfile $4 \\
     -usb -device usb-tablet -device usb-kbd \\

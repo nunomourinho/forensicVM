@@ -2138,6 +2138,19 @@ async def insert_cdrom(uuid, filename):
     qmp = QMPClient('forensicVM')
     socket_path = f"/forensicVM/mnt/vm/{uuid}/run/qmp.sock"
 
+
+    try:
+        await qmp.connect(socket_path)
+        res = await qmp.execute("blockdev-change-medium",
+                                { "id": "ide1-0-0",
+                                  "filename": f"/forensicVM/mnt/iso/{filename}",
+                                  "format": "raw" })
+        print(f"CD-ROM inserted.")
+    except Exception as e:
+        print(e)
+    finally:
+        await qmp.disconnect()
+
     try:
         await qmp.connect(socket_path)
         res = await qmp.execute("blockdev-change-medium",
@@ -2238,6 +2251,17 @@ async def eject_cdrom(uuid):
     """
     qmp = QMPClient('forensicVM')
     socket_path = f"/forensicVM/mnt/vm/{uuid}/run/qmp.sock"
+
+
+    try:
+        await qmp.connect(socket_path)
+        res = await qmp.execute("blockdev-open-tray",
+                                { "id": "ide1-0-0"})
+        print(f"CD-ROM ejected.")
+    except Exception as e:
+        print(e)
+    finally:
+        await qmp.disconnect()
 
     try:
         await qmp.connect(socket_path)

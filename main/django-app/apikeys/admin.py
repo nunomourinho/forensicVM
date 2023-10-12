@@ -116,9 +116,9 @@ class ApiKeyAdmin(admin.ModelAdmin):
 
 
 class ChainOfCustodyAdmin(admin.ModelAdmin):
-    list_display = ('user', 'date', 'action', 'parameters')
-    search_fields = ['user__username', 'action']
-    list_filter = ('date', 'user')
+    list_display = ('user', 'date', 'action', 'parameters', 'ip_address','uuid')
+    search_fields = ['user__username', 'action','ip_address','uuid']
+    list_filter = ('date', 'user','ip_address','uuid')
     date_hierarchy = 'date'
     ordering = ['-date']
 

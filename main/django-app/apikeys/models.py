@@ -29,6 +29,8 @@ class ChainOfCustody(models.Model):
     date = models.DateTimeField(auto_now_add=True)
     action = models.CharField(max_length=500)
     parameters = models.TextField(blank=True, null=True)
+    uuid = models.TextField(blank=False, null=False)
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
 
     def __str__(self):
         return f"{self.user.username} - {self.action} on {self.date.strftime('%Y-%m-%d %H:%M:%S')}"

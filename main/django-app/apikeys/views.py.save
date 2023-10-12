@@ -909,7 +909,7 @@ class ChangeVMDateTimeView(View):
                 file.writelines(lines)
 
             request.user = user
-            await async_create_chain_of_custody_record(request, "Set datetime", f"{datetime_str}", uuid)
+            await async_create_chain_of_custody_record(request, "Date time set", f"{datetime_str}", uuid)
             return JsonResponse({'message': f'Date time {datetime_str} set successfully for VM {uuid}'}, status=status.HTTP_200_OK)
         except Exception as e:
             return JsonResponse({'error': f'Error updating VM date time: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -987,9 +987,6 @@ class DownloadNetworkPcapView(View):
         # Return the zip file as a FileResponse
         response = FileResponse(open(zip_file_path, 'rb'), content_type='application/zip')
         response['Content-Disposition'] = f'attachment; filename="{os.path.basename(zip_file_path)}"'
-        request.user = user
-        await async_create_chain_of_custody_record(request, "Download pcap network traffic", "pcap.zip", uuid)
-
         return response
 
 
@@ -1146,8 +1143,6 @@ class StartTapInterfaceView(View):
         if start_tap_error:
             return JsonResponse({'error': f'Error starting tap interface: {start_tap_error}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-        request.user = user
-        await async_create_chain_of_custody_record(request, "Enabled network card", "", uuid)
         return JsonResponse({'message': f'Tap interface {tap_interface} started successfully'}, status=status.HTTP_200_OK)
 
 @method_decorator(csrf_exempt, name='dispatch')
@@ -1227,8 +1222,6 @@ class StopTapInterfaceView(View):
         if start_tap_error:
             return JsonResponse({'error': f'Error stopping tap interface: {start_tap_error}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-        request.user = user
-        await async_create_chain_of_custody_record(request, "Disabled network card", "", uuid)
         return JsonResponse({'message': f'Tap interface {tap_interface} stopped successfully'}, status=status.HTTP_200_OK)
 
 
@@ -1354,9 +1347,6 @@ class ChangeMemorySizeView(View):
             # Write the updated script content back to the file
             with open(recent_script_file, 'w') as f:
                 f.write(updated_script_content)
-
-            request.user = user
-            sync_create_chain_of_custody_record(request, "Changed memory size", f"{new_memory_size}", uuid)
 
             return JsonResponse({'message': 'Memory size updated successfully'}, status=200)
         else:
@@ -1507,10 +1497,6 @@ class DeleteSnapshotView(View):
             return JsonResponse({'error': 'Snapshot name required'}, status=400)
 
         delete_status = await delete_snapshot(uuid, snapshot_name)
-
-        request.user = user
-        await async_create_chain_of_custody_record(request, "Deleted snapshot", f"{snapshot_name}", uuid)
-
         return JsonResponse({'message': delete_status}, status=200)
 
 
@@ -1592,8 +1578,6 @@ class RollbackSnapshotView(View):
             return JsonResponse({'error': 'Snapshot name required'}, status=400)
 
         rollback_status = await rollback_snapshot(uuid, snapshot_name)
-        request.user = user
-        await async_create_chain_of_custody_record(request, "Rollback snapshot", f"{snapshot_name}", uuid)
         return JsonResponse({'message': rollback_status}, status=200)
 
 async def create_snapshot(uuid):
@@ -1682,8 +1666,6 @@ class CreateSnapshotView(View):
             return JsonResponse({'error': 'API key required'}, status=401)
 
         snapshot_name = await create_snapshot(uuid)
-        request.user = user
-        await async_create_chain_of_custody_record(request, "Create snapshot", f"{snapshot_name}", uuid)
         return JsonResponse({'snapshot_name': snapshot_name}, status=200)
 
 async def get_snapshots(uuid):
@@ -1895,7 +1877,6 @@ class RecreateFoldersView(View):
             create_and_format_qcow2(qcow2_file, folders)
             print("after create qcow2")
 
-
             return JsonResponse({'message': f'Folders {", ".join(folders)} created successfully in {qcow2_file}'}, status=status.HTTP_200_OK)
         except Exception as e:
             return JsonResponse({'error': f'Error executing guestfish: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -1984,10 +1965,6 @@ class RunPluginView(APIView):
         try:
             result = subprocess.run(['bash', plugin_script_path, 'run', image_file], capture_output=True, text=True)
             output = result.stdout.strip()
-
-            request.user = user
-            sync_create_chain_of_custody_record(request, "Run plugin", f"{plugin_directory}", image_uuid)
-
             return JsonResponse({'output': output}, status=status.HTTP_200_OK)
         except subprocess.CalledProcessError as e:
             return JsonResponse({'error': f'Plugin execution failed: {e.stderr}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -2284,9 +2261,6 @@ class InsertCDROMView(View):
             return api_key_error
 
         cdrom_status = await insert_cdrom(uuid, filename)
-        request.user = user
-        await async_create_chain_of_custody_record(request, "Insert cdrom", f"{filename}", uuid)
-
         return JsonResponse({'message': cdrom_status}, status=status.HTTP_200_OK)
 
     def get_user_or_key_error(self, request):
@@ -2395,8 +2369,6 @@ class EjectCDROMView(View):
             return api_key_error
 
         cdrom_status = await eject_cdrom(uuid)
-        request.user = user
-        await async_create_chain_of_custody_record(request, "Eject cdrom", "", uuid)
         return JsonResponse({'message': cdrom_status}, status=status.HTTP_200_OK)
 
     def get_user_or_key_error(self, request):
@@ -2483,8 +2455,6 @@ class DeleteISOFileView(View):
 
         os.remove(iso_file_path)
 
-        request.user = user
-        sync_create_chain_of_custody_record(request, "Deleted cdrom", f"{filename}", "---")
         return JsonResponse({'message': f'ISO file {filename} deleted successfully'}, status=status.HTTP_200_OK)
 
 
@@ -2542,8 +2512,6 @@ class UploadISOView(View):
             for chunk in iso_file.chunks():
                 f.write(chunk)
 
-        request.user = user
-        sync_create_chain_of_custody_record(request, "Upload cdrom", f"{iso_file.name}", "---")
         return JsonResponse({'message': 'ISO file uploaded successfully'}, status=status.HTTP_200_OK)
 
 
@@ -2787,8 +2755,6 @@ class DownloadEvidenceView(View):
         # Return the evidence file as a FileResponse
         response = FileResponse(open(evidence_path, 'rb'), content_type='application/octet-stream')
         response['Content-Disposition'] = f'attachment; filename="{os.path.basename(evidence_path)}"'
-        request.user = user
-        await async_create_chain_of_custody_record(request, "Download evidence drive", "evidence.vmdk", uuid)
         return response
 
 async def memory_snapshot(uuid):
@@ -2876,8 +2842,6 @@ class MemorySnapshotView(View):
 
         snapshot_file = await memory_snapshot(uuid)
         response = FileResponse(open(snapshot_file, 'rb'), content_type='application/octet-stream', as_attachment=True, filename=os.path.basename(snapshot_file))
-        request.user = user
-        await async_create_chain_of_custody_record(request, "Make and download memory dump", "memory.dump", uuid)
         return response
 
 @method_decorator(csrf_exempt, name='dispatch')
@@ -2946,8 +2910,6 @@ class DownloadScreenshotsView(View):
         # Return the zip file as a FileResponse
         response = FileResponse(open(zip_file_path, 'rb'), content_type='application/zip')
         response['Content-Disposition'] = f'attachment; filename="{os.path.basename(zip_file_path)}"'
-        request.user = user
-        await async_create_chain_of_custody_record(request, "Download screenshots", "screenshots.zip", uuid)
         return response
 
 async def screendump(uuid):
@@ -3038,8 +3000,7 @@ class ScreenshotVMView(View):
         screen_number = await screendump(uuid)
 
         result = {'screenshot_taken': True, 'message': f'{screen_number}'}
-        request.user = user
-        await async_create_chain_of_custody_record(request, "Make screenshot", f"{screen_number}", uuid)
+
         return JsonResponse(result, status=status.HTTP_200_OK)
 
 
@@ -3139,8 +3100,7 @@ class ShutdownVMView(View):
         await system_shutdown(uuid)
 
         result = {'vm_shutdown': True, 'message': f'Shutdown command sent to VM with UUID {uuid}'}
-        request.user = user
-        await async_create_chain_of_custody_record(request, "Sent Shutdown", "", uuid)
+
         return JsonResponse(result, status=status.HTTP_200_OK)
 
     def get_user_or_key_error(self, request):
@@ -3242,8 +3202,7 @@ class ResetVMView(View):
         await system_reset(uuid)
 
         result = {'vm_reset': True, 'message': f'Reset command sent to VM with UUID {uuid}'}
-        request.user = user
-        await async_create_chain_of_custody_record(request, "Sent Reset", "", uuid)
+
         return JsonResponse(result, status=status.HTTP_200_OK)
 
     def get_user_or_key_error(self, request):
@@ -3373,8 +3332,6 @@ class DeleteVMView(APIView):
         try:
             shutil.rmtree(vm_path)
             result = {'vm_deleted': True}
-            request.user = user
-            sync_create_chain_of_custody_record(request, "DELETED VM", "", uuid)
         except Exception as e:
             result = {'vm_deleted': False, 'error': str(e)}
 
@@ -3501,8 +3458,6 @@ class StopVMView(APIView):
         vm_stopped = uuid not in screen_status
 
         result = {'vm_stopped': vm_stopped}
-        request.user = user
-        sync_create_chain_of_custody_record(request, "Stopped VM", "", uuid)
         return Response(result, status=status.HTTP_200_OK)
 
 
@@ -3573,8 +3528,6 @@ class StartVMView(APIView):
             'websocket_port': websocket_port
         }
 
-        request.user = user
-        sync_create_chain_of_custody_record(request, "Started VM", "", uuid)
         return Response(result, status=status.HTTP_200_OK)
 
 class ForensicImageVMStatus(APIView):
@@ -3714,8 +3667,6 @@ class CreateSshKeysView(APIView):
             authorized_keys = f.read()
 
         if public_key in authorized_keys:
-            request.user = user
-            sync_create_chain_of_custody_record(request, "Tried to copy to server the user ssh keys", "", "")
             return Response({'message': 'Public key already added to authorized keys'}, status=status.HTTP_200_OK)
 
         # Add public key to authorized keys of the forensicinvestigator user
@@ -3725,8 +3676,6 @@ class CreateSshKeysView(APIView):
         except FileNotFoundError:
             return Response({'error': 'Failed to append public key to authorized keys file'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-        request.user = user
-        sync_create_chain_of_custody_record(request, "Created new ssh keys for user om the server", "", "")
         return Response({'message': 'Public key added to authorized keys'}, status=status.HTTP_200_OK)
 
 

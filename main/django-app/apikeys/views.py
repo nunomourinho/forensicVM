@@ -48,6 +48,10 @@ from django.http import Http404
 from urllib.parse import quote
 import cv2
 from channels.db import database_sync_to_async
+from django.http import HttpResponse
+from docx import Document
+from .models import ChainOfCustody
+import io
 
 
 def get_client_ip(request):
@@ -94,6 +98,39 @@ def sync_create_chain_of_custody_record(request, action, parameters, uuid_value)
         uuid=uuid_value,
     )
     record.save()
+
+
+class GenerateChainOfCustodyView(View):
+    def get(self, request, uuid, *args, **kwargs):
+        # Filter ChainOfCustody records by uuid
+        records = ChainOfCustody.objects.filter(uuid=uuid)
+
+        # Create a new Document
+        doc = Document()
+        doc.add_heading('Chain of Custody Records', 0)
+
+        # Add records to the Document
+        for record in records:
+            doc.add_heading(f'User: {record.user.username}', level=1)
+            doc.add_paragraph(f'Date: {record.date}')
+            doc.add_paragraph(f'Action: {record.action}')
+            doc.add_paragraph(f'Parameters: {record.parameters}')
+            doc.add_paragraph(f'UUID: {record.uuid}')
+            doc.add_paragraph(f'IP Address: {record.ip_address}')
+            doc.add_paragraph()
+
+        # Save to BytesIO
+        f = io.BytesIO()
+        doc.save(f)
+        f.seek(0)
+
+        # Return as a Word document
+        response = HttpResponse(
+            f.read(), 
+            content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+        )
+        response['Content-Disposition'] = 'inline; filename=chain_of_custody.docx'
+        return response
 
 
 recordings = {}

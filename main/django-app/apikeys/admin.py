@@ -2,6 +2,7 @@ from django import forms
 from django.contrib import admin
 from django.utils.html import format_html
 from django.contrib import messages
+from .models import ChainOfCustody
 from .models import ApiKey
 
 class MaskedInput(forms.TextInput):
@@ -112,4 +113,14 @@ class ApiKeyAdmin(admin.ModelAdmin):
         message = format_html('New API key generated: <strong><h2>{}</h2></strong>   Please copy it to the clipboard. This is the only time that this key is visible', obj.key)
         messages.success(request, message)
 
+
+
+class ChainOfCustodyAdmin(admin.ModelAdmin):
+    list_display = ('user', 'date', 'action', 'parameters')
+    search_fields = ['user__username', 'action']
+    list_filter = ('date', 'user')
+    date_hierarchy = 'date'
+    ordering = ['-date']
+
+admin.site.register(ChainOfCustody, ChainOfCustodyAdmin)
 

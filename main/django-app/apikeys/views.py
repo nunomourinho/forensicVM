@@ -50,6 +50,9 @@ import cv2
 from channels.db import database_sync_to_async
 from django.http import HttpResponse
 from docx import Document
+from docx.shared import Pt
+from docx.shared import Pt, Inches
+from docx.enum.text import WD_ALIGN_PARAGRAPH
 from .models import ChainOfCustody
 import io
 
@@ -107,17 +110,37 @@ class GenerateChainOfCustodyView(View):
 
         # Create a new Document
         doc = Document()
+        p = doc.add_paragraph()
+        p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        p.add_run().add_picture('/forensicVM/main/branding/ForensicVM.jpg', width=Inches(2.0))
         doc.add_heading('Chain of Custody Records', 0)
 
-        # Add records to the Document
+        # Add a table to the Document
+        table = doc.add_table(rows=1, cols=6)
+
+        hdr_cells = table.rows[0].cells
+        hdr_cells[0].text = 'User'
+        hdr_cells[1].text = 'Date'
+        hdr_cells[2].text = 'Action'
+        hdr_cells[3].text = 'Parameters'
+        hdr_cells[4].text = 'UUID'
+        hdr_cells[5].text = 'IP Address'
+
+        # Add a row for each record
         for record in records:
-            doc.add_heading(f'User: {record.user.username}', level=1)
-            doc.add_paragraph(f'Date: {record.date}')
-            doc.add_paragraph(f'Action: {record.action}')
-            doc.add_paragraph(f'Parameters: {record.parameters}')
-            doc.add_paragraph(f'UUID: {record.uuid}')
-            doc.add_paragraph(f'IP Address: {record.ip_address}')
-            doc.add_paragraph()
+            row_cells = table.add_row().cells
+            row_cells[0].text = str(record.user.username)
+            row_cells[1].text = str(record.date)
+            row_cells[2].text = str(record.action)
+            row_cells[3].text = str(record.parameters)
+            row_cells[4].text = str(record.uuid)
+            row_cells[5].text = str(record.ip_address)
+
+            # Change font size to 8 pt
+            for cell in row_cells:
+                for paragraph in cell.paragraphs:
+                    for run in paragraph.runs:
+                        run.font.size = Pt(8)
 
         # Save to BytesIO
         f = io.BytesIO()
@@ -126,11 +149,13 @@ class GenerateChainOfCustodyView(View):
 
         # Return as a Word document
         response = HttpResponse(
-            f.read(), 
+            f.read(),
             content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document'
         )
         response['Content-Disposition'] = 'inline; filename=chain_of_custody.docx'
         return response
+
+
 
 
 recordings = {}

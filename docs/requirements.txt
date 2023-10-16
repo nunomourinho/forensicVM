@@ -84,7 +84,7 @@ tqdm==4.64.1
 Twisted==22.10.0
 typing_extensions==4.5.0
 tzdata==2022.7
-urllib3==1.26.14
+urllib3==1.26.17
 vnc2flv-rec==0.2.0
 vncdotool==1.0.0
 websockify==0.10.0

@@ -1,0 +1,23 @@
+version: 2
+formats: all
+
+sphinx:
+  configuration: docs/conf.py
+  fail_on_warning: false
+
+build:
+  os: ubuntu-20.04
+  tools:
+    python: "3.9.2"  # Ensure this version is compatible with your Django version
+
+python:
+  version: 3.9.2  # This sets the Python version for the virtual environment
+  install:
+    - requirements: main/django-app/requirements.txt
+  system_packages: true  # In case you need system-level packages
+
+# This can be used if you need to set the DJANGO_SETTINGS_MODULE or other environment variables
+# env:
+#   DJANGO_SETTINGS_MODULE: 'myproject.settings'
+
+

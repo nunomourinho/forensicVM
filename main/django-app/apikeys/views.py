@@ -112,11 +112,12 @@ class GenerateChainOfCustodyView(View):
         doc = Document()
         p = doc.add_paragraph()
         p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        p.add_run().add_picture('/forensicVM/main/branding/ForensicVM.jpg', width=Inches(2.0))
+        p.add_run().add_picture('/forensicVM/main/branding/ForensicVMblack.jpg', width=Inches(2.0))
         doc.add_heading('Chain of Custody Records', 0)
 
         # Add a table to the Document
         table = doc.add_table(rows=1, cols=6)
+        table.style = 'Medium List 1'
 
         hdr_cells = table.rows[0].cells
         hdr_cells[0].text = 'User'

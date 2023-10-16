@@ -12,7 +12,7 @@ build:
     
 python:
   install:
-    - requirements: main/django-app/requirements.txt
+    - requirements: docs/requirements.txt
   #system_packages: true  # In case you need system-level packages
 
 # This can be used if you need to set the DJANGO_SETTINGS_MODULE or other environment variables

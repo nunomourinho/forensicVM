@@ -33,7 +33,7 @@ hyperlink==21.0.0
 idna==3.4
 imagemounter==3.1.0
 incremental==22.10.0
-iotop==0.6
+#iotop>=0.6
 IProgress==0.4
 MarkupSafe==2.1.2
 MouseInfo==0.1.3

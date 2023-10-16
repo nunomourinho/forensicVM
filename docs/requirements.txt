@@ -59,7 +59,7 @@ PyScreeze==0.1.28
 PySide2==5.15.2.1
 PySimpleGUI==4.60.4
 PySimpleGUIDesigner==0.1.4.7
-PySimpleSOAP>=1.16.2
+#PySimpleSOAP>=1.16.2
 python-apt==2.2.1
 python-debian==0.1.39
 python-debianbts==3.1.0

@@ -30,16 +30,9 @@ extensions = [
     #'sphinxcontrib.autodocsumm',
 ]
 
-intersphinx_mapping = {
-    'python': ('https://docs.python.org/3/', None),
-    'sphinx': ('https://www.sphinx-doc.org/en/master/', None),
-}
-intersphinx_disabled_domains = ['std']
-
 templates_path = ['_templates']
 
-html_theme_options = {
-    # Other options...
+html_theme_options = {    
     'authors': [
         'Eng. Nuno Mourinho',
         'Eng. Mario Candeias',
@@ -47,7 +40,11 @@ html_theme_options = {
     ],
 }
 
-#html_theme = 'sphinx_rtd_theme'
+html_static_path = ['_static']
+html_theme = 'sphinx_rtd_theme'
+html_theme_options = {
+    'display_version': False,
+}
 
 # -- Options for EPUB output
 epub_show_urls = 'footnote'

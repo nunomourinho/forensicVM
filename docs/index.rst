@@ -10,4 +10,6 @@
 
    API Keys <apikeys>
    Modules <modules>
+   Configuration <conf>
+   Manage <manage>
 

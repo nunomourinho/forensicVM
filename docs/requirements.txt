@@ -1,4 +1,4 @@
-cv2
+opencv-python>=4.0
 apscheduler
 sphinx_rtd_theme
 altgraph==0.17.3

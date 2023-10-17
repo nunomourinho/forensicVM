@@ -15,8 +15,21 @@ python:
     - requirements: docs/requirements.txt
   #system_packages: true  # In case you need system-level packages
 
-# This can be used if you need to set the DJANGO_SETTINGS_MODULE or other environment variables
-# env:
-#   DJANGO_SETTINGS_MODULE: 'myproject.settings'
 
+templates_path = ['_templates']
 
+html_theme_options = {
+    # Other options...
+    'authors': [
+        'Eng. Nuno Mourinho',
+        'Eng. Mario Candeias',
+        'Dr. Rogério Matos Bravo',
+    ],
+}
+html_static_path = ['_static']
+html_theme = 'sphinx_rtd_theme'
+#html_logo = '_static/logo.png'
+html_theme_options = {
+    #'logo_only': True,
+    'display_version': False,
+}

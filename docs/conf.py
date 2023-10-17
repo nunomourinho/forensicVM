@@ -1,6 +1,11 @@
 import sys
 import os
-sys.path.insert(0, os.path.abspath('../..'))
+import django
+
+sys.path.insert(0, os.path.abspath('../main/django-app'))
+#os.environ['DJANGO_SETTINGS_MODULE'] = 'myproject.settings'
+django.setup()
+
 
 # Configuration file for the Sphinx documentation builder.
 

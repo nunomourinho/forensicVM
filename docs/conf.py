@@ -1,6 +1,7 @@
 import sys
 import os
 import django
+import sphinx_rtd_theme
 
 sys.path.insert(0, os.path.abspath('../main/django-app'))
 os.environ['DJANGO_SETTINGS_MODULE'] = 'conf.settings'
@@ -41,7 +42,8 @@ html_theme_options = {
 }
 
 html_static_path = ['_static']
-html_theme = 'sphinx_rtd_theme'
+html_theme = "sphinx_rtd_theme"
+html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
 html_theme_options = {
     'display_version': False,
 }

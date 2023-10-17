@@ -1,3 +1,4 @@
+cv2
 apscheduler
 sphinx_rtd_theme
 altgraph==0.17.3

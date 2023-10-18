@@ -169,9 +169,13 @@ class RecordCommentView(View):
 
     The expected format of the POST request:
     {
-        "comment": "Your comment here..."
+        "comment": "Your comment here...",
+        "uuid": "example-uuid"
     }
     """
+
+    authentication_classes = [SessionAuthentication]
+    permission_classes = []
 
     def post(self, request):
         """
@@ -179,38 +183,68 @@ class RecordCommentView(View):
 
         Args:
             request: The HTTP request from the client. Expected to contain the API key in the headers 
-            and the comment in the body.
+            and the comment and uuid in the body.
 
         Returns:
             JsonResponse: A JsonResponse that either confirms the comment was recorded or returns an error message.
         """
-        api_key = request.META.get('HTTP_X_API_KEY')
-        if api_key:
-            try:
-                api_key = ApiKey.objects.get(key=api_key)
-                user = api_key.user
-                if not user.is_active:
-                    return JsonResponse({'error': 'User account is disabled.'}, status=401)
-            except ApiKey.DoesNotExist:
-                return JsonResponse({'error': 'Invalid API key'}, status=401)
-        else:
-            return JsonResponse({'error': 'API key required'}, status=401)
 
-        # Get comment from request body
+        user, api_key_error = self.get_user_or_key_error(request)
+        if api_key_error:
+            return api_key_error
+
+        # Get comment and uuid from request body
         try:
             body = json.loads(request.body)
             comment = body.get('comment')
-            if not comment:
-                return JsonResponse({'error': 'Comment required'}, status=400)
+            uuid = body.get('uuid')
+            if not comment or not uuid:
+                return JsonResponse({'error': 'Both comment and uuid are required'}, status=400)
         except json.JSONDecodeError:
             return JsonResponse({'error': 'Invalid request format'}, status=400)
 
         # Record the comment on the chain of custody
         sync_create_chain_of_custody_record(request, "Chain of Custody Comment", comment, uuid)
-        
+
         return JsonResponse({'message': 'Comment recorded successfully'}, status=200)
 
+    def get_user_or_key_error(self, request):
+        """
+        Retrieves the authenticated user from the request or returns an API key error.
 
+        This method attempts to get an authenticated user from the request.
+        If the user is authenticated, it will return the user and None for the error.
+        If the user is not authenticated, it will attempt to authenticate the user using an API key provided in the request.
+        If the API key is valid and associated with an active user, it returns the user and None for the error.
+        If the API key is invalid or the user associated with the key is not active, it returns None for the user and a JsonResponse indicating the error.
+        If no API key is provided in the request, it returns None for the user and a JsonResponse indicating that an API key is required.
+
+        Parameters:
+        ----------
+        request : django.http.HttpRequest
+            The request instance for the current request.
+
+        Returns:
+        -------
+        tuple
+            A tuple where the first element is the authenticated user or None if no user could be authenticated,
+            and the second element is None or a JsonResponse containing an error message.
+        """
+        api_key = request.META.get('HTTP_X_API_KEY')
+        user = getattr(request, 'user', None)
+        if user and user.is_authenticated:
+            print("DEBUG: USER AUTHENTICATED")
+        elif api_key:
+            try:
+                api_key = ApiKey.objects.get(key=api_key)
+                user = getattr(api_key, 'user')
+                if not user.is_active:
+                    return None, JsonResponse({'error': 'User account is disabled.'}, status=status.HTTP_401_UNAUTHORIZED)
+            except ApiKey.DoesNotExist:
+                return None, JsonResponse({'error': 'Invalid API key'}, status=status.HTTP_401_UNAUTHORIZED)
+        else:
+            return None, JsonResponse({'error': 'API key required'}, status=status.HTTP_401_UNAUTHORIZED)
+        return user, None
 
 
 recordings = {}

@@ -1,0 +1,13 @@
+[Unit]
+Description=Django ForensicVM Application
+After=network.target
+
+[Service]
+User=root
+WorkingDirectory=/forensicVM/bin
+ExecStart=/bin/bash /forensicVM/bin/run-django > /var/log/forensicvm.log 2>&1
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+

@@ -1,3 +1,7 @@
+paramiko
+psutil
+speedtest-cli
+pandas
 altgraph==0.17.3
 asgiref==3.6.0
 attrs==22.2.0

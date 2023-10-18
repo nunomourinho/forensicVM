@@ -157,6 +157,60 @@ class GenerateChainOfCustodyView(View):
         return response
 
 
+@method_decorator(csrf_exempt, name='dispatch')
+class RecordCommentView(View):
+    """
+    API View that handles POST requests to record a comment on the chain of custody.
+
+    This view requires an API key for authentication. If the API key is valid
+    and is associated with an active user, the comment will be recorded.
+
+    If the API key is missing, invalid, or associated with an inactive user, an error message is returned.
+
+    The expected format of the POST request:
+    {
+        "comment": "Your comment here..."
+    }
+    """
+
+    def post(self, request):
+        """
+        Handles the POST request to record a comment on the chain of custody.
+
+        Args:
+            request: The HTTP request from the client. Expected to contain the API key in the headers 
+            and the comment in the body.
+
+        Returns:
+            JsonResponse: A JsonResponse that either confirms the comment was recorded or returns an error message.
+        """
+        api_key = request.META.get('HTTP_X_API_KEY')
+        if api_key:
+            try:
+                api_key = ApiKey.objects.get(key=api_key)
+                user = api_key.user
+                if not user.is_active:
+                    return JsonResponse({'error': 'User account is disabled.'}, status=401)
+            except ApiKey.DoesNotExist:
+                return JsonResponse({'error': 'Invalid API key'}, status=401)
+        else:
+            return JsonResponse({'error': 'API key required'}, status=401)
+
+        # Get comment from request body
+        try:
+            body = json.loads(request.body)
+            comment = body.get('comment')
+            if not comment:
+                return JsonResponse({'error': 'Comment required'}, status=400)
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid request format'}, status=400)
+
+        # Record the comment on the chain of custody
+        sync_create_chain_of_custody_record(request, "Chain of Custody Comment", comment, uuid)
+        
+        return JsonResponse({'message': 'Comment recorded successfully'}, status=200)
+
+
 
 
 recordings = {}

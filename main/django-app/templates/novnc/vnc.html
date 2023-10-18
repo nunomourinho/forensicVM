@@ -80,6 +80,7 @@ function downloadChainOfCustody() {
   .then(blob => {
       // Create a URL for the blob
       showAlert("Download started", "w3-teal")
+      document.getElementById('id04').style.display = 'none';
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;

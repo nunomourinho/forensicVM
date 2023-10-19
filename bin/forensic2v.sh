@@ -6,7 +6,7 @@
 # The script then removes hibernate files from any mounted NTFS partitions in the snapshot using the 'ntfsfix' command, adds virtio drivers and QEMU guest agent to the snapshot using the 'virt-v2v' command, and modifies the QEMU startup script to include necessary parameters.
 # If the script is run in 'copy' mode, it unmounts the mounted directories and deletes the temporary snapshot. If the script is run in 'snap' mode, it leaves the mounted directories and the temporary snapshot intact for later use. Finally, the script records the time it started and the time it ended, and calculates and displays the elapsed time.
 
-
+forensic_dir=""
 # Record the start time
 start_time=$(date +%s)
 
@@ -33,6 +33,43 @@ get_first_free_nbd() {
     done
     echo ""
 }
+
+get_image_size() {
+    # Get the argument (mount point)
+    local mount_point="$1"
+
+    # Check if the argument is provided
+    if [ -z "$mount_point" ]; then
+        echo "Error: Please provide the mount point."
+        return 1
+    fi
+
+    # Find the associated loop device for the mount point
+    local loop_device=$(df --output=source "$mount_point" | tail -1)
+
+    # Check if the loop device was found
+    if [ -z "$loop_device" ]; then
+        echo "Error: No loop device found for mount point $mount_point"
+        return 1
+    fi
+
+    # Get the backing file of the loop device
+    local backing_file=$(losetup --noheadings --output=BACK-FILE "$loop_device")
+
+    # Check if the backing file was found
+    if [ -z "$backing_file" ]; then
+        echo "Error: No backing file found for loop device $loop_device"
+        return 1
+    fi
+
+    # Find the size of the backing file in bytes
+    local file_size=$(stat --format=%s "$backing_file")
+
+    # Return the file size
+    echo "$file_size"
+}
+
+
 
 first_nbd=$(get_first_free_nbd)
 first_nbd="/dev/nbd2"
@@ -196,7 +233,9 @@ image_ewf_mnt=/forensicVM/mnt/vm/$name/ewf
 image_aff_mnt=/forensicVM/mnt/vm/$name/aff
 win_mount=/forensicVM/mnt/vm/$name/win
 run_mount=/forensicVM/mnt/vm/$name/run
+stats_dir=/forensicVM/mnt/vm/$name/stats
 evidence_disk=/forensicVM/mnt/vm/$name/evidence.qcow2
+forensic_dir=/forensicVM/mnt/vm/$name/
 
 qmp_socket=$run_mount/qmp.sock
 run_pid=$run_mount/run.pid
@@ -204,6 +243,8 @@ vm_mount=/forensicVM/mnt/vm
 tmp_mount=$vm_mount
 vm_name=/forensicVM/mnt/vm/$name
 info_name=/forensicVM/mnt/vm/$name/${name}.info
+
+echo $mode > "$stats_dir/mode"
 
 if [ $mode == "snap" ]; then
    touch /tmp/qemu-img-cp-now
@@ -214,6 +255,7 @@ mkdir "$image_ewf_mnt"
 mkdir "$image_aff_mnt"
 mkdir "$win_mount"
 mkdir "$run_mount"
+mkdir "$stats_dir"
 
 function DismountImage {
      #qemu-nbd --disconnect "/dev/nbd0"
@@ -264,6 +306,8 @@ function CleanUpEXIT {
 
      # Print the elapsed time in days, hours, minutes, and seconds
      echo "Elapsed time: $days days, $hours hours, $minutes minutes, $seconds seconds"
+     echo $elapsed_time > "$stats_dir/conversion_time_in_seconds"
+     echo "Elapsed time: $days days, $hours hours, $minutes minutes, $seconds seconds" > "$stats_dir/conversion_time_txt"
      read -p "Verify if the are any errors. Press any key to continue..."
      exit 0
 }
@@ -286,6 +330,7 @@ tput sgr0
 if [ $imagemanager == "ewf" ]; then
    ewfmount "$image" "$image_ewf_mnt"/
    # TODO: Create an extra mount image to snapshot
+   echo "ewf" > "$stats_dir/image_type"
 fi
 
 if [ $imagemanager == "aff" ]; then
@@ -293,6 +338,7 @@ if [ $imagemanager == "aff" ]; then
    if [[ $? -eq 0 ]]; then
        affrawmnt="${image_aff_mnt}/`ls $image_aff_mnt`"
        echo "Image mounted on: $affrawmnt"
+       echo "aff" > "$stats_dir/image_type"
        # TODO: Create an extra mount image to snapshot
    else
        echo "Error: could not mount $image"
@@ -306,18 +352,24 @@ tput setaf 2
 echo "3) Get image information"
 tput sgr0
 if [ $imagemanager == "ewf" ]; then
+   filesize=$(stat -c "%s" "$image_ewf_mnt"/ewf1)
+   echo $filesize > "$stats_dir/image_size"
    virt-inspector "$image_ewf_mnt"/ewf1 > ${info_name}
    # DEBUG: Comment bellow:
    #bash -i
 fi
 
 if [ $imagemanager == "aff" ]; then
+   filesize=$(stat -c "%s" "$affrawmnt")
+   echo $filesize > "$stats_dir/image_size"
    virt-inspector "$affrawmnt" > ${info_name}
    # DEBUG: Comment bellow:
    #bash -i
 fi
 
 if [ $imagemanager == "qemu" ]; then
+   filesize=$(stat -c "%s" "$1")
+   echo $filesize > "$stats_dir/image_size"
    virt-inspector "$1" > ${info_name}
 fi
 
@@ -416,6 +468,7 @@ if [[ $? -eq 1 ]]; then
 fi
 
 change_qemu_vm "$vm_name/S0002-P0001.qcow2.sh" "$vm_name/S0002-P0001.qcow2-vnc.sh" "$qmp_socket" "$run_pid" "$vm_name"
+qemu-img snapshot -c goldenSnapshot "$vm_name/S0002-P0001.qcow2-sda"
 
 tput bold
 tput setaf 2

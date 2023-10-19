@@ -100,7 +100,7 @@ from .views import CreateSshKeysView, ForensicImageVMStatus, StartVMView, StopVM
 from .views import ScreenshotVMView, MemorySnapshotView
 from .views import DownloadEvidenceView, CreateFoldersView, ListISOFilesView, UploadISOView, DeleteISOFileView
 from .views import EjectCDROMView, InsertCDROMView, InsertNetworkCardView, ListPluginsView, RunPluginView
-from .views import RecreateFoldersView, SnapshotListView, CreateSnapshotView, RollbackSnapshotView, DeleteSnapshotView
+from .views import RecreateFoldersView, SnapshotListView, CreateSnapshotView, RollbackSnapshotView, RollbackGoldenSnapshotView, DeleteSnapshotView
 from .views import MemorySizeView, ChangeMemorySizeView, GetAvailableMemoryView, StartTapInterfaceView, StopTapInterfaceView
 from .views import DownloadNetworkPcapView,CheckTapInterfaceView
 from .views import ChangeVMDateTimeView, RemoveVMDateTimeView, DownloadVideoView
@@ -137,6 +137,7 @@ urlpatterns = [
     path('snapshots-list/<uuid>/', SnapshotListView.as_view(), name='snapshot-list'),
     path('create-snapshot/<uuid>/', CreateSnapshotView.as_view(), name='create-snapshot'),
     path('rollback-snapshot/<uuid>/', RollbackSnapshotView.as_view(), name='rollback-snapshot'),
+    path('rollback-golden-snapshot/<uuid>/', RollbackGoldenSnapshotView.as_view(), name='rollback-golden-snapshot'),
     path('delete-snapshot/<uuid:uuid>/', DeleteSnapshotView.as_view(), name='delete-snapshot'),
     path('get-memory-size/<uuid>/', MemorySizeView.as_view(), name='get-memory-size'),
     path('change-memory-size/<uuid>/', ChangeMemorySizeView.as_view(), name='change_memory_size'),

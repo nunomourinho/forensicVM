@@ -1694,6 +1694,28 @@ async def rollback_snapshot(uuid, snapshot_name):
     finally:
         await qmp.disconnect()
 
+async def rollback_golden_snapshot(uuid):
+    """
+    Asynchronously rollback to the golden snapshot of a specific VM.
+
+
+    Args:
+        uuid (str): The unique identifier for the VM.
+
+    Returns:
+        str: A message indicating whether the snapshot was successfully rolled back or not.
+    """
+    try:
+        command = "sudo /usr/bin/qemu-img snapshot -a goldenSnapshot /forensicVM/mnt/vm/" + uuid + "/S0002-P0001.qcow2-sda"
+        result = await subprocess.run(command, shell=True, check=True)
+        if result.returncode >0:
+            raise Exception("Could not rollback golden snapshot")
+        return "Snapshot rollback successful."
+    except Exception as e:
+        print(e)
+        return "Error rolling back snapshot."
+
+
 @method_decorator(csrf_exempt, name='dispatch')
 class RollbackSnapshotView(View):
     """
@@ -1746,6 +1768,58 @@ class RollbackSnapshotView(View):
         request.user = user
         await async_create_chain_of_custody_record(request, "Rollback snapshot", f"{snapshot_name}", uuid)
         return JsonResponse({'message': rollback_status}, status=200)
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class RollbackGoldenSnapshotView(View):
+    """
+    API View that handles POST requests to rollback the golden snapshot of a specific VM.
+
+    This view requires an API key for authentication. If the API key is valid and is associated
+    with an active user, it calls the `rollback_snapshot` asynchronous function to rollback to the snapshot.
+
+    If the API key is missing, invalid, or associated with an inactive user, or if the snapshot
+    name is missing in the request data, an error message is returned.
+
+    The response indicates either a success or an error message in a JSON format:
+    {
+        "message": <string>
+    }
+    or
+    {
+        "error": <string>
+    }
+    """
+    async def post(self, request, uuid):
+        """
+        Handles the POST request to rollback to a snapshot of a VM.
+
+        Args:
+            request: The HTTP request from the client. Expected to contain the API key in the headers,
+                     and the snapshot name in the request data.
+            uuid: The UUID of the VM to rollback the snapshot.
+
+        Returns:
+            JsonResponse: A JsonResponse that either contains a success message or an error message.
+        """
+        api_key = request.META.get('HTTP_X_API_KEY')
+        if api_key:
+            try:
+                api_key = await sync_to_async(ApiKey.objects.get)(key=api_key)
+                user = await sync_to_async(getattr)(api_key, 'user')
+                if not user.is_active:
+                    return JsonResponse({'error': 'User account is disabled.'}, status=401)
+            except ApiKey.DoesNotExist:
+                return JsonResponse({'error': 'Invalid API key'}, status=401)
+        else:
+            return JsonResponse({'error': 'API key required'}, status=401)
+
+        rollback_status = await rollback_golden_snapshot(uuid)
+        request.user = user
+        await async_create_chain_of_custody_record(request, "Rollback to initial state", f"Golden snapshot used to rollback to initial state", uuid)
+        return JsonResponse({'message': rollback_status}, status=200)
+
+
 
 async def create_snapshot(uuid):
     """

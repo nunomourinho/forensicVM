@@ -7,6 +7,20 @@
 # If the script is run in 'copy' mode, it unmounts the mounted directories and deletes the temporary snapshot. If the script is run in 'snap' mode, it leaves the mounted directories and the temporary snapshot intact for later use. Finally, the script records the time it started and the time it ended, and calculates and displays the elapsed time.
 
 forensic_dir=""
+mkdir /forensicVM/mnt/vm/$2
+mkdir /forensicVM/mnt/vm/$2/stats
+
+tput bold
+tput setaf 2
+echo "Get disk stats - Please wait one minute..."
+tput sgr0
+fio --name=seq-write --rw=write --bs=4k --size=1G --directory=/forensicVM/mnt/tmp --runtime=60s --iodepth=32 --numjobs=1 --group_reporting=1 \
+    --name=seq-read --rw=read --bs=4k --size=1G --directory=/forensicVM/mnt/tmp --runtime=60s --iodepth=32 --numjobs=1 --group_reporting=1 \
+    --name=rand-write --rw=randwrite --bs=4k --size=1G --directory=/forensicVM/mnt/tmp --runtime=60s --iodepth=32 --numjobs=1 --group_reporting=1 \
+    --name=rand-read --rw=randread --bs=4k --size=1G --directory=/forensicVM/mnt/tmp --runtime=60s --iodepth=32 --numjobs=1 --group_reporting=1 \
+    --output-format=json --output=/forensicVM/mnt/vm/$2/stats/fio-stats.json
+
+
 # Record the start time
 start_time=$(date +%s)
 

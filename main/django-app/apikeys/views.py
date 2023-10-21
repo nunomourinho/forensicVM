@@ -105,6 +105,8 @@ class VirtualIntrospectionView(View):
         if not is_active:
             return JsonResponse({'error': 'User account is disabled.'}, status=401)
 
+        await async_create_chain_of_custody_record(request, "Virtual introspect", "Generated report on live process lists, possible malware and network connections", uuid)
+
         snapshot_file = await memory_snapshot_helper(uuid)
 
         # Run the vol.py command in a shell

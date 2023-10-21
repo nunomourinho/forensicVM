@@ -98,8 +98,30 @@ async def memory_snapshot_helper(uuid):
 
     return next_snapshot_path
 
+
 class VirtualIntrospectionView(View):
+    """
+    A class-based view that handles virtual introspection requests.
+
+    This view fetches process lists, possible malware detections, network connections,
+    and other related information from a given virtual machine snapshot, using the Volatility3
+    forensic analysis tool. It then presents this information in a rendered HTML template.
+    """
+
     async def get(self, request, uuid):
+        """
+        Handles the GET request for virtual introspection based on the provided VM's UUID.
+
+        Args:
+            request (HttpRequest): The Django HttpRequest object.
+            uuid (str): The UUID of the virtual machine to introspect.
+
+        Returns:
+            HttpResponse: A rendered HTML page with the introspection data or a JSON error response.
+
+        Raises:
+            Exception: If there's an error executing the Volatility3 command.
+        """
         is_active = await sync_to_async(lambda: request.user.is_active)()
 
         if not is_active:
@@ -208,7 +230,32 @@ def sync_create_chain_of_custody_record(request, action, parameters, uuid_value)
 
 
 class GenerateChainOfCustodyView(View):
+    """
+    A class-based view that generates a chain of custody record in the form of a Word document.
+
+    This view fetches the chain of custody records associated with a given UUID from the database,
+    creates a formatted Word document presenting these records, and then returns this document 
+    to the user.
+    """
+
     def get(self, request, uuid, *args, **kwargs):
+        """
+        Handles the GET request to generate the chain of custody Word document based on the provided UUID.
+
+        Args:
+            request (HttpRequest): The Django HttpRequest object.
+            uuid (str): The UUID associated with the desired chain of custody records.
+            *args: Variable length argument list.
+            **kwargs: Arbitrary keyword arguments.
+
+        Returns:
+            HttpResponse: A Word document (.docx) containing the chain of custody records for the specified UUID.
+
+        Notes:
+            The resulting Word document is formatted with a centered logo, a title, and a table 
+            presenting the chain of custody records. Each record includes user, date, action, 
+            parameters, UUID, and IP address. 
+        """
         # Filter ChainOfCustody records by uuid
         records = ChainOfCustody.objects.filter(uuid=uuid)
 

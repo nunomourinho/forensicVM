@@ -6,7 +6,7 @@
 
 .. toctree::
    :maxdepth: 3
-   :caption: ForensicVM Plugin Manual
+   :caption: ForensicVM Server API Development Manual
 
    API Keys <apikeys>
    Modules <modules>

@@ -1,3 +1,4 @@
+aiofiles
 opencv-python>=4.0
 apscheduler
 sphinx_rtd_theme

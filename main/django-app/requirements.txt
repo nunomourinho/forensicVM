@@ -1,3 +1,4 @@
+aiofiles
 paramiko
 psutil
 speedtest-cli

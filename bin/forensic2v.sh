@@ -20,6 +20,58 @@ fio --name=seq-write --rw=write --bs=4k --size=1G --directory=/forensicVM/mnt/tm
     --name=rand-read --rw=randread --bs=4k --size=1G --directory=/forensicVM/mnt/tmp --runtime=60s --iodepth=32 --numjobs=1 --group_reporting=1 \
     --output-format=json --output=/forensicVM/mnt/vm/$2/stats/fio-stats.json
 
+function extract_bandwidths_from_fio_output {
+    # Check for input file argument
+    if [[ $# -eq 0 ]]; then
+        echo "Error: Please provide the path to the FIO JSON output file."
+        return 1
+    fi
+
+    local FILE_PATH="$1/fio-stats.json"
+
+    # Check if jq is installed
+    if ! command -v jq &> /dev/null; then
+        echo "Error: jq is not installed. Please install it to proceed."
+        return 1
+    fi
+
+    # Extract bandwidth values using jq
+    local READ_BW_KBPS=$(jq '.jobs[0].read.bw' "$FILE_PATH")
+    local WRITE_BW_KBPS=$(jq '.jobs[0].write.bw' "$FILE_PATH")
+
+    # Convert KB/s to MB/s
+    local READ_BW_MBPS=$(echo "$READ_BW_KBPS / 1024" | bc -l)
+    local WRITE_BW_MBPS=$(echo "$WRITE_BW_KBPS / 1024" | bc -l)
+
+    # Print the results
+    echo "$READ_BW_MBPS" > "$1/disk_read.txt"
+    echo "$WRITE_BW_MBPS" > "$1/disk_write.txt"
+}
+
+benchmark_read_speed() {
+    local file_path="$1"  # Input parameter: File path
+    local size_to_read="2G"  # Size to read (e.g., 2GB)
+
+    # Measure the time it takes to read the specified size from the file
+    local start_time=$(date +%s.%N)
+    dd if="$file_path" bs=1M count="$size_to_read" of=/dev/null
+    local end_time=$(date +%s.%N)
+
+    # Calculate the elapsed time in seconds
+    local elapsed_time=$(echo "$end_time - $start_time" | bc)
+
+    # Calculate the read speed in MB/s
+    local read_speed=$(echo "scale=2; $size_to_read / $elapsed_time" | bc)
+
+    echo "$read_speed" > "/forensicVM/mnt/vm/$2/stats/transfer_read_speed.txt"
+}
+
+
+benchmark_read_speed "/path/to/your/file"
+extract_bandwidths_from_fio_output "/forensicVM/mnt/vm/$2/stats"
+
+
+
 
 # Record the start time
 start_time=$(date +%s)

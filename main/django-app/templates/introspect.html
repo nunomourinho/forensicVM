@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ForensicVM Live Virtual Introspection</title>
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+</head>
+<body>
+
+<div class="w3-container">
+    <h1>Virtual Introspection</h1>
+    
+    <div class="w3-bar w3-blue">
+        <button class="w3-bar-item w3-button" onclick="openTab('ProcessTree')">Process Tree</button>
+        <button class="w3-bar-item w3-button" onclick="openTab('Cmdline')">Command Line Arguments</button>
+        <button class="w3-bar-item w3-button" onclick="openTab('Envars')">Environment Variables</button>
+        <button class="w3-bar-item w3-button" onclick="openTab('Malfind')">Possible malware injection processes</button>
+    </div>
+
+    <div id="ProcessTree" class="w3-container w3-display-container tab">
+        <h2 class="w3-blue">Process tree</h2>
+        <table class="w3-table-all w3-card">
+            <thead>
+                <tr class="w3-blue">
+                    {% for header in headers %}
+                        <th>{{ header }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for process in processes %}
+                    <tr>
+                        {% for value in process %}
+                            <td>{{ value }}</td>
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div id="Malfind" class="w3-container w3-display-container tab" style="display:none">
+        <h2 class="w3-blue">Malfind Output</h2>
+        Possible malware processes. It can be a false positive. Please check.
+        <textarea class="w3-input w3-border" style="height: 800px; resize: vertical;" readonly>{{ malfind_output }}</textarea>
+    </div>
+
+    <div id="Envars" class="w3-container w3-display-container tab" style="display:none">
+        <h2 class="w3-blue">Environment Variables</h2>
+        <textarea class="w3-input w3-border" style="height: 800px; resize: vertical;" readonly>{{ envars_output }}</textarea>
+    </div>
+
+    <div id="Cmdline" class="w3-container w3-display-container tab" style="display:none">
+        <h2 class="w3-blue">Command line</h2>
+        <textarea class="w3-input w3-border" style="height: 800px; resize: vertical;" readonly>{{ cmdline_output }}</textarea>
+    </div>
+
+    <script>
+        function openTab(tabName) {
+            var i;
+            var x = document.getElementsByClassName("tab");
+            for (i = 0; i < x.length; i++) {
+                x[i].style.display = "none";
+            }
+            document.getElementById(tabName).style.display = "block";
+        }
+    </script>
+</div>
+</body>
+</html>
+

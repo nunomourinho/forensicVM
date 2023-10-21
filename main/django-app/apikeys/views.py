@@ -55,6 +55,102 @@ from docx.shared import Pt, Inches
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from .models import ChainOfCustody
 import io
+import aiofiles
+
+
+async def memory_snapshot_helper(uuid):
+    """
+    This asynchronous function captures a snapshot of a VM's memory.
+
+    It establishes a connection with the QEMU Machine Protocol (QMP) running on the VM,
+    then uses the QMP command 'dump-guest-memory' to capture the memory snapshot.
+
+    The function saves the memory snapshot to the VM's directory, with a unique filename
+    based on the current number of existing snapshots.
+
+    Parameters:
+    uuid (str): The UUID of the VM.
+
+    Returns:
+    str: The path to the newly created memory snapshot file.
+
+    Raises:
+    Exception: If there's an error executing the 'dump-guest-memory' command or disconnecting from QMP.
+    """
+    qmp = QMPClient('forensicVM')
+    socket_path = f"/forensicVM/mnt/vm/{uuid}/run/qmp.sock"
+    memory_snapshots_path = f"/forensicVM/mnt/vm/{uuid}/memory/"
+
+    if not os.path.exists(memory_snapshots_path):
+        os.makedirs(memory_snapshots_path)
+
+    next_snapshot_filename = f"memory_snapshot_analysis.dmp"
+    next_snapshot_path = os.path.join(memory_snapshots_path, next_snapshot_filename)
+
+    try:
+        await qmp.connect(socket_path)
+        res = await qmp.execute('dump-guest-memory', { "paging": False, "protocol": f"file:{next_snapshot_path}", "detach": False})
+        print(f"Memory snapshot saved: {next_snapshot_path}")
+    except Exception as e:
+        print(e)
+    finally:
+        await qmp.disconnect()
+
+    return next_snapshot_path
+
+class VirtualIntrospectionView(View):
+    async def get(self, request, uuid):
+        is_active = await sync_to_async(lambda: request.user.is_active)()
+
+        if not is_active:
+            return JsonResponse({'error': 'User account is disabled.'}, status=401)
+
+        snapshot_file = await memory_snapshot_helper(uuid)
+
+        # Run the vol.py command in a shell
+        cmd = [
+            'python3', '/forensicVM/bin/volatility3/vol.py',
+            '-f', snapshot_file,
+            'windows.pstree'
+        ]
+
+        # Execute the command and fetch the result
+        result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+
+        # If the command failed, raise an error
+        if result.returncode != 0:
+            raise Exception("Error executing vol.py: " + result.stderr)
+
+        # Parse the result stdout
+
+        lines = result.stdout.splitlines()[4:]  # skip the first 4 lines
+
+        headers = ["PID", "PPID", "ImageFileName", "Offset(V)", "Threads", "Handles", "SessionId", "Wow64", "CreateTime", "ExitTime", "-", "-"]
+        processes = []
+
+        for line in lines:
+            data = re.split(r'\s+', line.strip())  # split using regex to handle indeterminate spaces
+            #if len(data) == 10:  # We expect 10 columns
+            print(data)
+            processes.append(data)
+
+        #context = {
+        #    'headers': headers,
+        #    'processes': processes
+        #}
+
+        cmd_malfind = ['python3', '/forensicVM/bin/volatility3/vol.py', '-f', snapshot_file, 'windows.malfind']
+        malfind_output = subprocess.Popen(cmd_malfind, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True).communicate()[0]
+
+        cmd_envars = ['python3', '/forensicVM/bin/volatility3/vol.py', '-f', snapshot_file, 'windows.envars']
+        envars_output = subprocess.Popen(cmd_envars, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True).communicate()[0]
+
+        cmd_envars = ['python3', '/forensicVM/bin/volatility3/vol.py', '-f', snapshot_file, 'windows.cmdline']
+        cmdline_output = subprocess.Popen(cmd_envars, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True).communicate()[0]
+
+        context = {"processes": processes, "headers": headers, "malfind_output": malfind_output, "envars_output": envars_output, "cmdline_output": cmdline_output}
+
+        return await sync_to_async(render)(request, 'introspect.html', context)
 
 
 def get_client_ip(request):

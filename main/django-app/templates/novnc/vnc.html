@@ -31,6 +31,38 @@
         }
 
 
+function introspectVM() {
+    const uuid = getParameterByName('uuid');
+
+    if (uuid) {
+        const introspectWindow = window.open('', '_blank');
+        introspectWindow.document.write('Making a live memory snapshot and loading introspection data. Please wait...');
+
+        fetch('/api/introspect/' + uuid + '/', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken'),
+            },
+            credentials: 'include'
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Error: ' + response.status);
+            }
+            return response.text();  // assuming that the response is HTML
+        })
+        .then(html => {
+            introspectWindow.document.open();
+            introspectWindow.document.write(html);
+            introspectWindow.document.close();
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+            introspectWindow.document.write('An error occurred: ' + error.message);
+        });
+    }
+}
 
 function recordComment(comment) {
     const uuid = getParameterByName('uuid');
@@ -909,6 +941,9 @@ function showAlert(message, color = 'w3-green') {
 
             <!-- ChainOfCustody icon -->
             <i id="ChainIcon" class="material-icons w3-text-white noVNC_button" title="Manage Chain of Custody" onclick="document.getElementById('id04').style.display='block'">work_history</i>
+
+            <!-- Introspect icon -->
+            <i id="IntrospectIcon" class="material-icons w3-text-white noVNC_button" title="Virtual introspect" onclick="introspectVM()">memory</i>
 
 
             <!-- Settings -->

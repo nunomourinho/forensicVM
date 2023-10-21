@@ -54,6 +54,51 @@ html_theme_options = {
     'display_version': False,
 }
 
+latex_additional_files = ["cover.jpg", "backcover.jpg"]
+
+latex_engine = 'pdflatex'
+
+latex_elements = {
+    'preamble': r'''
+        \usepackage{graphicx}
+        \usepackage{placeins}
+        \usepackage[absolute]{textpos}
+        \setlength{\TPHorizModule}{1cm}
+        \setlength{\TPVertModule}{1cm}
+        \usepackage{etoolbox}
+    ''',
+    'maketitle': r'''
+        \begin{titlepage}
+            \thispagestyle{empty}
+            \begin{textblock}{20}(0,0)
+                \IfFileExists{cover.jpg}{
+                  \includegraphics[width=\paperwidth,height=\paperheight]{cover.jpg}
+                }{
+                  \textbf{Cover Image Not Found}
+                }
+            \end{textblock}
+        \end{titlepage}
+        \clearpage
+        \newpage\null\thispagestyle{empty}\clearpage
+        \newpage\null\thispagestyle{empty}\clearpage
+        \newpage\null\thispagestyle{empty}\clearpage
+        \pagenumbering{arabic}
+        \AtEndDocument{
+            \clearpage
+            \newpage\null\thispagestyle{empty}\clearpage
+            \newpage\null\thispagestyle{empty}\clearpage
+            \begin{textblock}{20}(0,0)
+                \IfFileExists{backcover.jpg}{
+                  \includegraphics[width=\paperwidth,height=\paperheight]{backcover.jpg}
+                  \textbf{2023}
+                }{
+                  \textbf{Back Cover Image Not Found}
+                }
+            \end{textblock}
+        }
+    '''
+}
+
 # -- Options for EPUB output
 epub_show_urls = 'footnote'
 numfig = True

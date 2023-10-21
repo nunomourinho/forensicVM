@@ -148,7 +148,13 @@ class VirtualIntrospectionView(View):
         cmd_envars = ['python3', '/forensicVM/bin/volatility3/vol.py', '-f', snapshot_file, 'windows.cmdline']
         cmdline_output = subprocess.Popen(cmd_envars, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True).communicate()[0]
 
-        context = {"processes": processes, "headers": headers, "malfind_output": malfind_output, "envars_output": envars_output, "cmdline_output": cmdline_output}
+        cmd_netscan = ['python3', '/forensicVM/bin/volatility3/vol.py', '-f', snapshot_file, 'windows.netscan']
+        netscan_output = subprocess.Popen(cmd_netscan, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True).communicate()[0]
+
+        cmd_netstat = ['python3', '/forensicVM/bin/volatility3/vol.py', '-f', snapshot_file, 'windows.netstat']
+        netstat_output = subprocess.Popen(cmd_netstat, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True).communicate()[0]
+
+        context = {"processes": processes, "headers": headers, "malfind_output": malfind_output, "envars_output": envars_output, "cmdline_output": cmdline_output, "netscan_output": netscan_output, "netstat_output": netstat_output}
 
         return await sync_to_async(render)(request, 'introspect.html', context)
 

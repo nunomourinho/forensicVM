@@ -7,13 +7,15 @@
 <body>
 
 <div class="w3-container">
-    <h1>Virtual Introspection</h1>
+    <h1>ForensicVM Virtual Introspection</h1>
     
     <div class="w3-bar w3-blue">
         <button class="w3-bar-item w3-button" onclick="openTab('ProcessTree')">Process Tree</button>
         <button class="w3-bar-item w3-button" onclick="openTab('Cmdline')">Command Line Arguments</button>
         <button class="w3-bar-item w3-button" onclick="openTab('Envars')">Environment Variables</button>
         <button class="w3-bar-item w3-button" onclick="openTab('Malfind')">Possible malware injection processes</button>
+        <button class="w3-bar-item w3-button" onclick="openTab('Netscan')">Network connections</button>
+        <button class="w3-bar-item w3-button" onclick="openTab('Netstat')">Network Services</button>
     </div>
 
     <div id="ProcessTree" class="w3-container w3-display-container tab">
@@ -41,17 +43,27 @@
     <div id="Malfind" class="w3-container w3-display-container tab" style="display:none">
         <h2 class="w3-blue">Malfind Output</h2>
         Possible malware processes. It can be a false positive. Please check.
-        <textarea class="w3-input w3-border" style="height: 800px; resize: vertical;" readonly>{{ malfind_output }}</textarea>
+        <textarea class="w3-input w3-border" style="height: 800px; resize: vertical; font-family: monospace;" readonly>{{ malfind_output }}</textarea>
     </div>
 
     <div id="Envars" class="w3-container w3-display-container tab" style="display:none">
         <h2 class="w3-blue">Environment Variables</h2>
-        <textarea class="w3-input w3-border" style="height: 800px; resize: vertical;" readonly>{{ envars_output }}</textarea>
+        <textarea class="w3-input w3-border" style="height: 800px; resize: vertical; font-family: monospace;" readonly>{{ envars_output }}</textarea>
     </div>
 
     <div id="Cmdline" class="w3-container w3-display-container tab" style="display:none">
         <h2 class="w3-blue">Command line</h2>
-        <textarea class="w3-input w3-border" style="height: 800px; resize: vertical;" readonly>{{ cmdline_output }}</textarea>
+        <textarea class="w3-input w3-border" style="height: 800px; resize: vertical; font-family: monospace;" readonly>{{ cmdline_output }}</textarea>
+    </div>
+
+    <div id="Netscan" class="w3-container w3-display-container tab" style="display:none">
+        <h2 class="w3-blue">Netscan</h2>
+        <textarea class="w3-input w3-border" style="height: 800px; resize: vertical; font-family: monospace;" readonly>{{ netscan_output }}</textarea>
+    </div>
+
+    <div id="Netstat" class="w3-container w3-display-container tab" style="display:none">
+        <h2 class="w3-blue">Netstat</h2>
+        <textarea class="w3-input w3-border" style="height: 800px; resize: vertical; font-family: monospace;" readonly>{{ netstat_output }}</textarea>
     </div>
 
     <script>

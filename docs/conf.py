@@ -27,11 +27,18 @@ extensions = [
     'sphinx.ext.autodoc',    
     'sphinx.ext.autosummary',
     'sphinx.ext.intersphinx',	
+    'sphinx.ext.autosectionlabel',    
     #'sphinx_autodoc_typehints',
     #'sphinxcontrib.autodocsumm',
 ]
 
+intersphinx_mapping = {
+    'python': ('https://docs.python.org/3/', None),
+    'sphinx': ('https://www.sphinx-doc.org/en/master/', None),
+}
+
 templates_path = ['_templates']
+intersphinx_disabled_domains = ['std']
 
 html_theme_options = {    
     'authors': [
@@ -43,11 +50,10 @@ html_theme_options = {
 
 html_static_path = ['_static']
 html_theme = "sphinx_rtd_theme"
-html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
 html_theme_options = {
     'display_version': False,
 }
 
 # -- Options for EPUB output
 epub_show_urls = 'footnote'
-
+numfig = True

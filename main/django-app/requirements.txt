@@ -1,3 +1,4 @@
+django-excel-response
 aiofiles
 paramiko
 psutil

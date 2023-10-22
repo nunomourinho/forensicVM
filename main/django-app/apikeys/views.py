@@ -54,9 +54,114 @@ from docx.shared import Pt
 from docx.shared import Pt, Inches
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from .models import ChainOfCustody
+from .models import VMData
 import io
 import aiofiles
+import xml.etree.ElementTree as ET
+from excel_response import ExcelResponse
 
+
+@method_decorator(csrf_exempt, name='dispatch')
+class ExportVMDataToExcel(View):
+    """
+    View class to export VMData objects to an Excel format.
+    This view is CSRF exempt to accommodate external tools or systems that might need to fetch the Excel without having a CSRF token.
+    """
+
+    def get(self, request, *args, **kwargs):
+        """
+        Handles the GET request to fetch all VMData objects and return them as an Excel response.
+
+        Args:
+            request (HttpRequest): The HTTP GET request.
+            *args: Variable length argument list.
+            **kwargs: Arbitrary keyword arguments.
+
+        Returns:
+            HttpResponse: An Excel formatted response containing all VMData objects.
+        """
+        queryset = VMData.objects.all()
+        return ExcelResponse(queryset)
+
+@method_decorator(csrf_exempt, name='dispatch')
+class InsertMetrics(View):
+    """
+    This view is responsible for inserting metrics related to a virtual machine.
+    It reads data from specific files located in a given directory and saves them into the VMData model.
+    """
+    def post(self, request, uuid):
+        """
+        Handles the POST request. Reads metrics from files in the specified directory
+        and saves them to the VMData model. If a file doesn't exist, default values will be set.
+
+        Args:
+            request (HttpRequest): The incoming HTTP POST request.
+            uuid (str): The UUID of the virtual machine.
+
+        Returns:
+            HttpResponse: A 200 status response after successful data insertion.
+        """
+        vm_data = VMData(uuid=uuid)
+
+        BASE_DIR = f"/forensicVM/mnt/vm/{uuid}/stats"
+        INFO_DIR = f"/forensicVM/mnt/vm/{uuid}/"
+
+        # File names separated based on extension
+        string_files_no_ext = ['conversion_time_txt', 'extension', 'filename', 'image_type', 'mode']
+        float_files_no_ext = ['conversion_time_in_seconds', 'image_size']
+        float_files_txt_ext = ['disk_read', 'disk_write', 'elapsed_time', 'end_time', 'start_time', 'transfer_read_speed']
+
+        # Process string data without extension
+        for file in string_files_no_ext:
+            file_path = os.path.join(BASE_DIR, file)
+            if os.path.exists(file_path):
+                with open(file_path, 'r') as f:
+                    line = f.readline().strip()
+                    setattr(vm_data, file, line if line else "N/A")
+            else:
+                setattr(vm_data, file, "N/A")
+
+        # Process float data without extension
+        for file in float_files_no_ext:
+            file_path = os.path.join(BASE_DIR, file)
+            if os.path.exists(file_path):
+                with open(file_path, 'r') as f:
+                    line = f.readline().strip()
+                    setattr(vm_data, file, float(line) if line else 0.0)
+            else:
+                setattr(vm_data, file, 0.0)
+
+        # Process float data with .txt extension
+        for file in float_files_txt_ext:
+            file_path = os.path.join(BASE_DIR, file + '.txt')
+            if os.path.exists(file_path):
+                with open(file_path, 'r') as f:
+                    line = f.readline().strip()
+                    setattr(vm_data, file, float(line) if line else 0.0)
+            else:
+                setattr(vm_data, file, 0.0)
+
+        # Extract additional fields using the logic in VMListView
+        info_file_path = os.path.join(INFO_DIR, f"{uuid}.info")
+        if os.path.exists(info_file_path):
+            tree = ET.parse(info_file_path)
+            root = tree.getroot()
+
+            # Find the first <operatingsystem> under <operatingsystems>
+            os_data = root.find('./operatingsystem')
+            if os_data:
+                vm_data.distro = os_data.findtext('distro', "N/A")
+                vm_data.hostname = os_data.findtext('hostname', "N/A")
+                vm_data.osinfo = os_data.findtext('osinfo', "N/A")
+                vm_data.product_name = os_data.findtext('product_name', "N/A")
+        else:
+            vm_data.distro = "N/A"
+            vm_data.hostname = "N/A"
+            vm_data.osinfo = "N/A"
+            vm_data.product_name = "N/A"
+
+        vm_data.save()
+        return HttpResponse(status=200)
 
 async def memory_snapshot_helper(uuid):
     """
@@ -142,12 +247,15 @@ class VirtualIntrospectionView(View):
         result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
 
         # If the command failed, raise an error
-        if result.returncode != 0:
-            raise Exception("Error executing vol.py: " + result.stderr)
+        #if result.returncode != 0:
+        #    raise Exception("Error executing vol.py: " + result.stderr)
 
         # Parse the result stdout
 
-        lines = result.stdout.splitlines()[4:]  # skip the first 4 lines
+        try:
+           lines = result.stdout.splitlines()[4:]  # skip the first 4 lines
+        except Exception as e:
+           lines = []
 
         headers = ["PID", "PPID", "ImageFileName", "Offset(V)", "Threads", "Handles", "SessionId", "Wow64", "CreateTime", "ExitTime", "-", "-"]
         processes = []

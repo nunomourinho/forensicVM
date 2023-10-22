@@ -10,6 +10,62 @@ forensic_dir=""
 mkdir /forensicVM/mnt/vm/$2
 mkdir /forensicVM/mnt/vm/$2/stats
 
+extract_filename_and_extension() {
+    local full_path="$1"
+    local destination="$2"
+
+    # Check if the argument is provided
+    if [ -z "$full_path" ]; then
+        echo "Error: Please provide the full path."
+        return 1
+    fi
+
+    # Extract the filename without the path
+    local filename_with_extension="${full_path##*/}"
+
+    # Extract just the filename without the extension
+    local filename_without_extension="${filename_with_extension%.*}"
+
+    # Extract the extension without the dot
+    local extension="${filename_with_extension##*.}"
+
+    echo "$filename_without_extension" > "$2/filename"
+    echo "$extension" > "$2/extension"
+}
+
+extract_filename_and_extension $1 /forensicVM/mnt/vm/$2/stats
+
+msg_green() {
+   tput bold
+   tput setaf 2
+   echo "$1"
+   tput sgr0
+}
+
+benchmark_read_speed() {
+    local file_path="$1"  # Input parameter: File path
+    local size_to_read="200"  # Size to read (e.g., 2GB)
+
+    msg_green "Test server-client network transfer speed"
+    # Measure the time it takes to read the specified size from the file
+    local start_time=$(date +%s.%N)
+    dd if="$file_path" bs=1M count="$size_to_read" | pv -s 200M >/dev/null
+    local end_time=$(date +%s.%N)
+
+    # Calculate the elapsed time in seconds
+    local elapsed_time=$(echo "$end_time - $start_time" | bc)
+
+    # Calculate the read speed in MB/s
+    local read_speed=$(echo "scale=2; $size_to_read / $elapsed_time" | bc)
+    echo "Debug benchmark speed"
+
+    echo "$read_speed" > "/forensicVM/mnt/vm/$2/stats/transfer_read_speed.txt"
+}
+
+
+benchmark_read_speed $1 $2
+
+
 tput bold
 tput setaf 2
 echo "Get disk stats - Please wait one minute..."
@@ -48,26 +104,7 @@ function extract_bandwidths_from_fio_output {
     echo "$WRITE_BW_MBPS" > "$1/disk_write.txt"
 }
 
-benchmark_read_speed() {
-    local file_path="$1"  # Input parameter: File path
-    local size_to_read="2G"  # Size to read (e.g., 2GB)
 
-    # Measure the time it takes to read the specified size from the file
-    local start_time=$(date +%s.%N)
-    dd if="$file_path" bs=1M count="$size_to_read" of=/dev/null
-    local end_time=$(date +%s.%N)
-
-    # Calculate the elapsed time in seconds
-    local elapsed_time=$(echo "$end_time - $start_time" | bc)
-
-    # Calculate the read speed in MB/s
-    local read_speed=$(echo "scale=2; $size_to_read / $elapsed_time" | bc)
-
-    echo "$read_speed" > "/forensicVM/mnt/vm/$2/stats/transfer_read_speed.txt"
-}
-
-
-benchmark_read_speed "/path/to/your/file"
 extract_bandwidths_from_fio_output "/forensicVM/mnt/vm/$2/stats"
 
 
@@ -75,6 +112,7 @@ extract_bandwidths_from_fio_output "/forensicVM/mnt/vm/$2/stats"
 
 # Record the start time
 start_time=$(date +%s)
+echo $start_time > "/forensicVM/mnt/vm/$2/stats/start_time.txt"
 
 check_disk_partitions() {
   local image_file="$1"
@@ -361,6 +399,9 @@ function CleanUpEXIT {
 
      # Calculate the elapsed time in seconds
      elapsed_time=$(($end_time - $start_time))
+     echo $end_time > "$stats_dir/end_time.txt"
+     echo $elapsed_time > "$stats_dir/elapsed_time.txt"
+
 
 
      # Convert the elapsed time to days, hours, minutes, and seconds

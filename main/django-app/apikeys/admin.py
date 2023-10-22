@@ -4,6 +4,7 @@ from django.utils.html import format_html
 from django.contrib import messages
 from .models import ChainOfCustody
 from .models import ApiKey
+from .models import VMData
 
 class MaskedInput(forms.TextInput):
     """
@@ -124,3 +125,10 @@ class ChainOfCustodyAdmin(admin.ModelAdmin):
 
 admin.site.register(ChainOfCustody, ChainOfCustodyAdmin)
 
+
+class VMDataAdmin(admin.ModelAdmin):
+    list_display = ['id', 'uuid', 'filename', 'image_type', 'distro', 'hostname']
+    search_fields = ['uuid', 'filename', 'image_type', 'distro', 'hostname']
+    list_filter = ['image_type', 'distro']
+
+admin.site.register(VMData, VMDataAdmin)

@@ -35,3 +35,25 @@ class ChainOfCustody(models.Model):
     def __str__(self):
         return f"{self.user.username} - {self.action} on {self.date.strftime('%Y-%m-%d %H:%M:%S')}"
 
+
+class VMData(models.Model):
+    id = models.AutoField(primary_key=True)  # Auto-incrementing primary key
+    uuid = models.CharField(max_length=36)
+    conversion_time_txt = models.CharField(max_length=255)
+    extension = models.CharField(max_length=10)
+    filename = models.CharField(max_length=255)
+    image_type = models.CharField(max_length=50)
+    mode = models.CharField(max_length=50)
+    conversion_time_in_seconds = models.FloatField()
+    disk_read = models.FloatField()
+    disk_write = models.FloatField()
+    elapsed_time = models.FloatField()
+    end_time = models.FloatField()
+    image_size = models.FloatField()
+    start_time = models.FloatField()
+    transfer_read_speed = models.FloatField()
+    distro = models.CharField(max_length=100, default='---')
+    hostname = models.CharField(max_length=100, default='---')
+    osinfo = models.CharField(max_length=100, default='---')
+    product_name = models.CharField(max_length=100, default='---')
+

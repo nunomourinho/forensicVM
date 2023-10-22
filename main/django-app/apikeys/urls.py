@@ -91,6 +91,7 @@ CheckRecordingStatusVMView: Checks the recording status of the forensic VM with 
 ListVideosView: Lists available video recordings of the forensic VM with the given UUID.
 
 CheckUserAuthenticatedView: Checks if the user is authenticated via an API key.
+
 """
 from django.views.generic import View
 from django.urls import path
@@ -106,7 +107,7 @@ from .views import DownloadNetworkPcapView,CheckTapInterfaceView
 from .views import ChangeVMDateTimeView, RemoveVMDateTimeView, DownloadVideoView
 from .views import RecordVideoVMView, StopVideoRecordingVMView, CheckRecordingStatusVMView, ListVideosView
 from .views import CheckUserAuthenticatedView, GenerateChainOfCustodyView, RecordCommentView
-from .views import VirtualIntrospectionView
+from .views import VirtualIntrospectionView, InsertMetrics, ExportVMDataToExcel
 
 
 urlpatterns = [
@@ -159,5 +160,7 @@ urlpatterns = [
     path('custody/<uuid>/', GenerateChainOfCustodyView.as_view(), name='generate-chain-off-custody'),
     path('record_comment/', RecordCommentView.as_view(), name='record_comment'),
     path('introspect/<uuid:uuid>/', VirtualIntrospectionView.as_view(), name='introspect_vm'),
+    path('insertmetrics/<uuid>/', InsertMetrics.as_view(), name='insert_metrics'),
+    path('exportmetrics/', ExportVMDataToExcel.as_view(), name='export_excel'),
 ]
 

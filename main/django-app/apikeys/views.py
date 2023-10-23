@@ -89,6 +89,10 @@ class InsertMetrics(View):
     This view is responsible for inserting metrics related to a virtual machine.
     It reads data from specific files located in a given directory and saves them into the VMData model.
     """
+
+    authentication_classes = [SessionAuthentication]
+    permission_classes = []
+
     def post(self, request, uuid):
         """
         Handles the POST request. Reads metrics from files in the specified directory
@@ -101,6 +105,13 @@ class InsertMetrics(View):
         Returns:
             HttpResponse: A 200 status response after successful data insertion.
         """
+
+        user, api_key_error = self.get_user_or_key_error(request)
+        request.user, api_key_error = self.get_user_or_key_error(request)
+
+        if api_key_error:
+            return api_key_error
+
         vm_data = VMData(uuid=uuid)
 
         BASE_DIR = f"/forensicVM/mnt/vm/{uuid}/stats"
@@ -161,7 +172,48 @@ class InsertMetrics(View):
             vm_data.product_name = "N/A"
 
         vm_data.save()
+        sync_create_chain_of_custody_record(request, "Converted image to ForensicVM", "Converted the image to forensic VM and collected performance metrics", uuid)
         return HttpResponse(status=200)
+
+    def get_user_or_key_error(self, request):
+        """
+        Retrieves the authenticated user from the request or returns an API key error.
+
+        This method attempts to get an authenticated user from the request.
+        If the user is authenticated, it will return the user and None for the error.
+        If the user is not authenticated, it will attempt to authenticate the user using an API key provided in the request.
+        If the API key is valid and associated with an active user, it returns the user and None for the error.
+        If the API key is invalid or the user associated with the key is not active, it returns None for the user and a JsonResponse indicating the error.
+        If no API key is provided in the request, it returns None for the user and a JsonResponse indicating that an API key is required.
+
+        Parameters:
+        ----------
+        request : django.http.HttpRequest
+            The request instance for the current request.
+
+        Returns:
+        -------
+        tuple
+            A tuple where the first element is the authenticated user or None if no user could be authenticated,
+            and the second element is None or a JsonResponse containing an error message.
+        """
+        api_key = request.META.get('HTTP_X_API_KEY')
+        user = getattr(request, 'user', None)
+        if user and user.is_authenticated:
+            print("DEBUG: USER AUTHENTICATED")
+        elif api_key:
+            try:
+                api_key = ApiKey.objects.get(key=api_key)
+                user = getattr(api_key, 'user')
+                if not user.is_active:
+                    return None, JsonResponse({'error': 'User account is disabled.'}, status=status.HTTP_401_UNAUTHORIZED)
+            except ApiKey.DoesNotExist:
+                return None, JsonResponse({'error': 'Invalid API key'}, status=status.HTTP_401_UNAUTHORIZED)
+        else:
+            return None, JsonResponse({'error': 'API key required'}, status=status.HTTP_401_UNAUTHORIZED)
+        return user, None
+
+
 
 async def memory_snapshot_helper(uuid):
     """

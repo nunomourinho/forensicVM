@@ -118,7 +118,7 @@ class InsertMetrics(View):
         INFO_DIR = f"/forensicVM/mnt/vm/{uuid}/"
 
         # File names separated based on extension
-        string_files_no_ext = ['conversion_time_txt', 'extension', 'filename', 'image_type', 'mode']
+        string_files_no_ext = ['conversion_time_txt', 'extension', 'filename', 'image_type', 'mode', "start_time_full", "end_time_full"]
         float_files_no_ext = ['conversion_time_in_seconds', 'image_size']
         float_files_txt_ext = ['disk_read', 'disk_write', 'elapsed_time', 'end_time', 'start_time', 'transfer_read_speed']
 

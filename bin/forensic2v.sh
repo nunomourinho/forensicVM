@@ -112,7 +112,9 @@ extract_bandwidths_from_fio_output "/forensicVM/mnt/vm/$2/stats"
 
 # Record the start time
 start_time=$(date +%s)
+start_time_full=$(date)
 echo $start_time > "/forensicVM/mnt/vm/$2/stats/start_time.txt"
+echo $start_time_full > "/forensicVM/mnt/vm/$2/stats/start_time_full"
 
 check_disk_partitions() {
   local image_file="$1"
@@ -395,11 +397,13 @@ function CleanUpEXIT {
      echo "Normal CleanUp"
      # Record the end time
      end_time=$(date +%s)
+     end_time_full=$(date)
 
 
      # Calculate the elapsed time in seconds
      elapsed_time=$(($end_time - $start_time))
      echo $end_time > "$stats_dir/end_time.txt"
+     echo $end_time_full > "$stats_dir/end_time_full"
      echo $elapsed_time > "$stats_dir/elapsed_time.txt"
 
 
@@ -441,7 +445,7 @@ if [ $imagemanager == "ewf" ]; then
 fi
 
 if [ $imagemanager == "aff" ]; then
-   affuse -o direct_io "$image" "$image_aff_mnt"/
+   affuse  -o splice_read -o direct_io "$image" "$image_aff_mnt"/
    if [[ $? -eq 0 ]]; then
        affrawmnt="${image_aff_mnt}/`ls $image_aff_mnt`"
        echo "Image mounted on: $affrawmnt"

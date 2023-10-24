@@ -156,4 +156,6 @@ SESSION_EXPIRE_SECONDS = 300 # 5 minutes
 SESSION_EXPIRE_AFTER_LAST_ACTIVITY = True
 SESSION_TIMEOUT_REDIRECT = '/'
 
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
 CSRF_TRUSTED_ORIGINS = ['http://forensicvm.mesi.ninja','http://0.0.0.0', 'http://127.0.0.1', 'http://192.168.1.112', 'http://85.240.2.211', 'https://forensicvm.mesi.ninja']

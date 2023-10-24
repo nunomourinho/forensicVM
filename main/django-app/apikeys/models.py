@@ -61,4 +61,8 @@ class VMData(models.Model):
     hostname = models.CharField(max_length=100, default='N/A')
     osinfo = models.CharField(max_length=100, default='N/A')
     product_name = models.CharField(max_length=100, default='N/A')
+    image_source = models.CharField(max_length=100, default='N/A')
+    image_real_name = models.CharField(max_length=100, default='N/A')
+    image_description = models.TextField(default='N/A')
+
 

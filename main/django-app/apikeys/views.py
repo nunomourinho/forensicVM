@@ -431,21 +431,21 @@ class GenerateChainOfCustodyView(View):
         table.style = 'Medium List 1'
 
         hdr_cells = table.rows[0].cells
-        hdr_cells[0].text = 'User'
-        hdr_cells[1].text = 'Date'
-        hdr_cells[2].text = 'Action'
-        hdr_cells[3].text = 'Parameters'
-        hdr_cells[4].text = 'UUID'
+        hdr_cells[0].text = 'Date'
+        hdr_cells[1].text = 'Action'
+        hdr_cells[2].text = 'Parameters'
+        hdr_cells[3].text = 'UUID'
+        hdr_cells[4].text = 'User'
         hdr_cells[5].text = 'IP Address'
 
         # Add a row for each record
         for record in records:
             row_cells = table.add_row().cells
-            row_cells[0].text = str(record.user.username)
-            row_cells[1].text = str(record.date)
-            row_cells[2].text = str(record.action)
-            row_cells[3].text = str(record.parameters)
-            row_cells[4].text = str(record.uuid)
+            row_cells[0].text = str(record.date)
+            row_cells[1].text = str(record.action)
+            row_cells[2].text = str(record.parameters)
+            row_cells[3].text = str(record.uuid)
+            row_cells[4].text = str(record.user.username)
             row_cells[5].text = str(record.ip_address)
 
             # Change font size to 8 pt

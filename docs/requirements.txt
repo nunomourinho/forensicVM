@@ -1,3 +1,7 @@
+pandas
+scipy
+statsmodels
+python-docx
 xlwt
 django-excel-response
 aiofiles

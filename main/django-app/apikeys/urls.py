@@ -107,7 +107,7 @@ from .views import DownloadNetworkPcapView,CheckTapInterfaceView
 from .views import ChangeVMDateTimeView, RemoveVMDateTimeView, DownloadVideoView
 from .views import RecordVideoVMView, StopVideoRecordingVMView, CheckRecordingStatusVMView, ListVideosView
 from .views import CheckUserAuthenticatedView, GenerateChainOfCustodyView, RecordCommentView
-from .views import VirtualIntrospectionView, InsertMetrics, ExportVMDataToExcel
+from .views import VirtualIntrospectionView, InsertMetrics, ExportVMDataToExcel, GenerateMetrics
 
 
 urlpatterns = [
@@ -162,5 +162,6 @@ urlpatterns = [
     path('introspect/<uuid:uuid>/', VirtualIntrospectionView.as_view(), name='introspect_vm'),
     path('insertmetrics/<uuid>/', InsertMetrics.as_view(), name='insert_metrics'),
     path('exportmetrics/', ExportVMDataToExcel.as_view(), name='export_excel'),
+    path('generatemetrics/', GenerateMetrics.as_view(), name='generate_metrics'),
 ]
 

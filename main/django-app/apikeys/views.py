@@ -111,7 +111,7 @@ def ExcelResponse(queryset):
 
     # Create a new Excel workbook and add a worksheet
     wb = xlwt.Workbook(encoding='utf-8')
-    ws = wb.add_sheet("VMData")
+    ws = wb.add_sheet("Metrics")
 
     # Write headers to the worksheet
     for col_num, header in enumerate(headers):
@@ -125,7 +125,7 @@ def ExcelResponse(queryset):
 
     # Prepare response
     response = HttpResponse(content_type='application/ms-excel')
-    response['Content-Disposition'] = 'attachment; filename="vmdata.xls"'
+    response['Content-Disposition'] = 'attachment; filename="virtualization_metrics.xls"'
     wb.save(response)
 
     return response

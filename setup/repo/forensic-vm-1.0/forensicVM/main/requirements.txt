@@ -87,7 +87,7 @@ urllib3==1.26.14
 vnc2flv-rec==0.2.0
 vncdotool==1.0.0
 websockify==0.10.0
-Werkzeug==2.2.3
+Werkzeug==3.0.1
 whichcraft==0.6.1
 yarg==0.1.9
 zope.event==4.6

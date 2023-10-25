@@ -1,3 +1,4 @@
+xlwt
 django-excel-response
 aiofiles
 opencv-python>=4.0

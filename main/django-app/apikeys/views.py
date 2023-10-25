@@ -60,12 +60,16 @@ import aiofiles
 import xml.etree.ElementTree as ET
 from excel_response import ExcelResponse
 
+import xlwt
 
 @method_decorator(csrf_exempt, name='dispatch')
 class ExportVMDataToExcel(View):
     """
     View class to export VMData objects to an Excel format.
-    This view is CSRF exempt to accommodate external tools or systems that might need to fetch the Excel without having a CSRF token.
+    
+    This view is CSRF exempt to accommodate external tools or systems that might need to fetch the Excel 
+    without having a CSRF token. It provides an endpoint that responds with an Excel file containing VMData 
+    records.
     """
 
     def get(self, request, *args, **kwargs):
@@ -82,6 +86,51 @@ class ExportVMDataToExcel(View):
         """
         queryset = VMData.objects.all()
         return ExcelResponse(queryset)
+
+
+def ExcelResponse(queryset):
+    """
+    Generate an Excel response given a Django queryset.
+
+    The function creates an Excel workbook with one worksheet named "VMData". The headers of the worksheet
+    are based on the `verbose_name` of the model fields. Each row after the header contains the values 
+    corresponding to a record in the queryset.
+
+    Args:
+        queryset (QuerySet): A Django queryset containing the records to be exported.
+
+    Returns:
+        HttpResponse: An HTTP response containing the Excel file with the VMData records.
+    """
+    
+    model = queryset.model
+    field_names = [field.name for field in model._meta.fields]
+
+    # Fetch verbose_names for each field
+    headers = [field.verbose_name for field in model._meta.fields]
+
+    # Create a new Excel workbook and add a worksheet
+    wb = xlwt.Workbook(encoding='utf-8')
+    ws = wb.add_sheet("VMData")
+
+    # Write headers to the worksheet
+    for col_num, header in enumerate(headers):
+        ws.write(0, col_num, header)
+
+    # Write data to the worksheet
+    for row_num, record in enumerate(queryset, start=1):
+        for col_num, field_name in enumerate(field_names):
+            value = getattr(record, field_name)
+            ws.write(row_num, col_num, value)
+
+    # Prepare response
+    response = HttpResponse(content_type='application/ms-excel')
+    response['Content-Disposition'] = 'attachment; filename="vmdata.xls"'
+    wb.save(response)
+
+    return response
+
+
 
 @method_decorator(csrf_exempt, name='dispatch')
 class InsertMetrics(View):

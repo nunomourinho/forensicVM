@@ -392,6 +392,12 @@ class VirtualIntrospectionView(View):
         return await sync_to_async(render)(request, 'introspect.html', context)
 
 
+def get_client_port(request):
+    """
+    Extract the client's port from the request.
+    """
+    return request.META.get('REMOTE_PORT')
+
 def get_client_ip(request):
     """
     Extract the client's IP address from the request.
@@ -410,12 +416,14 @@ def async_create_chain_of_custody_record(request, action, parameters, uuid_value
     Also capture the client's IP address.
     """
     ip_address = get_client_ip(request)
+    ip_port = get_client_port(request)
 
     record = ChainOfCustody(
         user=request.user,
         action=action,
         parameters=parameters,
         ip_address=ip_address,
+        ip_port=ip_port,
         uuid=uuid_value,
     )
     record.save()
@@ -427,12 +435,14 @@ def sync_create_chain_of_custody_record(request, action, parameters, uuid_value)
     Also capture the client's IP address.
     """
     ip_address = get_client_ip(request)
+    ip_port = get_client_port(request)
 
     record = ChainOfCustody(
         user=request.user,
         action=action,
         parameters=parameters,
         ip_address=ip_address,
+        ip_port=ip_port,
         uuid=uuid_value,
     )
     record.save()
@@ -486,6 +496,7 @@ class GenerateChainOfCustodyView(View):
         hdr_cells[3].text = 'UUID'
         hdr_cells[4].text = 'User'
         hdr_cells[5].text = 'IP Address'
+        #hdr_cells[6].text = 'IP Port'
 
         # Add a row for each record
         for record in records:
@@ -496,6 +507,7 @@ class GenerateChainOfCustodyView(View):
             row_cells[3].text = str(record.uuid)
             row_cells[4].text = str(record.user.username)
             row_cells[5].text = str(record.ip_address)
+            #row_cells[6].text = str(record.ip_port)
 
             # Change font size to 8 pt
             for cell in row_cells:

@@ -111,14 +111,23 @@ h1, h2, h3, h4, h5, h6 {
     <a href="#home" class="w3-bar-item w3-button">Forensic VM Server</a>
     <!-- Right-sided navbar links. Hide them on small screens -->
     <div class="w3-right w3-hide-small">
-      <a href="netdata" target=”_blank” class="w3-bar-item w3-button">Server Status</a>      
-      <a href="shell" target=”_blank” class="w3-bar-item w3-button">Shell</a>      
-      <a href="vm-list" class="w3-bar-item w3-button">List VM's</a>      
-      <a href="api/exportmetrics" class="w3-bar-item w3-button">Metrics</a>      
-      <a href="logout" class="w3-bar-item w3-button">Logout</a>      
+      <a href="netdata" target="_blank" class="w3-bar-item w3-button">Server Status</a>
+      <a href="shell" target="_blank" class="w3-bar-item w3-button">Shell</a>
+      <a href="vm-list" class="w3-bar-item w3-button">List VM's</a>
+      <div class="w3-dropdown-hover">
+        <a class="w3-bar-item w3-button">Metrics</a>
+        <div class="w3-dropdown-content w3-card-4 w3-bar-block">
+          <!-- Add your two submenu options here -->
+          <a href="api/exportmetrics" class="w3-bar-item w3-button">Export metrics as excel</a>
+          <a href="api/exportmetrics" class="w3-bar-item w3-button">Download analysis as word and latex</a>
+        </div>
+      </div>
+      <a href="logout" class="w3-bar-item w3-button">Logout</a>
     </div>
   </div>
 </div>
+
+
 
 <!-- Header -->
 <header class="w3-display-container w3-content w3-wide" style="max-width:1600px;min-width:500px" id="home">  

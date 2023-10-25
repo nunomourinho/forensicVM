@@ -37,13 +37,26 @@ class ChainOfCustody(models.Model):
 
 
 class VMData(models.Model):
+    REAL_IMAGE_CHOICES = [
+        ('N/A', 'Not Applicable'),
+        ('VMDK', 'VMDK'),
+        ('ENCASE', 'Encase'),
+        ('AFF', 'AFF'),
+        ('RAW', 'RAW'),
+        ('SMART', 'SMART'),
+    ]
     id = models.AutoField(primary_key=True)  # Auto-incrementing primary key
     uuid = models.CharField(max_length=36)
     conversion_time_txt = models.CharField(max_length=255, verbose_name="Conversion time: HH:MM:SS")
     extension = models.CharField(max_length=10, verbose_name="Disk image extension")
     filename = models.CharField(max_length=255, verbose_name="Disk image filename")
     image_type = models.CharField(max_length=50, verbose_name="Tool used to mount image")
-    real_image_type = models.CharField(max_length=50, default='N/A', verbose_name="Real image type")
+    real_image_type = models.CharField(
+        max_length=10,
+        choices=REAL_IMAGE_CHOICES,
+        default='N/A',
+        verbose_name="Real image type"
+    )
     mode = models.CharField(max_length=50, verbose_name="Conversion mode")
     conversion_time_in_seconds = models.FloatField(verbose_name="Real conversion time in seconds")
     disk_read = models.FloatField(verbose_name="Disk read test in MB/s")
@@ -64,5 +77,6 @@ class VMData(models.Model):
     image_source = models.CharField(max_length=100, default='N/A', verbose_name="Image site source")
     image_real_name = models.CharField(max_length=100, default='N/A', verbose_name="Image site identification")
     image_description = models.TextField(default='N/A', verbose_name="Image site description")
-
+    class Meta:
+        verbose_name = "Metric"
 

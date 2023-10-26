@@ -45,6 +45,7 @@ class VMData(models.Model):
         ('AFF', 'AFF'),
         ('RAW', 'RAW'),
         ('SMART', 'SMART'),
+        ('QCOW2', 'QCOW2'),
     ]
     id = models.AutoField(primary_key=True)  # Auto-incrementing primary key
     uuid = models.CharField(max_length=36)

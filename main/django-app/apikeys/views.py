@@ -589,8 +589,20 @@ class GenerateChainOfCustodyView(View):
             presenting the chain of custody records. Each record includes user, date, action, 
             parameters, UUID, and IP address. 
         """
+
+        # Display additional VMData fields with field name in bold
+        def add_field_paragraph(field_name, field_value):
+            """Helper function to add a paragraph with bold field name and regular value."""
+            para = doc.add_paragraph()
+            bold_run = para.add_run(f'{field_name}: ')
+            bold_run.bold = True
+            para.add_run(str(field_value))
+
         # Filter ChainOfCustody records by uuid
         records = ChainOfCustody.objects.filter(uuid=uuid)
+
+        # Fetch the first VMData record that matches the given uuid
+        vm_data = VMData.objects.filter(uuid=uuid).first()
 
         # Create a new Document
         doc = Document()
@@ -599,17 +611,30 @@ class GenerateChainOfCustodyView(View):
         p.add_run().add_picture('/forensicVM/main/branding/ForensicVMblack.jpg', width=Inches(2.0))
         doc.add_heading('Chain of Custody Records', 0)
 
+        # Add the UUID after the heading and format it as bold
+        uuid_paragraph = doc.add_paragraph()
+        uuid_run = uuid_paragraph.add_run('UUID: ')
+        uuid_run.bold = True
+        uuid_paragraph.add_run(str(uuid))
+
+        try:
+            add_field_paragraph('Filename', vm_data.filename)
+            add_field_paragraph('Hostname', vm_data.hostname)
+            add_field_paragraph('OS Info', vm_data.osinfo)
+            add_field_paragraph('Product Name', vm_data.product_name)
+        except Exception as e:
+            pass
+
         # Add a table to the Document
-        table = doc.add_table(rows=1, cols=6)
+        table = doc.add_table(rows=1, cols=5)
         table.style = 'Medium List 1'
 
         hdr_cells = table.rows[0].cells
         hdr_cells[0].text = 'Date'
         hdr_cells[1].text = 'Action'
         hdr_cells[2].text = 'Parameters'
-        hdr_cells[3].text = 'UUID'
-        hdr_cells[4].text = 'User'
-        hdr_cells[5].text = 'IP Address'
+        hdr_cells[3].text = 'User'
+        hdr_cells[4].text = 'IP Address'
         #hdr_cells[6].text = 'IP Port'
 
         # Add a row for each record
@@ -618,9 +643,8 @@ class GenerateChainOfCustodyView(View):
             row_cells[0].text = str(record.date)
             row_cells[1].text = str(record.action)
             row_cells[2].text = str(record.parameters)
-            row_cells[3].text = str(record.uuid)
-            row_cells[4].text = str(record.user.username)
-            row_cells[5].text = str(record.ip_address)
+            row_cells[3].text = str(record.user.username)
+            row_cells[4].text = str(record.ip_address)
             #row_cells[6].text = str(record.ip_port)
 
             # Change font size to 8 pt

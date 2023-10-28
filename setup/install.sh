@@ -1,6 +1,4 @@
 cd /
-mkdir forensicVM
-cd forensicVM
 yes | git clone --recurse-submodules https://github.com/nunomourinho/forensicVM.git
 
 

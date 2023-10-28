@@ -1,7 +1,6 @@
 cd /
 yes | git clone --recurse-submodules https://github.com/nunomourinho/forensicVM.git
-cd /forensicVM/setup/apps
-
+cd /forensicVM/setup
 xargs -a installed_packages.txt apt install -y
 
 cp /forensicVM/etc/systemd/system/forensicvm /etc/systemd/system/forensicvm

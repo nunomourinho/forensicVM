@@ -54,7 +54,6 @@ pefile
 Pillow
 pipreqs
 psutil
-PyAutoGUI
 pycparser
 pycurl
 python_docx

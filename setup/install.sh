@@ -1,8 +1,5 @@
 #!/bin/bash
 
-cp /forensicVM/setup/apps/sources.list/sources.list /etc/apt/sources.list
-apt update
-apt upgrade -y
 cd /
 
 REPO_URL="https://github.com/nunomourinho/forensicVM.git"
@@ -18,6 +15,11 @@ else
     echo "Directory $REPO_DIR does not exist. Cloning repository."
     yes | git clone --recurse-submodules "$REPO_URL" "$REPO_DIR"
 fi
+
+cp /forensicVM/setup/apps/sources.list/sources.list /etc/apt/sources.list
+apt update
+apt upgrade -y
+
 cd /forensicVM/setup
 xargs -a /forensicVM/setup/installed_packages.txt apt install -y
 cd /forensicVM/main/django-app

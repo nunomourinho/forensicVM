@@ -12,7 +12,5 @@ ForensicVM Server admin and development manual
    :caption: ForensicVM Server API Development Manual
 
    Folder Structure <pages/folder_structure>
-   API Keys <apikeys>
-   Modules <modules>
-   Configuration <conf>   
+   Development Manual <development>   
 

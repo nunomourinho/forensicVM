@@ -3,7 +3,7 @@
 cd /
 
 REPO_URL="https://github.com/nunomourinho/forensicVM.git"
-REPO_DIR="forensicVM"
+REPO_DIR="/forensicVM"
 
 # Check if the repository directory exists
 if [ -d "$REPO_DIR/.git" ]; then

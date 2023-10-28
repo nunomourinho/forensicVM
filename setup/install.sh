@@ -9,6 +9,7 @@ REPO_DIR="/forensicVM"
 if [ -d "$REPO_DIR/.git" ]; then
     echo "Directory $REPO_DIR exists. Updating repository."
     cd "$REPO_DIR"
+    git config pull.rebase false
     git pull origin master
     git submodule update --init --recursive
 else

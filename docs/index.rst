@@ -11,6 +11,6 @@ ForensicVM Server admin and development manual
    :maxdepth: 3
    :caption: ForensicVM Server API Development Manual
 
-   Folder Structure <pages/folder_structure>
+   Administrator Manual <admin>
    Development Manual <development>   
 

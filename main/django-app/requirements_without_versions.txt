@@ -1,3 +1,4 @@
+apscheduler
 pandas
 scipy
 statsmodels

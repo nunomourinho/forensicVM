@@ -1,7 +1,7 @@
 cd /
 mkdir forensicVM
 cd forensicVM
-git clone --recurse-submodules https://github.com/nunomourinho/forensicVM.git
+yes | git clone --recurse-submodules https://github.com/nunomourinho/forensicVM.git
 
 
 cp /forensicVM/etc/systemd/system/forensicvm /etc/systemd/system/forensicvm

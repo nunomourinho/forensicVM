@@ -22,7 +22,7 @@ cd /forensicVM/setup
 xargs -a /forensicVM/setup/installed_packages.txt apt install -y
 cd /forensicVM/main/django-app
 source /forensicVM/main/django-app/env_linux/bin/activate
-pip install -r requirements.txt
+pip install -r requirements_without_versions.txt
 
 cp /forensicVM/etc/systemd/system/forensicvm.service /etc/systemd/system/forensicvm.service
 systemctl daemon-reload

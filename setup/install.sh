@@ -27,6 +27,19 @@ cd /forensicVM/main/django-app
 source /forensicVM/main/django-app/env_linux/bin/activate
 pip install -r requirements_without_versions.txt
 
+# Detect local IP address
+local_ip=$(hostname -I | awk '{print $1}')
+
+# Detect external IP address
+external_ip=$(curl -s ipinfo.io/ip)
+
+# Prepare the new ALLOWED_HOSTS line
+new_allowed_hosts="ALLOWED_HOSTS = ['$local_ip', '$external_ip', 'localhost', '127.0.0.1']"
+echo $new_allowed_hosts
+
+# Replace the existing ALLOWED_HOSTS line in settings.py
+sed -i "s/^ALLOWED_HOSTS = .*$/$new_allowed_hosts/" /forensicVM/main/django-app/conf/settings.py
+
 cp /forensicVM/etc/systemd/system/forensicvm.service /etc/systemd/system/forensicvm.service
 systemctl daemon-reload
 systemctl enable forensicvm

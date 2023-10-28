@@ -21,6 +21,13 @@ cp /forensicVM/setup/apps/sources.list/sources.list /etc/apt/sources.list
 apt update
 apt upgrade -y
 
+mkdir /forensicVM/mnt
+mkdir /forensicVM/mnt/vm
+mkdir /forensicVM/mnt/iso
+mkdir /forensicVM/mnt/tmp
+
+
+
 cd /forensicVM/setup
 xargs -a /forensicVM/setup/installed_packages.txt apt install -y
 cd /forensicVM/main/django-app

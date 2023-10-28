@@ -700,6 +700,8 @@ class RecordCommentView(View):
         """
 
         user, api_key_error = self.get_user_or_key_error(request)
+        request.user, api_key_error = self.get_user_or_key_error(request)
+
         if api_key_error:
             return api_key_error
 

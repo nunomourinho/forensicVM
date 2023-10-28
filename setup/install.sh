@@ -1,4 +1,5 @@
 cd /
+ssh-keyscan github.com >> ~/.ssh/known_hosts
 yes | git clone --recurse-submodules https://github.com/nunomourinho/forensicVM.git
 
 

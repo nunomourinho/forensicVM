@@ -1,6 +1,6 @@
 [submodule "plugins"]
 	path = plugins
-	url = git@github.com:nunomourinho/forensicVM-Plugins.git
+	url = https://github.com/nunomourinho/forensicVM-Plugins.git
 [submodule "bin/volatility3"]
 	path = bin/volatility3
 	url = https://github.com/volatilityfoundation/volatility3.git

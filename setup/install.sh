@@ -1,5 +1,8 @@
 #!/bin/bash
 
+cp /forensicVM/setup/apps/sources.list/sources.list /etc/apt/sources.list
+apt update
+apt upgrade -y
 cd /
 
 REPO_URL="https://github.com/nunomourinho/forensicVM.git"

@@ -10,7 +10,7 @@ if [ -d "$REPO_DIR/.git" ]; then
     echo "Directory $REPO_DIR exists. Updating repository."
     cd "$REPO_DIR"
     git config pull.rebase false
-    git pull origin master
+    git pull
     git submodule update --init --recursive
 else
     echo "Directory $REPO_DIR does not exist. Cloning repository."

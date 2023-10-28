@@ -20,8 +20,11 @@ else
 fi
 cd /forensicVM/setup
 xargs -a /forensicVM/setup/installed_packages.txt apt install -y
+cd /forensicVM/main/django-app
+source /forensicVM/main/django-app/venv_2023/bin/activate
+python3 install -r requirements.txt
 
-cp /forensicVM/etc/systemd/system/forensicvm /etc/systemd/system/forensicvm
+cp /forensicVM/etc/systemd/system/forensicvm.service /etc/systemd/system/forensicvm.service
 systemctl daemon-reload
 systemctl enable forensicvm
 systemctl start forensicvm

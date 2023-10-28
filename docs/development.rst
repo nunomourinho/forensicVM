@@ -9,7 +9,7 @@ ForensicVM Server api development manual
    :maxdepth: 3
    :caption: API Development Manual
    
-   Internal Folder Structure <pages/folder_structure>
+   Internal Folder Structure (/forensicVM) <pages/folder_structure>
    API Keys <apikeys>
    Modules <modules>
    Configuration <conf>   

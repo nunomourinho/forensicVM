@@ -1,5 +1,20 @@
+#!/bin/bash
+
 cd /
-yes | git clone --recurse-submodules https://github.com/nunomourinho/forensicVM.git
+
+REPO_URL="https://github.com/nunomourinho/forensicVM.git"
+REPO_DIR="forensicVM"
+
+# Check if the repository directory exists
+if [ -d "$REPO_DIR/.git" ]; then
+    echo "Directory $REPO_DIR exists. Updating repository."
+    cd "$REPO_DIR"
+    git pull origin master
+    git submodule update --init --recursive
+else
+    echo "Directory $REPO_DIR does not exist. Cloning repository."
+    yes | git clone --recurse-submodules "$REPO_URL" "$REPO_DIR"
+fi
 cd /forensicVM/setup
 xargs -a /forensicVM/setup/installed_packages.txt apt install -y
 

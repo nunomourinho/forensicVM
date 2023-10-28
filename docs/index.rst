@@ -9,9 +9,8 @@ ForensicVM Server admin and development manual
 
 .. toctree::
    :maxdepth: 3
-   :caption: ForensicVM Server API Development Manual
+   :caption: ForensicVM Server - Admin and Development
 
-   API Keys <apikeys>
-   Modules <modules>
-   Configuration <conf>   
+   Administrator Manual <admin>
+   Development Manual <development>   
 

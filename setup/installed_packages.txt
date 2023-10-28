@@ -1359,10 +1359,8 @@ syslinux
 syslinux-common
 syslinux-utils
 systemd
-systemd-sysv
 systemd-timesyncd
 sysv-rc
-sysvinit-core
 sysvinit-utils
 t1utils
 tar

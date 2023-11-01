@@ -13,22 +13,39 @@ if [ "$EUID" -ne 0 ]; then
   exit 1
 fi
 
+# Check if rsync is installed, and install it if not
+if ! [ -x "$(command -v rsync)" ]; then
+  msg_green "Installing rsync."
+  apt update
+  apt install -y rsync
+fi
+
 cd /
 
+
+msg_green "Updating git repository"
 REPO_URL="https://github.com/nunomourinho/forensicVM.git"
 REPO_DIR="/forensicVM"
+TEMP_DIR="/forensicVM_git"
 
-# Check if the repository directory exists
-if [ -d "$REPO_DIR/.git" ]; then
-    echo "Directory $REPO_DIR exists. Updating repository."
-    cd "$REPO_DIR"
+# Clone or update the repository in a temporary directory
+if [ -d "$TEMP_DIR/.git" ]; then
+    echo "Temporary directory $TEMP_DIR exists. Updating repository."
+    cd "$TEMP_DIR"
     git config pull.rebase false
     git pull
     git submodule update --init --recursive
 else
-    msg_green "Directory $REPO_DIR does not exist. Cloning repository."
-    yes | git clone --recurse-submodules "$REPO_URL" "$REPO_DIR"
+    msg_green "Temporary directory $TEMP_DIR does not exist. Cloning repository."
+    yes | git clone --recurse-submodules "$REPO_URL" "$TEMP_DIR"
 fi
+
+# Sync files to the production directory, excluding settings.py
+rsync -av --exclude 'main/django-app/conf/settings.py'--exclude 'main/django-app/db.sqlite3' "$TEMP_DIR/" "$REPO_DIR/"
+
+# Update submodules in the production directory
+cd "$REPO_DIR"
+git submodule update --init --recursive
 
 msg_green "Updatating and upgrading installed packages"
 

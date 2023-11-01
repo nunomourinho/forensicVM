@@ -34,6 +34,11 @@ cd /forensicVM/main/django-app
 source /forensicVM/main/django-app/env_linux/bin/activate
 pip install -r requirements_without_versions.txt
 
+
+useradd -m forensicinvestigator
+"forensicinvestigator:forensicinvestigator" | chpasswd
+
+
 # Detect local IP address
 local_ip=$(hostname -I | awk '{print $1}')
 

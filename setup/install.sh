@@ -80,6 +80,22 @@ destination_dir="/usr"
 # Copy all files and folders recursively
 cp -r "$source_dir"/* "$destination_dir"
 
+msg_green "Adding sudo forensicinvestigator actions"
+# Define the line to add to sudoers
+sudoers_line="forensicinvestigator ALL=(ALL) NOPASSWD: /forensicVM/bin/*, /forensicVM/plugins/*, /forensicVM/mnt/vm/*"
+
+# Use visudo to edit the sudoers file
+if ! grep -qF "$sudoers_line" /etc/sudoers; then
+  echo "$sudoers_line" | sudo EDITOR='tee -a' visudo
+  if [ $? -eq 0 ]; then
+    echo "Line added to sudoers file successfully."
+  else
+    echo "Error: Failed to add line to sudoers file."
+  fi
+else
+  echo "The line already exists in the sudoers file."
+fi
+
 
 msg_green "Installing and starting the forensicvm service"
 cp /forensicVM/etc/systemd/system/forensicvm.service /etc/systemd/system/forensicvm.service

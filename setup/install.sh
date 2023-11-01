@@ -56,6 +56,28 @@ msg_green "Adding a forensic investigator user with a default password. Please c
 useradd -m forensicinvestigator
 echo "forensicinvestigator:forensicinvestigator" | chpasswd
 
+msg_green "Creating ssh keys - public and private"
+username="forensicinvestigator"
+# Create an SSH key pair for the user
+if [ ! -f "/home/$username/.ssh/id_rsa" ]; then
+  sudo -u "$username" ssh-keygen -t rsa -b 4096 -f "/home/$username/.ssh/id_rsa" -N ""
+fi
+
+# Create the authorized_keys file
+touch "/home/$username/.ssh/authorized_keys"
+
+# Create the known_hosts file
+touch "/home/$username/.ssh/known_hosts"
+
+
+# Set ownership and permissions for SSH files and directories
+chown -R "$username:$username" "/home/$username/.ssh"
+chmod 700 "/home/$username/.ssh"
+chmod 600 "/home/$username/.ssh/authorized_keys"
+chmod 644 "/home/$username/.ssh/known_hosts"
+
+msg_green "User $username created with SSH keys and required files."
+
 
 msg_green "Defining initial allowed hosts in django"
 # Detect local IP address

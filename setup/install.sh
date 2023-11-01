@@ -96,11 +96,46 @@ sed -i "s/^ALLOWED_HOSTS = .*$/$new_allowed_hosts/" /forensicVM/main/django-app/
 
 msg_green "Adding extra /usr files"
 # Define source and destination directories
-source_dir="/forensicVM/usr"
-destination_dir="/usr"
+source_dir="/forensicVM/usr/share"
+destination_dir="/usr/share"
 
 # Copy all files and folders recursively
 cp -r "$source_dir"/* "$destination_dir"
+
+
+msg_green "Patch qemu-img"
+# Define the source and destination paths
+source_path="/forensicVM/usr/bin/qemu-img"
+destination_path="/usr/bin/qemu-img"
+
+# Check if the source file exists
+if [ -f "$source_path" ]; then
+  # Check if the destination file exists and is different from the source
+  if [ -f "$destination_path" ] && ! cmp -s "$source_path" "$destination_path"; then
+    # Rename the destination file to .forensicVM
+    mv "$destination_path" "$destination_path.forensicVM"
+    if [ $? -eq 0 ]; then
+      echo "Renamed $destination_path to $destination_path.forensicVM."
+    else
+      echo "Error: Failed to rename $destination_path."
+      exit 1
+    fi
+  fi
+
+  # Copy the source file to the destination
+  cp "$source_path" "$destination_path"
+  if [ $? -eq 0 ]; then
+    echo "Copied $source_path to $destination_path."
+  else
+    echo "Error: Failed to copy $source_path to $destination_path."
+    exit 1
+  fi
+else
+  echo "Error: Source file $source_path does not exist."
+  exit 1
+fi
+
+msg_green "qemu-img sucessfully patched"
 
 msg_green "Adding sudo forensicinvestigator actions"
 # Define the line to add to sudoers

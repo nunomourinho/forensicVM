@@ -171,6 +171,13 @@ else
 fi
 
 
+msg_green "Reconfiguring shellinabox"
+cp /forensicVM/etc/default/shellinabox /etc/default/shellinabox
+systemctl daemon-reload
+systemctl enable shellinabox
+systemctl start shellinabox
+
+
 msg_green "Installing and starting the forensicvm service"
 cp /forensicVM/etc/systemd/system/forensicvm.service /etc/systemd/system/forensicvm.service
 systemctl daemon-reload

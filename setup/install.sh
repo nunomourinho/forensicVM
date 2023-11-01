@@ -1,5 +1,18 @@
 #!/bin/bash
 
+msg_green() {
+   tput bold
+   tput setaf 2
+   echo "$1"
+   tput sgr0
+}
+
+# Check if the script is run as root
+if [ "$EUID" -ne 0 ]; then
+  msg_green "This script must be run as root or with sudo privileges."
+  exit 1
+fi
+
 cd /
 
 REPO_URL="https://github.com/nunomourinho/forensicVM.git"
@@ -13,9 +26,11 @@ if [ -d "$REPO_DIR/.git" ]; then
     git pull
     git submodule update --init --recursive
 else
-    echo "Directory $REPO_DIR does not exist. Cloning repository."
+    msg_green "Directory $REPO_DIR does not exist. Cloning repository."
     yes | git clone --recurse-submodules "$REPO_URL" "$REPO_DIR"
 fi
+
+msg_green "Updatating and upgrading installed packages"
 
 cp /forensicVM/setup/apps/sources.list/sources.list /etc/apt/sources.list
 apt update
@@ -30,15 +45,19 @@ mkdir /forensicVM/mnt/tmp
 
 cd /forensicVM/setup
 xargs -a /forensicVM/setup/installed_packages.txt apt install -y
+
+msg_green "Installing python requirements"
 cd /forensicVM/main/django-app
 source /forensicVM/main/django-app/env_linux/bin/activate
 pip install -r requirements_without_versions.txt
 
 
+msg_green "Adding a forensic investigator user with a default password. Please change"
 useradd -m forensicinvestigator
-"forensicinvestigator:forensicinvestigator" | chpasswd
+echo "forensicinvestigator:forensicinvestigator" | chpasswd
 
 
+msg_green "Defining initial allowed hosts in django"
 # Detect local IP address
 local_ip=$(hostname -I | awk '{print $1}')
 
@@ -52,6 +71,17 @@ echo $new_allowed_hosts
 # Replace the existing ALLOWED_HOSTS line in settings.py
 sed -i "s/^ALLOWED_HOSTS = .*$/$new_allowed_hosts/" /forensicVM/main/django-app/conf/settings.py
 
+
+msg_green "Adding extra /usr files"
+# Define source and destination directories
+source_dir="/forensicVM/usr"
+destination_dir="/usr"
+
+# Copy all files and folders recursively
+cp -r "$source_dir"/* "$destination_dir"
+
+
+msg_green "Installing and starting the forensicvm service"
 cp /forensicVM/etc/systemd/system/forensicvm.service /etc/systemd/system/forensicvm.service
 systemctl daemon-reload
 systemctl enable forensicvm

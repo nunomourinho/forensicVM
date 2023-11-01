@@ -41,7 +41,7 @@ else
 fi
 
 # Sync files to the production directory, excluding settings.py
-rsync -av --exclude 'main/django-app/conf/settings.py'--exclude 'main/django-app/db.sqlite3' "$TEMP_DIR/" "$REPO_DIR/"
+rsync -av --exclude '*/settings.py'--exclude '*/db.sqlite3' "$TEMP_DIR/" "$REPO_DIR/"
 
 # Update submodules in the production directory
 cd "$REPO_DIR"

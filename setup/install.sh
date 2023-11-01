@@ -174,6 +174,7 @@ fi
 msg_green "Reconfiguring shellinabox"
 cp /forensicVM/etc/default/shellinabox /etc/default/shellinabox
 systemctl daemon-reload
+systemctl stop shellinabox
 systemctl enable shellinabox
 systemctl start shellinabox
 

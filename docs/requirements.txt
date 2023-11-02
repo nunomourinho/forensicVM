@@ -24,7 +24,7 @@ colorama==0.4.6
 channels==4.0.0
 constantly==15.1.0
 cryptography==39.0.1
-Django==4.1.9
+Django==4.1.13
 django-extensions==3.2.1
 django-revproxy @ https://github.com/jazzband/django-revproxy/archive/refs/tags/0.11.0.zip#sha256=182206aa1d1719aa5abf7379efb45ccb93c0d7088b8a25d8a69c67459c1d547e
 django-session-timeout==0.1.0

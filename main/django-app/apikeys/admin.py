@@ -129,6 +129,6 @@ admin.site.register(ChainOfCustody, ChainOfCustodyAdmin)
 class VMDataAdmin(admin.ModelAdmin):
     list_display = ['id', 'uuid', 'filename', 'hostname', 'real_image_type', 'image_type', 'mode', 'distro', 'booted','first_boot_time','conversion_time_in_seconds']
     search_fields = ['uuid', 'filename', 'hostname', 'real_image_type', 'image_type', 'distro']
-    list_filter = ['image_type', 'real_image_type', 'distro']
+    list_filter = ['image_type', 'real_image_type', 'distro', 'product_name']
 
 admin.site.register(VMData, VMDataAdmin)

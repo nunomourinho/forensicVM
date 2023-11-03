@@ -66,6 +66,17 @@ from statsmodels.formula.api import ols
 import statsmodels.api as sm
 from docx import Document
 
+import pandas as pd
+from docx import Document
+from docx.shared import Inches
+import matplotlib.pyplot as plt
+import numpy as np
+import zipfile
+import os
+from django.http import FileResponse
+from django.views import View
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_exempt
 
 @method_decorator(csrf_exempt, name='dispatch')
 class GenerateMetrics(View):
@@ -85,95 +96,143 @@ class GenerateMetrics(View):
             **kwargs: Arbitrary keyword arguments.
 
         Returns:
-            FileResponse: A Word formatted response containing the analysis of VMData objects.
+            FileResponse: A Zip formatted response containing the analysis of VMData objects.
         """
         # Fetching the data and converting it to DataFrame
         queryset = VMData.objects.all().values()
         data = pd.DataFrame.from_records(queryset)
 
         # Call the function to generate the docx and latex
-        doc_path = self.analyze_virtualization_metrics_final(data)
+        doc_path = self.generate_metrics_doc(data)
 
-        return FileResponse(open(doc_path, 'rb'), as_attachment=True, filename='virtualization_metrics_analysis.docx')
+        return FileResponse(open(doc_path, 'rb'), as_attachment=True, filename='virtualization_metrics_analysis.zip')
 
-    def analyze_virtualization_metrics_final(self, data):
-        doc = Document()
-        doc.add_heading('Virtualization Metrics Analysis', 0)
+    def calculate_average_speeds(self, data):
+        # Isolate data for snap and copy modes
+        snap_data = data[data['mode'] == 'snap']  # Adjusted 'Conversion mode' to 'mode'
+        copy_data = data[data['mode'] == 'copy']  # Adjusted 'Conversion mode' to 'mode'
 
-        try:
-            # 2. Data Analysis
-            descriptive_stats = data.groupby(['Tool used to mount image', 'Conversion mode'])['Real conversion time in seconds'].describe()
-            doc.add_heading('Descriptive Statistics', level=1)
-            table = doc.add_table(rows=1, cols=9)
-            hdr_cells = table.rows[0].cells
-            columns = ['Tool', 'Mode', 'count', 'mean', 'std', 'min', '25%', '50%', 'max']
-            for i, col in enumerate(columns):
-                hdr_cells[i].text = col.capitalize()
+        # Calculate average speed for snap mode
+        snap_image_size_bytes = snap_data['image_size'].sum()  # Adjusted 'Image size in bytes' to 'image_size'
+        snap_total_time_seconds = snap_data['conversion_time_in_seconds'].sum()  # Adjusted 'Real conversion time in seconds' to 'conversion_time_in_seconds'
+        average_speed_snap = snap_image_size_bytes / snap_total_time_seconds / (1024**2)  # Convert to MB/s
 
-            for index, row in descriptive_stats.iterrows():
-                cells = table.add_row().cells
-                cells[0].text = str(index[0])
-                cells[1].text = str(index[1])
-                for i in range(2, 9):
-                    cells[i].text = str(round(row[columns[i]], 2))
-        except Exception as e:
-            doc.add_paragraph(f"Error during Descriptive Statistics: {e}")
+        # Calculate average speed for copy mode
+        copy_image_size_bytes = copy_data['image_size'].sum()  # Adjusted 'Image size in bytes' to 'image_size'
+        copy_total_time_seconds = copy_data['conversion_time_in_seconds'].sum()  # Adjusted 'Real conversion time in seconds' to 'conversion_time_in_seconds'
+        average_speed_copy = copy_image_size_bytes / copy_total_time_seconds / (1024**2)  # Convert to MB/s
 
-        try:
-            data['Tool_Binarized'] = data['Tool used to mount image'].apply(lambda x: 0 if x == 'aff' else 1)
-            correlation, p_value = pointbiserialr(data['Tool_Binarized'], data['Real conversion time in seconds'])
+        return average_speed_snap, average_speed_copy
 
-            doc.add_heading('Point-biserial Correlation', level=1)
-            doc.add_paragraph(f'Correlation: {correlation:.3f}')
-            doc.add_paragraph(f'p-value: {p_value:.3f}')
-        except Exception as e:
-            doc.add_paragraph(f"Error during Point-biserial Correlation: {e}")
 
-        try:
-            data_renamed = data.rename(columns={
-                'Real conversion time in seconds': 'ConversionTime',
-                'Tool used to mount image': 'Tool',
-                'Conversion mode': 'Mode'
-            })
-            model_renamed = ols('ConversionTime ~ C(Tool) * C(Mode)', data=data_renamed).fit()
-            anova_table_renamed = sm.stats.anova_lm(model_renamed, typ=2)
-            
-            doc.add_heading('ANOVA Results', level=1)
-            table = doc.add_table(rows=1, cols=4)
-            hdr_cells = table.rows[0].cells
-            columns = ['Source', 'sum_sq', 'df', 'F']
-            for i, col in enumerate(columns):
-                hdr_cells[i].text = col.capitalize()
+    def calculate_expected_time(self, image_sizes_gb, speed_mb_s):
+        # Function to calculate the expected conversion time in seconds for given speeds and image sizes
+        image_sizes_bytes = [size * 1024**3 for size in image_sizes_gb]  # Convert GB to bytes
+        expected_times_seconds = [size / (speed_mb_s * 1024**2) for size in image_sizes_bytes]  # Calculate time in seconds
+        return expected_times_seconds
 
-            for index, row in anova_table_renamed.iterrows():
-                cells = table.add_row().cells
-                cells[0].text = str(index)
-                for i in range(1, 4):
-                    cells[i].text = str(round(row[columns[i]], 2))
-        except Exception as e:
-            doc.add_paragraph(f"Error during ANOVA Results: {e}")
+    def create_word_document(self, data):
+        # Create a new Word document
+        doc_graph = Document()
+        doc_graph.add_heading('Expected Conversion Time Graphs', level=1)
 
-        doc_path = "virtualization_metrics_analysis_final.docx"
-        doc.save(doc_path)
-        
-#        latex_content = "\\section*{Virtualization Metrics Analysis}\n"
-        
-#        try:
-#            latex_content += "\\subsection*{Descriptive Statistics}\n"
-#            latex_content += descriptive_stats.to_latex()
-#            latex_content += "\n\\subsection*{Point-biserial Correlation}\n"
-#            latex_content += f"Correlation: {correlation:.3f}\n\np-value: {p_value:.3f}\n"
-#            latex_content += "\n\\subsection*{ANOVA Results}\n"
-#            latex_content += anova_table_renamed.to_latex()
-#        except Exception as e:
-#            latex_content += f"\\paragraph*{Error during LaTeX generation: {e}}"
+        return doc_graph
 
-#        latex_path = "virtualization_metrics_analysis_final.tex"
-#        with open(latex_path, 'w') as latex_file:
-#            latex_file.write(latex_content)
+    def create_latex_content(self):
+        # Create LaTeX content with the graph embedded using the graphicx package
+        latex_graph_content = r'''
+        \section*{Expected Conversion Time Graphs}
 
-        return doc_path
-#, latex_path
+        \begin{figure}[htbp]
+        \centering
+        \includegraphics[width=0.9\textwidth]{conversion_time_graph.png}
+        \caption{Expected Conversion Time vs Image Size}
+        \end{figure}
+        '''
+
+        return latex_graph_content
+
+    def create_graph(self, image_sizes_gb, expected_times_snap_hours, expected_times_copy_hours):
+        # Create the graph using Matplotlib
+        fig, ax = plt.subplots(figsize=(10, 6))
+
+        # Plot for snap mode
+        ax.plot(image_sizes_gb, expected_times_snap_hours, marker='o', label='Snap Mode', color='blue')
+
+        # Plot for copy mode
+        ax.plot(image_sizes_gb, expected_times_copy_hours, marker='s', label='Copy Mode', color='red')
+
+        # Log scale for x-axis
+        ax.set_xscale('log')
+
+        # Titles and labels
+        ax.set_title('Expected Conversion Time vs Image Size')
+        ax.set_xlabel('Image Size (GB)')
+        ax.set_ylabel('Expected Conversion Time (Hours)')
+        ax.legend()
+
+        # Grid
+        ax.grid(True, which="both", ls="--", linewidth=0.5)
+
+        # Tight layout for better spacing
+        plt.tight_layout()
+
+        return fig
+
+    def generate_metrics_doc(self, data):
+        # Load the Excel file to recreate the dataframe
+        df = data
+
+        # Apply the function to our dataframe to get the average speeds
+        average_speed_snap, average_speed_copy = self.calculate_average_speeds(df)
+
+        # Image sizes in GB for which to calculate conversion times
+        image_sizes_gb = np.array([1, 10, 100, 1000, 100000])
+
+        # Perform the calculations for expected times
+        expected_times_snap = self.calculate_expected_time(image_sizes_gb, average_speed_snap)
+        expected_times_copy = self.calculate_expected_time(image_sizes_gb, average_speed_copy)
+
+        # Convert times to hours for graphing
+        expected_times_snap_hours = np.array(expected_times_snap) / 3600
+        expected_times_copy_hours = np.array(expected_times_copy) / 3600
+
+        # Create a new Word document
+        doc_graph = self.create_word_document(data)
+
+        # Create the graph
+        fig = self.create_graph(image_sizes_gb, expected_times_snap_hours, expected_times_copy_hours)
+
+        # Save the plot to a file
+        graph_filename = '/forensicVM/mnt/tmp/conversion_time_graph.png'
+        fig.savefig(graph_filename)
+        plt.close()
+
+        # Insert the graph into the Word document
+        doc_graph.add_picture(graph_filename, width=Inches(6))
+        doc_graph.add_page_break()
+
+        # Save the Word document
+        word_graph_filename = '/forensicVM/mnt/tmp/expected_conversion_times_graph.docx'
+        doc_graph.save(word_graph_filename)
+
+        # Create LaTeX content
+        latex_graph_content = self.create_latex_content()
+
+        # Save the LaTeX document content to a file
+        latex_graph_filename = '/forensicVM/mnt/tmp/expected_conversion_times_graph.tex'
+        with open(latex_graph_filename, 'w') as latex_file:
+            latex_file.write(latex_graph_content)
+
+        # Zip the Word and LaTeX files together
+        zip_graph_filename = '/forensicVM/mnt/tmp/expected_conversion_times_graphs.zip'
+        with zipfile.ZipFile(zip_graph_filename, 'w') as zipf:
+            zipf.write(word_graph_filename, os.path.basename(word_graph_filename))
+            zipf.write(graph_filename, os.path.basename(graph_filename))  # Include the graph image for LaTeX
+            zipf.write(latex_graph_filename, os.path.basename(latex_graph_filename))
+
+        return zip_graph_filename
+
 
 
 @method_decorator(csrf_exempt, name='dispatch')

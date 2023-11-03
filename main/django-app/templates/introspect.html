@@ -16,6 +16,7 @@
         <button class="w3-bar-item w3-button" onclick="openTab('Malfind')">Possible malware injection processes</button>
         <button class="w3-bar-item w3-button" onclick="openTab('Netscan')">Network connections</button>
         <button class="w3-bar-item w3-button" onclick="openTab('Netstat')">Network Services</button>
+        <button class="w3-bar-item w3-button" onclick="openTab('Hashdump')">Possible user password hash</button>
     </div>
 
     <div id="ProcessTree" class="w3-container w3-display-container tab">
@@ -64,6 +65,11 @@
     <div id="Netstat" class="w3-container w3-display-container tab" style="display:none">
         <h2 class="w3-blue">Netstat</h2>
         <textarea class="w3-input w3-border" style="height: 800px; resize: vertical; font-family: monospace;" readonly>{{ netstat_output }}</textarea>
+    </div>
+
+    <div id="Hashdump" class="w3-container w3-display-container tab" style="display:none">
+        <h2 class="w3-blue">Hash: Possible passwords</h2>
+        <textarea class="w3-input w3-border" style="height: 800px; resize: vertical; font-family: monospace;" readonly>{{ hashdump_output }}</textarea>
     </div>
 
     <script>

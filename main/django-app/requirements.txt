@@ -1,3 +1,4 @@
+pycryptodome
 matplotlib
 pandas
 scipy

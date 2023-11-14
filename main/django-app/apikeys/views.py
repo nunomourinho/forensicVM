@@ -321,11 +321,11 @@ class GenerateMetrics(View):
         # Adding a paragraph for the distribution of operating systems
         self.add_paragraph(doc_graph, f"In our dataset, the distribution of operating system distributions is varied, showcasing our system's compatibility with a wide range of environments. The distributions include: {distro_count_text}. This diversity is crucial for comprehensive forensic analysis across different platforms.")
 
-        # Adding a paragraph for the distribution of operating system product names
-        self.add_paragraph(doc_graph, f"Regarding the specific product names of the operating systems, our data indicates a diverse set of systems being analyzed. These include: {product_count_text}. This variety allows for tailored approaches in forensic analysis, accommodating the unique characteristics of each operating system.")
-
         # Adding a paragraph for the distribution of operating system families
         self.add_paragraph(doc_graph, f"The breakdown of operating system families in our dataset further reflects the scope of our forensic capabilities. The OS families represented are: {os_info_count_text}. This range ensures that our forensic analysis methods are versatile and adaptable to various system architectures.")
+
+        # Adding a paragraph for the distribution of operating system product names
+        self.add_paragraph(doc_graph, f"Regarding the specific product names of the operating systems, our data indicates a diverse set of systems being analyzed. These include: {product_count_text}. This variety allows for tailored approaches in forensic analysis, accommodating the unique characteristics of each operating system.")
 
         # Adding a paragraph for the tools used to mount forensic images
         self.add_paragraph(doc_graph, f"Our analysis also extends to the tools effectively used to mount forensic images, which are critical for the success of our virtualization processes. The tools include: {tool_used_count_text}. The choice of tools reflects our commitment to using the most effective and reliable methods for each type of forensic image.")

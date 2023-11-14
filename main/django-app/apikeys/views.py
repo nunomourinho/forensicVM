@@ -86,6 +86,15 @@ class GenerateMetrics(View):
     This view is CSRF exempt similar to the provided example.
     """
 
+    # Display additional VMData fields with field name in bold
+    def add_paragraph(self, doc, text):
+        """Helper function to add a paragraph."""
+        para = doc.add_paragraph()
+        bold_run = para.add_run(text)
+        #bold_run.bold = True
+        #para.add_run(str(field_value))
+
+
     def get(self, request, *args, **kwargs):
         """
         Handles the GET request to fetch all VMData objects, analyze them, and return a Word document.
@@ -134,7 +143,6 @@ class GenerateMetrics(View):
     def create_word_document(self, data):
         # Create a new Word document
         doc_graph = Document()
-        doc_graph.add_heading('Expected Conversion Time Graphs', level=1)
 
         return doc_graph
 
@@ -179,15 +187,173 @@ class GenerateMetrics(View):
 
         return fig
 
+    def create_word_metrics_table(self, image_sizes_gb, expected_times_snap_hours, expected_times_copy_hours, doc):
+        # Create a table in the Word document
+        table = doc.add_table(rows=1, cols=4)
+        table.style = 'Medium List 1'
+        hdr_cells = table.rows[0].cells
+        hdr_cells[0].text = 'Image Size (GB)'
+        hdr_cells[1].text = 'Expected Time Snap (Hours)'
+        hdr_cells[2].text = 'Expected Time Copy (Hours)'
+
+        # Adding the data
+        for size, snap_time, copy_time in zip(image_sizes_gb, expected_times_snap_hours, expected_times_copy_hours):
+            row_cells = table.add_row().cells
+            row_cells[0].text = str(size)
+            row_cells[1].text = f"{snap_time:.2f}"
+            row_cells[2].text = f"{copy_time:.2f}"
+
+
+    def create_latex_metrics_table(self, image_sizes_gb, expected_times_snap_hours, expected_times_copy_hours):
+        # Start the table
+        latex_table_content = "\\begin{table}[ht]\n\\centering\n"
+        latex_table_content += "\\begin{tabular}{|c|c|c|}\n\\hline\n"
+        latex_table_content += "Image Size (GB) & Expected Time Snap (Hours) & Expected Time Copy (Hours) \\\\\n\\hline\n"
+
+        # Adding the data
+        for size, snap_time, copy_time in zip(image_sizes_gb, expected_times_snap_hours, expected_times_copy_hours):
+            latex_table_content += f"{size} & {snap_time:.2f} & {copy_time:.2f} \\\\\n\\hline\n"
+
+        # End the table
+        latex_table_content += "\\end{tabular}\n\\caption{Expected Conversion Time vs Image Size}\n\\end{table}\n"
+        return latex_table_content
+
     def generate_metrics_doc(self, data):
+        # Create a new Word document
+        doc_graph = self.create_word_document(data)
+
         # Load the Excel file to recreate the dataframe
         df = data
 
         # Apply the function to our dataframe to get the average speeds
         average_speed_snap, average_speed_copy = self.calculate_average_speeds(df)
 
+
+        # Extract data from VMData model
+        df2 = pd.DataFrame.from_records(data)
+
+        # conversion_time_in_seconds, disk_read, and disk_write are the main fields of interest
+        descriptive_stats = df2[['conversion_time_in_seconds', 'disk_read', 'disk_write']].describe()
+
+        # Extracting specific statistics
+        average_conversion_time = descriptive_stats.loc['mean', 'conversion_time_in_seconds']
+        std_dev_conversion_time = descriptive_stats.loc['std', 'conversion_time_in_seconds']
+        min_conversion_time = descriptive_stats.loc['min', 'conversion_time_in_seconds']
+        max_conversion_time = descriptive_stats.loc['max', 'conversion_time_in_seconds']
+
+        average_disk_read = descriptive_stats.loc['mean', 'disk_read']
+        average_disk_write = descriptive_stats.loc['mean', 'disk_write']
+        std_dev_disk_read = descriptive_stats.loc['std', 'disk_read']
+        std_dev_disk_write = descriptive_stats.loc['std', 'disk_write']
+
+        # Count the number of virtualizations in each mode
+        mode_counts = df2['mode'].value_counts()
+
+        # Get the count for each mode
+        snap_count = mode_counts.get('snap', 0)  # Replace 'snap' with the exact term used in your database
+        copy_count = mode_counts.get('copy', 0)  # Replace 'copy' with the exact term used in your database
+        total_virtualizations = snap_count + copy_count
+
+
+        # Additional code for categorical fields
+        real_image_type_counts = df2['real_image_type'].value_counts()
+        distro_counts = df2['distro'].value_counts()
+        product_counts = df2['product_name'].value_counts()
+        os_info_counts = df2['osinfo'].value_counts()
+        tool_used_counts = df2['image_type'].value_counts()
+        mode_counts = df2['mode'].value_counts()
+
+
+        # Adding explanations to the document
+        doc_graph.add_heading('Descriptive Statistics', level=1)
+
+        doc_graph.add_heading('Introduction', level=2)
+
+        self.add_paragraph(doc_graph, "Our VMData model captures a comprehensive set of metrics to evaluate the virtualization process of forensic images. This data is pivotal for assessing the efficiency and effectiveness of different virtualization methods.")
+
+        self.add_paragraph(doc_graph, "The model includes fields like 'conversion_time_txt', 'extension', and 'filename', providing basic information about each virtualization instance, such as the time taken for conversion and details about the disk image used. This helps in tracking performance and identifying potential areas for optimization.")
+
+        self.add_paragraph(doc_graph, "Significant attributes like 'image_type' and 'real_image_type' detail the tools used for mounting the image and the actual format of the forensic image, respectively. These fields are crucial for understanding the compatibility and performance across different image formats and mounting techniques.")
+
+        self.add_paragraph(doc_graph, "'Conversion_time_in_seconds', 'disk_read', and 'disk_write' are key performance indicators. They provide direct measures of the time efficiency and disk IO performance during the virtualization process, allowing us to quantify and compare the speed and resource utilization of different virtualization modes.")
+
+        self.add_paragraph(doc_graph, "Fields such as 'elapsed_time', 'start_time', and 'end_time' offer insights into the overall time frame of the virtualization process. Additionally, 'first_boot_time' and 'booted' indicate the success and efficiency of the initial boot process of the virtualized image, which is critical in forensic analysis.")
+
+        self.add_paragraph(doc_graph, "Network performance metrics like 'transfer_read_speed' and detailed OS information fields including 'distro', 'hostname', and 'osinfo' provide a deeper understanding of the virtualization environment and its impact on the system's network and operating characteristics.")
+
+        self.add_paragraph(doc_graph, "Finally, fields like 'image_source', 'image_real_name', and 'image_description' give context to the source and nature of the forensic images. This information is invaluable for maintaining a detailed record and ensuring the integrity and traceability of forensic data throughout the virtualization process.")
+
+        doc_graph.add_heading('Descriptive statistics', level=2)
+        # Adding paragraphs for descriptive statistics
+        self.add_paragraph(doc_graph, "To further understand our virtualization process, we have conducted a detailed statistical analysis of our VMData. This analysis provides valuable insights into key performance metrics such as conversion time, disk read speed, and disk write speed.")
+
+        self.add_paragraph(doc_graph, f"Our findings indicate that the average conversion time stands at {average_conversion_time:.0f} seconds, with a standard deviation of {std_dev_conversion_time:.0f}, highlighting the variability in our conversion process. The minimum and maximum conversion times recorded are {min_conversion_time:.0f} and {max_conversion_time:.0f} seconds respectively, which helps in identifying outliers and understanding the range of our process efficiencies.")
+
+        self.add_paragraph(doc_graph, f"In terms of disk performance, the average disk read speed is {average_disk_read:.0f} MB/s, and the average disk write speed is {average_disk_write:.0f} MB/s. The standard deviations for these readings are {std_dev_disk_read:.0f} and {std_dev_disk_write:.0f}, respectively, which provide insights into the consistency of our disk operations.")
+
+        self.add_paragraph(doc_graph, "These statistics reflect the current scenario, are indicative of our current performance levels and serve as a benchmark for future improvements in our virtualization processes.")
+
+
+        # Additional code for categorical fields
+        real_image_type_counts = df2['real_image_type'].value_counts()
+        distro_counts = df2['distro'].value_counts()
+        product_counts = df2['product_name'].value_counts()
+        os_info_counts = df2['osinfo'].value_counts()
+        tool_used_counts = df2['image_type'].value_counts()
+        mode_counts = df2['mode'].value_counts()
+
+
+        # Constructing the real image type distribution text
+        real_image_types_text = ", ".join([f"{image_type}: {count}" for image_type, count in real_image_type_counts.items()])
+        distro_count_text = ", ".join([f"{image_type}: {count}" for image_type, count in distro_counts.items()])
+        product_count_text = ", ".join([f"{image_type}: {count}" for image_type, count in product_counts.items()])
+        os_info_count_text = ", ".join([f"{image_type}: {count}" for image_type, count in os_info_counts.items()])
+        tool_used_count_text = ", ".join([f"{image_type}: {count}" for image_type, count in tool_used_counts.items()])
+
+
+        # Getting the count for snapshot and copy modes
+        snap_count = mode_counts.get('snap', 0)  # Replace 'snap' with the exact term used in your dataset
+        copy_count = mode_counts.get('copy', 0)  # Replace 'copy' with the exact term used in your dataset
+
+        # Adding the paragraph with the distribution of real image types
+        self.add_paragraph(doc_graph, f"The dataset reveals a varied distribution of real image types used in our virtualization processes, with counts as follows: {real_image_types_text}. This diversity underscores our system's capability to handle a broad spectrum of image formats, catering to the varied requirements of forensic analysis.")
+
+        # Adding a paragraph for the distribution of operating systems
+        self.add_paragraph(doc_graph, f"In our dataset, the distribution of operating system distributions is varied, showcasing our system's compatibility with a wide range of environments. The distributions include: {distro_count_text}. This diversity is crucial for comprehensive forensic analysis across different platforms.")
+
+        # Adding a paragraph for the distribution of operating system product names
+        self.add_paragraph(doc_graph, f"Regarding the specific product names of the operating systems, our data indicates a diverse set of systems being analyzed. These include: {product_count_text}. This variety allows for tailored approaches in forensic analysis, accommodating the unique characteristics of each operating system.")
+
+        # Adding a paragraph for the distribution of operating system families
+        self.add_paragraph(doc_graph, f"The breakdown of operating system families in our dataset further reflects the scope of our forensic capabilities. The OS families represented are: {os_info_count_text}. This range ensures that our forensic analysis methods are versatile and adaptable to various system architectures.")
+
+        # Adding a paragraph for the tools used to mount forensic images
+        self.add_paragraph(doc_graph, f"Our analysis also extends to the tools effectively used to mount forensic images, which are critical for the success of our virtualization processes. The tools include: {tool_used_count_text}. The choice of tools reflects our commitment to using the most effective and reliable methods for each type of forensic image.")
+
+        # Adding the paragraph with the distribution of virtualization modes
+        #self.add_paragraph(doc_graph, f"Furthermore, our analysis shows a total of {snap_count} virtualizations performed in snapshot mode and {copy_count} in copy mode. This distribution highlights the adaptability and efficiency of our virtualization strategies, ensuring optimal processing tailored to the specific needs of each case.")
+
+
+        doc_graph.add_heading('Virtualization speed estimation', level=2)
+
+        self.add_paragraph(doc_graph, "In our virtualization process of forensic images, we utilize two distinct modes: snapshot and copy. Each mode serves a unique purpose in handling the virtualization of forensic data, and understanding their efficiency is crucial for our operations.")
+
+        self.add_paragraph(doc_graph, f"The average speed for the snapshot mode is {average_speed_snap:.0f} MB/s. In this mode, we create an overlay on the server that maintains a link to the original forensic image. This image is accessed remotely via a Samba share over SSH. The speed of this process is vital as it determines the efficiency of creating a quick, less resource-intensive reference to the original data, enabling fast access while preserving the integrity of the original forensic image.")
+
+        self.add_paragraph(doc_graph, f"In contrast, the average speed for the copy mode is {average_speed_copy:.0f} MB/s. This mode also involves creating an overlay, but differs significantly as it entails copying the entire forensic image to the server. This method is more resource-intensive and the speed is indicative of how efficiently we can duplicate and store the entire forensic data on our system.")
+
+        self.add_paragraph(doc_graph, f"These metrics are gathered from a database of {total_virtualizations:.0f} virtualizations, with {snap_count:.0f} virtualizations performed in snapshot mode, and {copy_count:.0f} performed in copy mode. Estimating the number of hours required for virtualization operations in both snapshot and copy modes, based on these averages, allows us to plan effectively. It aids in determining resource allocation, optimizing our virtualization process, and ensuring that our forensic analysis is conducted within a timely and efficient manner. These insights are invaluable for continual improvement and maintaining high standards in forensic virtualization.")
+
+        self.add_paragraph(doc_graph, "Following our analysis of the virtualization process, we have compiled a table that outlines the expected time in hours for virtualizing forensic images in both snapshot and copy modes. This table is an essential tool for planning and forecasting our virtualization tasks.")
+
+        self.add_paragraph(doc_graph, "The table includes data for a range of image sizes - 1, 10, 100, 1000, 10000, and 100000 GB. These sizes represent a comprehensive spectrum of typical forensic image sizes that we encounter in our operations. By understanding the expected time for each size and mode, we can optimize our workflow and ensure efficient allocation of resources.")
+
+        self.add_paragraph(doc_graph, "The expected time is calculated based on the average speeds previously discussed. For the snapshot mode, the expected time accounts for the process of creating an overlay with a link to the original image, while for the copy mode, it reflects the time taken to duplicate the entire image to our server. These estimations are crucial for managing our virtualization pipeline, scheduling tasks, and maintaining the high integrity required in forensic analysis.")
+
+
+
         # Image sizes in GB for which to calculate conversion times
-        image_sizes_gb = np.array([1, 10, 100, 1000, 100000])
+        image_sizes_gb = np.array([1, 10, 100, 1000, 10000, 100000])
 
         # Perform the calculations for expected times
         expected_times_snap = self.calculate_expected_time(image_sizes_gb, average_speed_snap)
@@ -197,8 +363,6 @@ class GenerateMetrics(View):
         expected_times_snap_hours = np.array(expected_times_snap) / 3600
         expected_times_copy_hours = np.array(expected_times_copy) / 3600
 
-        # Create a new Word document
-        doc_graph = self.create_word_document(data)
 
         # Create the graph
         fig = self.create_graph(image_sizes_gb, expected_times_snap_hours, expected_times_copy_hours)
@@ -208,9 +372,20 @@ class GenerateMetrics(View):
         fig.savefig(graph_filename)
         plt.close()
 
+        # Create and add the metrics table to the Word document
+        self.create_word_metrics_table(image_sizes_gb, expected_times_snap_hours, expected_times_copy_hours, doc_graph)
+
+        self.add_paragraph(doc_graph, "Accompanying the table of expected conversion times, we have developed a line graph that visually represents the relationship between the image size and the estimated conversion time for both snapshot and copy modes. This graphical representation aids in the quick and intuitive understanding of how image size impacts conversion time.")
+
+        self.add_paragraph(doc_graph, "On the graph, the X-axis represents the image size in gigabytes (GB), ranging from smaller sizes such as 1 GB to larger sizes up to 100,000 GB. The Y-axis denotes the estimated conversion time in hours. This scale allows us to observe the direct correlation between the size of the forensic image and the time required for its virtualization.")
+
+        self.add_paragraph(doc_graph, "The graph includes two distinct lines, each representing one of the virtualization modes. The line for the snapshot mode illustrates the time efficiency of creating an overlay linked to the original image, while the line for the copy mode shows the time taken to duplicate the entire image to the server. The visual comparison between these two lines provides valuable insights into the efficiency of each mode and helps in making informed decisions about which mode to use based on the size of the forensic image.")
+
+
         # Insert the graph into the Word document
         doc_graph.add_picture(graph_filename, width=Inches(6))
-        doc_graph.add_page_break()
+        #doc_graph.add_page_break()
+
 
         # Save the Word document
         word_graph_filename = '/forensicVM/mnt/tmp/expected_conversion_times_graph.docx'
@@ -218,6 +393,10 @@ class GenerateMetrics(View):
 
         # Create LaTeX content
         latex_graph_content = self.create_latex_content()
+
+        # Create and add the metrics table to the LaTeX content
+        latex_table_content = self.create_latex_metrics_table(image_sizes_gb, expected_times_snap_hours, expected_times_copy_hours)
+        latex_graph_content += latex_table_content
 
         # Save the LaTeX document content to a file
         latex_graph_filename = '/forensicVM/mnt/tmp/expected_conversion_times_graph.tex'

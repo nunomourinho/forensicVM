@@ -269,9 +269,20 @@ class GenerateMetrics(View):
         df['size_category'] = pd.cut(df['image_size_gb'], bins=bins, labels=labels, right=False)
         return df
 
+
     def calculate_average_boot_times(self, df):
-        # Calculate average boot times
-        return df.groupby(['mode', 'size_category'])['first_boot_time'].mean().unstack()
+        # Group by mode and size category, then calculate average boot times
+        grouped = df.groupby(['mode', 'size_category'])['first_boot_time'].mean().unstack()
+
+        # Interpolate missing values for each mode
+        for mode in grouped.index:
+            grouped.loc[mode] = grouped.loc[mode].interpolate()
+
+        # Optional: Fill any remaining missing values using forward or backward fill
+        grouped.ffill(axis=1, inplace=True)
+        grouped.bfill(axis=1, inplace=True)
+
+        return grouped
 
 
 

@@ -70,6 +70,7 @@ import pandas as pd
 from docx import Document
 from docx.shared import Inches
 import matplotlib.pyplot as plt
+from scipy.interpolate import interp1d
 import numpy as np
 import zipfile
 import os
@@ -218,6 +219,62 @@ class GenerateMetrics(View):
         latex_table_content += "\\end{tabular}\n\\caption{Expected Conversion Time vs Image Size}\n\\end{table}\n"
         return latex_table_content
 
+    def create_boot_times_table(self, grouped, doc):
+        # Creates a table in the Word document with image size, snap boot time, and copy boot time
+        labels = ['1 GB', '10 GB', '100 GB', '1000 GB', '10000 GB', '100000 GB']
+        table = doc.add_table(rows=1, cols=3)
+        table.style = 'Medium List 1'
+        
+        # Setting the header row
+        hdr_cells = table.rows[0].cells
+        hdr_cells[0].text = 'Image Size'
+        hdr_cells[1].text = 'Expected Boot Time in Snap Mode (Seconds)'
+        hdr_cells[2].text = 'Expected Boot Time in Copy Mode (Seconds)'
+
+        # Adding rows for each image size
+        for label in labels:
+            row_cells = table.add_row().cells
+            row_cells[0].text = label
+            row_cells[1].text = f"{grouped.loc['snap', label]:.2f}" if label in grouped.loc['snap'] else "N/A"
+            row_cells[2].text = f"{grouped.loc['copy', label]:.2f}" if label in grouped.loc['copy'] else "N/A"
+
+
+    def create_boot_times_graph(self, grouped, filename):
+        # Creates a graph and saves it as an image
+        labels = ['1 GB', '10 GB', '100 GB', '1000 GB', '10000 GB', '100000 GB']
+        plt.figure()
+        for mode in ['snap', 'copy']:
+            plt.plot(labels, grouped.loc[mode], label=f"{mode.capitalize()} Mode")
+        plt.xlabel('Image Size')
+        plt.ylabel('Average Boot Time (Seconds)')
+        plt.title('Average Boot Times by Image Size and Mode')
+        plt.legend()
+        plt.savefig(filename)
+        plt.close()
+
+
+    def extract_data(self):
+        # Extracts data from VMData model
+        queryset = VMData.objects.filter(booted=True).values('mode', 'first_boot_time', 'image_size')
+        df = pd.DataFrame.from_records(queryset)
+
+        # Check for missing values in 'image_size' and interpolate
+        if df['image_size'].isnull().any():
+        # Interpolate missing values in 'image_size'
+            df['image_size'] = df['image_size'].interpolate(method='linear')
+
+        df['image_size_gb'] = df['image_size'] / (1024**3)
+        bins = [0, 1, 10, 100, 1000, 10000, 100000]
+        labels = ['1 GB', '10 GB', '100 GB', '1000 GB', '10000 GB', '100000 GB']
+        df['size_category'] = pd.cut(df['image_size_gb'], bins=bins, labels=labels, right=False)
+        return df
+
+    def calculate_average_boot_times(self, df):
+        # Calculate average boot times
+        return df.groupby(['mode', 'size_category'])['first_boot_time'].mean().unstack()
+
+
+
     def generate_metrics_doc(self, data):
         # Create a new Word document
         doc_graph = self.create_word_document(data)
@@ -346,7 +403,7 @@ class GenerateMetrics(View):
 
         self.add_paragraph(doc_graph, "Following our analysis of the virtualization process, we have compiled a table that outlines the expected time in hours for virtualizing forensic images in both snapshot and copy modes. This table is an essential tool for planning and forecasting our virtualization tasks.")
 
-        self.add_paragraph(doc_graph, "The table includes data for a range of image sizes - 1, 10, 100, 1000, 10000, and 100000 GB. These sizes represent a comprehensive spectrum of typical forensic image sizes that we encounter in our operations. By understanding the expected time for each size and mode, we can optimize our workflow and ensure efficient allocation of resources.")
+        self.add_paragraph(doc_graph, "The table includes data for a range of image sizes: 1, 10, 100, 1000, 10000, and 100000 GB. These sizes represent a comprehensive spectrum of typical forensic image sizes that we encounter in our operations. By understanding the expected time for each size and mode, we can optimize our workflow and ensure efficient allocation of resources.")
 
         self.add_paragraph(doc_graph, "The expected time is calculated based on the average speeds previously discussed. For the snapshot mode, the expected time accounts for the process of creating an overlay with a link to the original image, while for the copy mode, it reflects the time taken to duplicate the entire image to our server. These estimations are crucial for managing our virtualization pipeline, scheduling tasks, and maintaining the high integrity required in forensic analysis.")
 
@@ -386,6 +443,12 @@ class GenerateMetrics(View):
         doc_graph.add_picture(graph_filename, width=Inches(6))
         #doc_graph.add_page_break()
 
+
+        df2 = self.extract_data()
+        grouped = self.calculate_average_boot_times(df2)
+        self.create_boot_times_table(grouped, doc_graph)
+        self.create_boot_times_graph(grouped, 'boot_times_graph.png')
+        doc_graph.add_picture('boot_times_graph.png', width=Inches(6))
 
         # Save the Word document
         word_graph_filename = '/forensicVM/mnt/tmp/expected_conversion_times_graph.docx'

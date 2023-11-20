@@ -219,12 +219,35 @@ class GenerateMetrics(View):
         latex_table_content += "\\end{tabular}\n\\caption{Expected Conversion Time vs Image Size}\n\\end{table}\n"
         return latex_table_content
 
+
+    def spline_interpolate(self, df, mode, size_midpoints):
+        # Perform spline interpolation for the given mode
+        data = df.loc[mode].dropna()
+        spline = UnivariateSpline(size_midpoints, data, s=0, k=3)
+        interpolated_values = spline(size_midpoints)
+        return interpolated_values
+
+    def calculate_average_boot_times(self, df):
+        # Calculate average boot times
+        grouped = df.groupby(['mode', 'size_category'])['first_boot_time'].mean().unstack()
+
+        # Define midpoints for each size category for interpolation
+        size_midpoints = [0.5, 5.5, 55, 550, 5500, 55000]
+
+        # Perform spline interpolation for each mode
+        for mode in grouped.index:
+            interpolated_values = self.spline_interpolate(grouped, mode, size_midpoints)
+            grouped.loc[mode] = interpolated_values
+
+        return grouped
+
+
     def create_boot_times_table(self, grouped, doc):
         # Creates a table in the Word document with image size, snap boot time, and copy boot time
         labels = ['1 GB', '10 GB', '100 GB', '1000 GB', '10000 GB', '100000 GB']
         table = doc.add_table(rows=1, cols=3)
         table.style = 'Medium List 1'
-        
+
         # Setting the header row
         hdr_cells = table.rows[0].cells
         hdr_cells[0].text = 'Image Size'
@@ -232,12 +255,11 @@ class GenerateMetrics(View):
         hdr_cells[2].text = 'Expected Boot Time in Copy Mode (Seconds)'
 
         # Adding rows for each image size
-        for label in labels:
+        for i, label in enumerate(labels):
             row_cells = table.add_row().cells
             row_cells[0].text = label
-            row_cells[1].text = f"{grouped.loc['snap', label]:.2f}" if label in grouped.loc['snap'] else "N/A"
-            row_cells[2].text = f"{grouped.loc['copy', label]:.2f}" if label in grouped.loc['copy'] else "N/A"
-
+            row_cells[1].text = f"{grouped.loc['snap'][i]:.2f}"
+            row_cells[2].text = f"{grouped.loc['copy'][i]:.2f}"
 
     def create_boot_times_graph(self, grouped, filename):
         # Creates a graph and saves it as an image
@@ -251,7 +273,6 @@ class GenerateMetrics(View):
         plt.legend()
         plt.savefig(filename)
         plt.close()
-
 
     def extract_data(self):
         # Extracts data from VMData model
@@ -455,10 +476,25 @@ class GenerateMetrics(View):
         #doc_graph.add_page_break()
 
 
+        self.add_paragraph(doc_graph, "The 'extract_data' method within our GenerateMetrics class plays a crucial role in our analysis of virtual machine data. This method meticulously extracts vital metrics from the VMData model, focusing on attributes such as 'mode', 'first_boot_time', and 'image_size'. This careful extraction process ensures a comprehensive understanding of the performance and efficiency of the booted VM instances, providing valuable insights for our data-driven decision-making processes.")
+
+        self.add_paragraph(doc_graph, "A key functionality of the 'extract_data' method is its adept handling of missing data points in the 'image_size' attribute. By employing linear interpolation, we ensure the completeness and reliability of our dataset. This interpolation not only enhances the accuracy of our analysis but also lays a robust foundation for our VM management strategies, ensuring every decision is backed by complete and accurate data.")
+
+        self.add_paragraph(doc_graph, "In our quest to optimize VM operations, the 'calculate_average_boot_times' method stands out. It aggregates and computes average boot times across various VM image sizes and modes. This method is pivotal in revealing performance variations among different VM configurations, thereby aiding us in fine-tuning our virtual environment for peak efficiency.")
+
+        self.add_paragraph(doc_graph, "To visually articulate our findings, the 'create_boot_times_graph' method generates an informative graph. This graph, showcasing average boot times by image size and mode, is not just an analytical tool but also a powerful means of communication. It enables stakeholders to quickly comprehend the performance nuances of our VM setup, enhancing transparency and collaborative decision-making.")
+
+
         df2 = self.extract_data()
         grouped = self.calculate_average_boot_times(df2)
+
+        self.add_paragraph(doc_graph, "Complementing our visual analysis, the 'create_boot_times_table' method in our class assembles a detailed table in a Word document. This table, categorizing data by image size, snap boot time, and copy boot time, offers a structured overview for a side-by-side performance comparison of different VM configurations. It's an indispensable tool for assessing and benchmarking VM performance.")
+
         self.create_boot_times_table(grouped, doc_graph)
         self.create_boot_times_graph(grouped, 'boot_times_graph.png')
+
+        self.add_paragraph(doc_graph, "Our 'generate_metrics_doc' function culminates the efforts of all preceding methods, amalgamating them into a comprehensive document. This document, inclusive of both the detailed table and the descriptive graph, serves as an exhaustive report of our VM performance analysis. It's an essential asset for our team, aiding in the monitoring, evaluation, and enhancement of our virtualization processes.")
+
         doc_graph.add_picture('boot_times_graph.png', width=Inches(6))
 
         # Save the Word document

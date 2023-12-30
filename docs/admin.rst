@@ -1,23 +1,19 @@
-Admin Manual
-===============
+ForensicVM Administration Manual
+================================
 
 .. _forensicVM-admin-manual:
-
-==============================
-ForensicVM Administration Manual
-==============================
 
 .. contents::
    :local:
    :depth: 2
 
 Introduction
-============
+------------
 
 .. _overview:
 
 Overview
---------
+*********
 The `forensicVM` project is a specialized tool designed to facilitate the conversion of forensic images into virtual machine images. This tool is particularly useful in digital forensics and cyber investigation scenarios, where analyzing forensic images in a virtualized environment can provide deeper insights and a controlled setting for investigation.
 
 The `forensicVM` suite includes several scripts and components that work together to automate the process of setting up a virtual machine (VM) environment, converting forensic image formats, and providing an interface for interaction with the converted images. The primary components of `forensicVM` include:
@@ -30,6 +26,7 @@ The `forensicVM` suite includes several scripts and components that work togethe
 This manual aims to provide comprehensive guidance on installing, configuring, and effectively using `forensicVM`. It is intended for system administrators, digital forensic analysts, and IT professionals who require a reliable and efficient way to conduct forensic investigations in a virtualized environment.
 
 In the following sections, we will delve into the details of installation requirements, configuration steps, usage instructions, and advanced customization options to help you get the most out of `forensicVM`.
+
 Installation
 ------------
 
@@ -81,7 +78,7 @@ By following these steps, you should have `forensicVM` installed and ready for u
 
 
 Configuration
-=============
+**************
 
 .. _initial-configuration:
 
@@ -99,7 +96,7 @@ Network Settings
 ----------------
 
 Usage
-=====
+*****
 
 .. _running-forensicvm:
 
@@ -122,7 +119,7 @@ Using qemu-img
 --------------
 
 Advanced Topics
-===============
+****************
 
 .. _customization:
 
@@ -140,7 +137,7 @@ Frequently Asked Questions (FAQ)
 --------------------------------
 
 Appendices
-==========
+***********
 
 .. _appendix-a:
 
@@ -163,7 +160,7 @@ Contact Information
 -------------------
 
 Index
-=====
+******
 
 .. _index:
 

@@ -12,18 +12,29 @@ Introduction
 
 .. _overview:
 
+Introduction
+============
+
+.. _overview:
+
 Overview
-*********
-The `forensicVM` project is a specialized tool designed to facilitate the conversion of forensic images into virtual machine images. This tool is particularly useful in digital forensics and cyber investigation scenarios, where analyzing forensic images in a virtualized environment can provide deeper insights and a controlled setting for investigation.
+--------
+**ForensicVM** is a comprehensive project designed to assist forensic investigators in the virtualization of forensic images. By utilizing advanced technologies and tools, ForensicVM simplifies the process of analyzing and examining digital evidence in a virtualized environment.
 
-The `forensicVM` suite includes several scripts and components that work together to automate the process of setting up a virtual machine (VM) environment, converting forensic image formats, and providing an interface for interaction with the converted images. The primary components of `forensicVM` include:
+The project consists of two essential components: the ForensicVM client, which is an Autopsy plugin, and the ForensicVM server. These components work seamlessly together to provide a powerful and efficient forensic virtualization solution.
 
-- **run-or-convert.sh**: A script to set up the VM environment and initiate the conversion process of forensic images.
-- **forensic2v.sh**: The core script responsible for the actual conversion of forensic images to a VM-compatible format.
-- **qemu-img**: A wrapper script for the `qemu-img` command, facilitating image manipulation tasks.
-- **Django-based Web Interface**: A web interface for interacting with the virtualized forensic images.
+The ForensicVM server, developed using Django and Python, serves as the backbone of the system. It is recommended to install the server on Debian 11, which in turn should be set up on a dedicated bare metal server. This configuration ensures optimal performance and stability for your forensic investigations.
 
-This manual aims to provide comprehensive guidance on installing, configuring, and effectively using `forensicVM`. It is intended for system administrators, digital forensic analysts, and IT professionals who require a reliable and efficient way to conduct forensic investigations in a virtualized environment.
+> **Note:** Installing the ForensicVM server on a hypervisor is not recommended. The ForensicVM server itself acts as the hypervisor, and running it within a nested setup may result in unpredictable behavior and performance issues. To maintain the integrity and reliability of your forensic analysis, it is advised to adhere to the recommended server installation setup.
+
+To get started with ForensicVM, your first step is to install the server. For detailed instructions, please refer to the Installation section, where you'll find step-by-step guidance on setting up the server environment correctly.
+
+Once the server is up and running, you can explore the various capabilities and features of ForensicVM by diving into the Usage Section. This section provides comprehensive information on how to make the most out of the project, including tips, best practices, and real-world scenarios.
+
+I would like to emphasize that ForensicVM is an actively developed project. We're continuously working on enhancing its capabilities, improving performance, and adding new features. Stay tuned for updates and exciting developments as we strive to deliver the most effective and reliable forensic virtualization solution available.
+
+Thank you for choosing ForensicVM. We are confident that it will greatly streamline your forensic investigations and contribute to the success of your work.
+
 
 In the following sections, we will delve into the details of installation requirements, configuration steps, usage instructions, and advanced customization options to help you get the most out of `forensicVM`.
 

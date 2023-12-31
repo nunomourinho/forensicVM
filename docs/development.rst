@@ -8,7 +8,8 @@ ForensicVM Server development manual
 .. toctree::
    :maxdepth: 3
    :caption: API Development Manual
-   
+
+   Setup Development Enviroment <setup-development>
    Internal Folder Structure (/forensicVM) <pages/folder_structure>
    API Keys <apikeys>
    Modules <modules>

@@ -5,15 +5,6 @@ ForensicVM Server development manual
     :target: https://forensicvm-server.readthedocs.io/en/latest/?badge=latest
     :alt: Documentation Status
 
-.. toctree::
-   :maxdepth: 3
-   :caption: API Development Manual
-
-   Setup Development Enviroment <setup-development>
-   Internal Folder Structure (/forensicVM) <pages/folder_structure>
-   API Keys <apikeys>
-   Modules <modules>
-   Configuration <conf>   
 
 .. _forensicVM-server-dev-manual:
 
@@ -57,3 +48,13 @@ To get started with ForensicVM server development, you should have a solid under
 
 In the following sections, we will explore the setup of a development environment, delve into the server's architecture, and guide you through making your first contributions to the project.
 
+
+.. toctree::
+   :maxdepth: 3
+   :caption: API Development Manual
+
+   Setup Development Enviroment <setup-development>
+   Internal Folder Structure (/forensicVM) <pages/folder_structure>
+   API Keys <apikeys>
+   Modules <modules>
+   Configuration <conf>   

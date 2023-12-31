@@ -150,6 +150,34 @@ After successfully installing the `forensicVM` server, the next crucial step is 
 With these steps, you have successfully set up the master Django admin account for your `forensicVM` server. This account is essential for managing the Django application and configuring various aspects of the `forensicVM` system.
 
 
+Creating Additional Users and API Keys
+======================================
+
+.. _additional-users-api-keys:
+
+After setting up the master Django admin account, the next important step for administrators is to create additional user accounts and API keys. These accounts are essential for team members who need access to the `forensicVM` system, and API keys are required for integrating with other tools or services.
+
+1. **Log into the Django Admin Interface**:
+   Access the Django admin interface by navigating to `http://<your-server-address>/admin` in your web browser. Log in using the master admin account credentials you created earlier.
+
+2. **Add a New User**:
+   In the Django admin interface, navigate to the `Users` section. Here, you can add new users by clicking on the `Add User` button. Fill in the required details for each user, including username and password. Ensure to assign appropriate permissions based on the user's role and responsibilities.
+
+3. **Create API Keys**:
+   For each user who requires API access, create an API key. This key will be used for authentication when the user interacts with the `forensicVM` system through external tools or services.
+
+   - In the Django admin interface, go to the `API Keys` section.
+   - Select the user for whom you want to create an API key.
+   - Generate a new API key and provide it to the user securely.
+
+4. **Manage User Permissions**:
+   It's important to manage user permissions carefully. Assign permissions based on the principle of least privilege, ensuring users have access only to the features and data necessary for their role.
+
+5. **Document API Key Usage**:
+   Keep a record of all issued API keys, the users they are associated with, and their intended purposes. This documentation will help in managing access and troubleshooting any issues related to API usage.
+
+For a detailed step-by-step guide on how to add new users and create API keys, please refer to the `forensicVM Autopsy Plugin User Manual`. The manual provides comprehensive instructions on this process. You can access it here: [Adding a New User in forensicVM](https://forensicvm-autopsy-plugin-user-manual.readthedocs.io/en/latest/user/installation_and_setup.html#step-6-add-a-new-user).
+
 .. _network-settings:
 
 Network Settings

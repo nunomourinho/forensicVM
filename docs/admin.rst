@@ -12,13 +12,9 @@ Introduction
 
 .. _overview:
 
-Introduction
-============
-
-.. _overview:
-
 Overview
---------
+********
+
 **ForensicVM** is a comprehensive project designed to assist forensic investigators in the virtualization of forensic images. By utilizing advanced technologies and tools, ForensicVM simplifies the process of analyzing and examining digital evidence in a virtualized environment.
 
 The project consists of two essential components: the ForensicVM client, which is an Autopsy plugin, and the ForensicVM server. These components work seamlessly together to provide a powerful and efficient forensic virtualization solution.

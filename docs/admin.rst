@@ -5,7 +5,7 @@ ForensicVM Administration Manual
 
 .. contents::
    :local:
-   :depth: 2
+   :depth: 1
 
 Introduction
 ------------

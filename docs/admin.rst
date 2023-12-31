@@ -99,7 +99,56 @@ Configuration
 .. _initial-configuration:
 
 Initial Configuration
----------------------
+======================
+
+.. _django-admin-setup:
+
+Setting Up the Master Django Admin Account
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
+After successfully installing the `forensicVM` server, the next crucial step is to set up the master Django admin account. This account will allow you to manage the Django application and perform administrative tasks. Follow these steps to create the initial administrator account:
+
+1. **Navigate to the Django Application Directory**:
+   Change to the directory containing the Django application:
+
+   .. code-block:: bash
+
+      cd main/django-app
+
+2. **Activate the Python Virtual Environment**:
+   Before running any Django management commands, activate the Python virtual environment:
+
+   .. code-block:: bash
+
+      source env_linux/bin/activate
+
+3. **Create the Master Admin Account**:
+   Use Django's `manage.py` script to create a new superuser account. This account will have full access to the Django admin interface:
+
+   .. code-block:: bash
+
+      python manage.py createsuperuser
+
+   Follow the prompts to set up the username, email, and password for the admin account.
+
+4. **Verify the Account Creation**:
+   After completing the setup, you can verify the creation of the admin account by starting the Django development server and accessing the admin panel:
+
+   .. code-block:: bash
+
+      python manage.py runserver
+
+   Navigate to `http://<serverip>:8000/admin` in your web browser and log in with the credentials you just created.
+
+5. **Deactivate the Virtual Environment** (Optional):
+   Once you have verified that the admin account is working correctly, you can deactivate the virtual environment:
+
+   .. code-block:: bash
+
+      deactivate
+
+With these steps, you have successfully set up the master Django admin account for your `forensicVM` server. This account is essential for managing the Django application and configuring various aspects of the `forensicVM` system.
+
 
 .. _network-settings:
 

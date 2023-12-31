@@ -41,10 +41,19 @@ Installation
 
 Requirements
 ------------
-Before proceeding with the installation of `forensicVM`, ensure that your system meets the following requirements:
 
-- A Linux-based operating system.
-- Sufficient privileges to execute scripts and install packages (typically root access).
+Before proceeding with the installation of `forensicVM`, it's important to understand the system requirements and dependencies. The `forensicVM` installation process is designed to be straightforward, with the `install.sh` script handling the installation of all necessary dependencies.
+
+- **Operating System**: A Debian-based Linux distribution is recommended, with Debian 11 being the preferred choice for optimal compatibility and performance.
+- **Privileges**: You will need sufficient privileges (typically root access) to execute scripts and install packages on your system.
+
+The `install.sh` script, located in the `setup` directory of the `forensicVM` repository, automates the installation process. It installs all the required dependencies listed in both the `requirements.txt` and `installed_packages.txt` files. These dependencies include a range of Python packages and additional system libraries essential for the server's functionality.
+
+- **Python Packages**: Key Python packages required by the server include `pycryptodome`, `matplotlib`, `pandas`, `scipy`, `statsmodels`, `python-docx`, `xlwt`, `django-excel-response`, `aiofiles`, `opencv-python` (version 4.0 or higher), `apscheduler`, `sphinx_rtd_theme`, `Django` (version 4.1.9), `djangorestframework`, among others.
+- **Additional Dependencies**: The script also installs various other packages and dependencies critical for the operation of the `forensicVM` server.
+
+By running the `install.sh` script, you can ensure that all necessary components are correctly installed and configured on your system. This simplifies the setup process, allowing you to focus on utilizing the `forensicVM` server for your forensic investigations.
+
 
 .. _installation-steps:
 

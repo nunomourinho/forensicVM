@@ -101,11 +101,6 @@ Configuration
 Initial Configuration
 ---------------------
 
-.. _configuring-vm:
-
-Configuring the Virtual Machine
--------------------------------
-
 .. _network-settings:
 
 Network Settings
@@ -118,21 +113,6 @@ Usage
 
 Running ForensicVM
 ------------------
-
-.. _using-run-or-convert:
-
-Using run-or-convert.sh
------------------------
-
-.. _using-forensic2v:
-
-Using forensic2v.sh
--------------------
-
-.. _using-qemu-img:
-
-Using qemu-img
---------------
 
 Advanced Topics
 ****************
@@ -152,24 +132,6 @@ Troubleshooting
 Frequently Asked Questions (FAQ)
 --------------------------------
 
-Appendices
-***********
-
-.. _appendix-a:
-
-Appendix A: Reference Material
-------------------------------
-
-.. _appendix-b:
-
-Appendix B: Changelog
----------------------
-
-.. _appendix-c:
-
-Appendix C: License Information
--------------------------------
-
 .. _contact-info:
 
 Contact Information
@@ -183,5 +145,3 @@ Index
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
-
-

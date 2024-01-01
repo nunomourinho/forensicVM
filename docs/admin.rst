@@ -40,7 +40,7 @@ Installation
 .. _requirements:
 
 Requirements
-------------
+*************
 
 Before proceeding with the installation of `forensicVM`, it's important to understand the system requirements and dependencies. The `forensicVM` installation process is designed to be straightforward, with the `install.sh` script handling the installation of all necessary dependencies.
 
@@ -58,7 +58,7 @@ By running the `install.sh` script, you can ensure that all necessary components
 .. _installation-steps:
 
 Installation Steps
-------------------
+******************
 The `forensicVM` software can be installed by executing the `install.sh` script located in the repository. This script automates the installation process, including the setup of necessary dependencies and configurations. Follow these steps to install `forensicVM`:
 
 1. **Clone the Repository**:
@@ -170,17 +170,17 @@ By following these steps, you should have `forensicVM` installed and ready for u
 
 
 Configuration
-**************
+-------------
 
 .. _initial-configuration:
 
 Initial Configuration
-======================
+**********************
 
 .. _django-admin-setup:
 
 Setting Up the Master Django Admin Account
-$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+###########################################
 
 After successfully installing the `forensicVM` server, the next crucial step is to set up the master Django admin account. This account will allow you to manage the Django application and perform administrative tasks. Follow these steps to create the initial administrator account:
 
@@ -227,7 +227,7 @@ With these steps, you have successfully set up the master Django admin account f
 
 
 Creating Additional Users and API Keys
-======================================
+**************************************
 
 .. _additional-users-api-keys:
 
@@ -257,10 +257,10 @@ For a detailed step-by-step guide on how to add new users and create API keys, p
 .. _network-settings:
 
 Network Settings
-----------------
+****************
 
 Usage
-*****
+-----
 
 .. _running-forensicvm:
 
@@ -291,7 +291,7 @@ Contact Information
 -------------------
 
 Index
-******
+-----
 
 .. _index:
 

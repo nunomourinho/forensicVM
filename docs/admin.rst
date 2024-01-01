@@ -259,6 +259,64 @@ For a detailed step-by-step guide on how to add new users and create API keys, p
 Network Settings
 ****************
 
+.. _network-configuration:
+
+Configuring the Network as a Bridge
+-----------------------------------
+For the `forensicVM` server to function correctly, it's essential to configure the network as a bridge. This setup allows the server to communicate efficiently with the virtualized forensic images. The bridge network will be named `br0`. Follow these steps to configure your network:
+
+1. **Identify the Network Interface**:
+   - Determine the name of the network interface you want to bridge. This is typically something like `enp2s0` or `eth0`. You can find this information using the command:
+
+     .. code-block:: bash
+
+        ip link show
+
+2. **Edit Network Configuration**:
+   - Open the network configuration file for editing. This file is usually located at `/etc/network/interfaces` or a similar path, depending on your Linux distribution.
+
+     .. code-block:: bash
+
+        sudo nano /etc/network/interfaces
+
+   - Add the following configuration to the file, replacing `enp2s0` with your actual network interface name:
+
+     .. code-block:: none
+
+        # Original interface configuration
+        iface enp2s0 inet manual
+
+        # Bridge configuration
+        auto br0
+        iface br0 inet static
+            address 192.168.1.112/24
+            gateway 192.168.1.254
+            bridge-ports enp2s0
+            bridge-stp off
+            bridge-fd 0
+
+   - Replace `192.168.1.112/24` with the static IP address you want to assign to the bridge, and `192.168.1.254` with your network's gateway address.
+
+3. **Restart Networking Service**:
+   - After saving the changes, restart the networking service to apply the new configuration:
+
+     .. code-block:: bash
+
+        sudo systemctl restart networking
+
+   - Alternatively, you can reboot the system.
+
+4. **Verify the Configuration**:
+   - Once the network service is restarted, verify that the bridge is correctly configured and operational:
+
+     .. code-block:: bash
+
+        ip addr show br0
+
+By completing these steps, you will have configured a network bridge named `br0` on your `forensicVM` server. This bridge allows the server to manage network traffic to and from the virtualized forensic images effectively.
+
+
+
 Usage
 -----
 

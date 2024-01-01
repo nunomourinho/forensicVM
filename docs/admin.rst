@@ -85,16 +85,71 @@ The `forensicVM` software can be installed by executing the `install.sh` script 
    Note: The script may prompt for confirmation during the installation of various components.
 
 4. **Initial Database Setup**:
-   After the installation, set up the initial database for `forensicVM`. Navigate to the Django application directory and run the Django management commands:
+   After the installation, set up the initial database for `forensicVM`. The system can use SQLite, MySQL, or PostgreSQL as the database backend. Navigate to the Django application directory and configure the database settings before running the Django management commands:
 
    .. code-block:: bash
 
       cd main/django-app
       source env_linux/bin/activate
-      python manage.py makemigrations
-      python manage.py migrate
 
-   This will create the necessary database tables and apply migrations.
+   **SQLite (Default)**:
+   - SQLite is the default database and requires no additional configuration. Proceed with migrations:
+
+     .. code-block:: bash
+
+        python manage.py makemigrations
+        python manage.py migrate
+
+   **MySQL**:
+   - For MySQL, ensure you have MySQL server installed and running.
+   - Modify the `DATABASES` setting in `settings.py` to use the MySQL backend:
+
+     .. code-block:: python
+
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.mysql',
+                'NAME': 'your_database_name',
+                'USER': 'your_mysql_username',
+                'PASSWORD': 'your_mysql_password',
+                'HOST': 'localhost',   # Or an IP Address that your DB is hosted on
+                'PORT': '3306',
+            }
+        }
+
+   - After configuring, run the migrations:
+
+     .. code-block:: bash
+
+        python manage.py makemigrations
+        python manage.py migrate
+
+   **PostgreSQL**:
+   - For PostgreSQL, ensure you have PostgreSQL server installed and running.
+   - Modify the `DATABASES` setting in `settings.py` to use the PostgreSQL backend:
+
+     .. code-block:: python
+
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.postgresql',
+                'NAME': 'your_database_name',
+                'USER': 'your_postgresql_username',
+                'PASSWORD': 'your_postgresql_password',
+                'HOST': 'localhost',   # Or an IP Address that your DB is hosted on
+                'PORT': '5432',
+            }
+        }
+
+   - After configuring, run the migrations:
+
+     .. code-block:: bash
+
+        python manage.py makemigrations
+        python manage.py migrate
+
+   Remember to install the necessary Python packages for MySQL or PostgreSQL if you choose to use them (e.g., `mysqlclient` for MySQL, `psycopg2` for PostgreSQL).
+
 
 5. **Verify Installation**:
    After completing the installation and database setup, verify that all components of `forensicVM` are installed correctly. You can check the status of the services or attempt a test run to ensure functionality.

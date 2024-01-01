@@ -435,7 +435,7 @@ The `journalctl` command is a powerful tool for reviewing system logs, which can
 
   .. code-block:: bash
 
-      sudo journalctl -u forensicvm --since "2021-01-01 00:00:00" --until "2021-01-02 00:00:00"
+      sudo journalctl -u forensicvm --since "2024-01-01 00:00:00" --until "2024-01-02 00:00:00"
 
   Replace the dates and times with the range relevant to your troubleshooting needs.
 

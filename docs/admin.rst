@@ -84,11 +84,26 @@ The `forensicVM` software can be installed by executing the `install.sh` script 
 
    Note: The script may prompt for confirmation during the installation of various components.
 
-4. **Verify Installation**:
-   After the installation script completes, verify that all components of `forensicVM` are installed correctly. You can check the status of the services or attempt a test run to ensure functionality.
+4. **Initial Database Setup**:
+   After the installation, set up the initial database for `forensicVM`. Navigate to the Django application directory and run the Django management commands:
 
-5. **Post-Installation Configuration** (Optional):
+   .. code-block:: bash
+
+      cd main/django-app
+      source env_linux/bin/activate
+      python manage.py makemigrations
+      python manage.py migrate
+
+   This will create the necessary database tables and apply migrations.
+
+5. **Verify Installation**:
+   After completing the installation and database setup, verify that all components of `forensicVM` are installed correctly. You can check the status of the services or attempt a test run to ensure functionality.
+
+6. **Post-Installation Configuration** (Optional):
    Depending on your specific requirements, you may need to perform additional configuration steps, such as setting up network interfaces or customizing script parameters.
+
+By following these steps, you should have `forensicVM` installed and ready for use on your system. The next section will guide you through the initial configuration and usage of `forensicVM`.
+
 
 By following these steps, you should have `forensicVM` installed and ready for use on your system. The next section will guide you through the initial configuration and usage of `forensicVM`.
 

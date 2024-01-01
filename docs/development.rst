@@ -55,6 +55,15 @@ In the following sections, we will explore the setup of a development environmen
 
    Setup Development Enviroment <setup-development>
    Internal Folder Structure (/forensicVM) <pages/folder_structure>
+
+API CALLS AND MODULES
+**********************
+
+
+.. toctree::
+   :maxdepth: 3
+   :caption: API Development Manual
+
    API Keys <apikeys>
    Modules <modules>
    Configuration <conf>   

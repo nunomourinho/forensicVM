@@ -441,6 +441,44 @@ The `journalctl` command is a powerful tool for reviewing system logs, which can
 
 By using these commands, you can effectively manage and troubleshoot the `forensicVM` service. The logs provided by `journalctl` are often key to understanding and resolving any issues you may encounter.
 
+Editing ForensicVM Machine Configuration
+*****************************************
+
+.. _editing-forensicvm-vm-config:
+
+ForensicVM virtual machines are configured through shell scripts that specify how they should be launched and managed. These scripts include various parameters for the QEMU virtualization tool. Here's how to edit these configuration scripts:
+
+1. **Locate the Configuration Script**:
+   - The scripts are typically located in the `/forensicVM/mnt/vm/` directory, within a subdirectory named after the VM's unique identifier. For example:
+
+     .. code-block:: bash
+
+        cd /forensicVM/mnt/vm/d30c9683-fbe7-5f36-985d-d48ba9dbee5e
+
+2. **Open the Script for Editing**:
+   - Use a text editor to open the script file. For instance, to edit the `S0002-P0001.qcow2-vnc.sh` script:
+
+     .. code-block:: bash
+
+        sudo nano S0002-P0001.qcow2-vnc.sh
+
+3. **Understand the Script Components**:
+   - The script typically starts with a shebang (`#!/bin/bash`) followed by function definitions and variable assignments. For example, `find_next_available` is a function to find the next available network interface.
+   - The script then sets up various QEMU parameters for the virtual machine, such as memory allocation (`-m 2048`), drive files, display settings (`-display vnc=0.0.0.0:$1,websocket=$2`), and network configurations.
+
+4. **Edit the Configuration**:
+   - Make the necessary changes to the script. You might want to adjust memory allocation, network settings, or add/remove hardware devices.
+   - Be cautious with changes, as incorrect configurations can lead to VMs not functioning as expected.
+
+5. **Save and Exit**:
+   - After making your changes, save the file and exit the text editor.
+
+6. **Test the Changes**:
+   - To test your changes, you can manually run the script or use the web interface/Autopsy ForensicVM plugin to launch the VM.
+   - Ensure that the VM behaves as expected with the new configuration.
+
+By following these steps, you can customize the configuration of individual forensic virtual machines in `forensicVM`. This allows for tailored setups that meet specific investigative requirements or performance optimizations.
+
 
 .. _faq:
 

@@ -93,7 +93,13 @@ The `forensicVM` software can be installed by executing the `install.sh` script 
       source env_linux/bin/activate
 
    **SQLite (Default)**:
-   - SQLite is the default database and requires no additional configuration. Proceed with migrations:
+   - SQLite is the default database and requires no additional configuration. However, if there is an existing `db.sqlite3` file (example database), it should be deleted to start fresh:
+
+     .. code-block:: bash
+
+        rm db.sqlite3  # Remove if exists
+
+   - Proceed with migrations to create a new SQLite database:
 
      .. code-block:: bash
 

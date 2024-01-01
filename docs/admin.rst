@@ -480,6 +480,50 @@ ForensicVM virtual machines are configured through shell scripts that specify ho
 By following these steps, you can customize the configuration of individual forensic virtual machines in `forensicVM`. This allows for tailored setups that meet specific investigative requirements or performance optimizations.
 
 
+Adding an Extra Disk to a ForensicVM Virtual Machine
+****************************************************
+
+.. _adding-extra-disk-forensicvm-vm:
+
+To enhance the storage capabilities of a forensic virtual machine in `forensicVM`, you can add an extra disk by modifying the QEMU launch script. This involves adding another `-drive` option to the script. Here's how to do it:
+
+1. **Locate and Open the VM Configuration Script**:
+   - Navigate to the directory containing the VM's configuration script. For example:
+
+     .. code-block:: bash
+
+        cd /forensicVM/mnt/vm/d30c9683-fbe7-5f36-985d-d48ba9dbee5e
+
+   - Open the script for editing, such as `S0002-P0001.qcow2-vnc.sh`:
+
+     .. code-block:: bash
+
+        sudo nano S0002-P0001.qcow2-vnc.sh
+
+2. **Identify the Current Disk Configuration**:
+   - In the script, locate the existing `-drive` options. These lines define the current disks attached to the VM. For example:
+
+     .. code-block:: none
+
+        -drive file=/forensicVM/mnt/vm/d30c9683-fbe7-5f36-985d-d48ba9dbee5e/S0002-P0001.qcow2-sda,format=qcow2,if=virtio,index=0,media=disk
+
+3. **Add a New `-drive` Option for the Extra Disk**:
+   - Add a new line with the `-drive` option to define the extra disk. Specify the file path for the new disk image, the format (typically `qcow2`), and other relevant parameters. For example:
+
+     .. code-block:: none
+
+        -drive file=/path/to/your/new/disk-image.qcow2,format=qcow2,if=virtio,index=2,media=disk
+
+   - Ensure that the `index` value is unique and not used by other drives.
+
+4. **Save and Exit the Editor**:
+   - After adding the new `-drive` line, save the changes and exit the text editor.
+
+5. **Test the Configuration**:
+   - Start the VM using the modified script or through the web interface/Autopsy ForensicVM plugin to ensure the new disk is correctly attached and recognized by the VM.
+
+By following these steps, you can successfully add an extra disk to a forensic virtual machine in `forensicVM`. 
+
 .. _faq:
 
 Frequently Asked Questions (FAQ)

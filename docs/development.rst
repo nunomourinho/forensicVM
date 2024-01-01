@@ -43,7 +43,7 @@ This manual is tailored for:
 .. _getting-started:
 
 Getting Started
----------------
+****************
 To get started with ForensicVM server development, you should have a solid understanding of Python, Django, and web development principles. Familiarity with virtualization technologies and digital forensics concepts will also be beneficial.
 
 In the following sections, we will explore the setup of a development environment, delve into the server's architecture, and guide you through making your first contributions to the project.

@@ -317,13 +317,70 @@ By completing these steps, you will have configured a network bridge named `br0`
 
 
 
-Usage
------
-
 .. _running-forensicvm:
 
 Running ForensicVM
 ------------------
+
+.. _running-forensicvm:
+
+The `forensicVM` service can be managed using the `systemctl` command, which is part of the systemd system and service manager in Linux. This section provides a guide on how to start, stop, and check the status of the `forensicVM` service.
+
+Starting the Service
+********************
+To start the `forensicVM` service, use the following command:
+
+.. code-block:: bash
+
+    sudo systemctl start forensicvm
+
+This command will initiate the `forensicVM` service based on the configuration specified in the `forensicvm.service` file.
+
+Stopping the Service
+********************
+If you need to stop the `forensicVM` service, you can do so using the command:
+
+.. code-block:: bash
+
+    sudo systemctl stop forensicvm
+
+This will halt the `forensicVM` service, stopping all its operations.
+
+Checking the Service Status
+***************************
+To check the current status of the `forensicVM` service, including whether it is running or stopped, use:
+
+.. code-block:: bash
+
+    sudo systemctl status forensicvm
+
+This command provides information about the service's status, along with recent log entries that can be helpful for troubleshooting.
+
+Restarting the Service
+**********************
+In some cases, you might need to restart the `forensicVM` service, especially after making configuration changes. Use the following command to restart:
+
+.. code-block:: bash
+
+    sudo systemctl restart forensicvm
+
+Enabling and Disabling Auto-start
+*********************************
+To enable the `forensicVM` service to start automatically at system boot, use:
+
+.. code-block:: bash
+
+    sudo systemctl enable forensicvm
+
+Conversely, if you wish to disable the automatic start of the `forensicVM` service, use:
+
+.. code-block:: bash
+
+    sudo systemctl disable forensicvm
+
+By following these instructions, you can effectively manage the `forensicVM` service on your system, ensuring that it runs as expected and is available when needed.
+
+
 
 Advanced Topics
 ****************

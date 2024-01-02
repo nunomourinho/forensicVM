@@ -524,15 +524,6 @@ To enhance the storage capabilities of a forensic virtual machine in `forensicVM
 
 By following these steps, you can successfully add an extra disk to a forensic virtual machine in `forensicVM`. 
 
-.. _faq:
-
-Frequently Asked Questions (FAQ)
-********************************
-
-.. _contact-info:
-
-Contact Information
--------------------
 
 Index
 -----

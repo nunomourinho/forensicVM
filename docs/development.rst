@@ -60,6 +60,8 @@ Comprehensive Overview of ForensicVM Components
 ************************************************
 The section is divided into three key subsections, each derived from specific modules within the ForensicVM project:
 
+The section is divided into three key subsections, each derived from specific modules within the ForensicVM project:
+
 1. **API Keys (`apikeys.rst`)**:
    The API Keys section provides a comprehensive overview of the `apikeys` package, focusing on the server API services available for the Autopsy ForensicVM client plugin and the web client interface. It covers the administrative and operational aspects of API key management within ForensicVM, including submodules such as `apikeys.admin`, `apikeys.apps`, `apikeys.models`, `apikeys.serializers`, `apikeys.tests`, `apikeys.urls`, and `apikeys.views`. This section is essential for understanding how API keys are managed, their lifecycle, and their role in securing and facilitating access to server API services.
 
@@ -68,6 +70,7 @@ The section is divided into three key subsections, each derived from specific mo
 
 3. **Configuration (`conf.rst`)**:
    In the Configuration section, the focus is on the `conf` package, which encompasses settings, URL configurations, and WSGI-related aspects of ForensicVM. It offers a detailed look at modules like `conf.settings`, `conf.urls`, and `conf.wsgi`, essential for configuring and deploying the ForensicVM application effectively.
+
 
 
 .. toctree::

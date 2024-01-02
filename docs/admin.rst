@@ -381,6 +381,62 @@ Conversely, if you wish to disable the automatic start of the `forensicVM` servi
 By following these instructions, you can effectively manage the `forensicVM` service on your system, ensuring that it runs as expected and is available when needed.
 
 
+Updating ForensicVM Server
+***************************
+
+.. _updating-forensicvm-server:
+
+Updating the `forensicVM` server involves a few key steps to ensure that both the application and its underlying system packages are up-to-date. This process is similar to the initial installation but does not involve deleting the existing database. It's important to stop the `forensicVM` service before updating.
+
+1. **Stop the ForensicVM Service**:
+   Before beginning the update process, ensure that the `forensicVM` service is stopped:
+
+   .. code-block:: bash
+
+      sudo systemctl stop forensicvm
+
+2. **Update the Repository**:
+   If you have cloned the `forensicVM` repository, navigate to the directory and pull the latest changes:
+
+   .. code-block:: bash
+
+      cd forensicVM
+      git pull
+
+3. **Run the Update Script**:
+   Execute the `install.sh` script to update the `forensicVM` server. This script will update the necessary components and configurations without affecting the existing database:
+
+   .. code-block:: bash
+
+      sudo ./setup/install.sh
+
+   Note: The script may prompt for confirmation during the update of various components.
+
+4. **Update Installed Debian Packages**:
+   Before restarting the `forensicVM` service, it's a good practice to update the installed Debian packages to ensure all system components are up-to-date:
+
+   .. code-block:: bash
+
+      sudo apt-get update
+      sudo apt-get upgrade
+
+5. **Restart the ForensicVM Service**:
+   After completing the updates, restart the `forensicVM` service to apply the changes:
+
+   .. code-block:: bash
+
+      sudo systemctl start forensicvm
+
+6. **Verify the Update**:
+   Check the status of the `forensicVM` service to ensure that the update was successful and the service is running correctly:
+
+   .. code-block:: bash
+
+      sudo systemctl status forensicvm
+
+By following these steps, you can update the `forensicVM` server while preserving your existing database and configurations. This ensures that your `forensicVM` environment remains up-to-date with the latest features, security updates, and system packages.
+
+
 
 Advanced Topics
 ****************

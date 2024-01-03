@@ -382,7 +382,7 @@ By following these instructions, you can effectively manage the `forensicVM` ser
 
 
 Updating ForensicVM Server
-***************************
+---------------------------
 
 .. _updating-forensicvm-server:
 

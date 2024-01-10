@@ -64,85 +64,106 @@ Embark on this learning journey with us, and equip yourself with the skills need
 HTML
 ----
 
-Start with HTML to understand the basics of web page structure.
+Start with the foundation of web development by learning HTML, which will help you understand how to structure web pages.
 
-- Learn HTML: `W3Schools HTML Tutorial <https://www.w3schools.com/html/default.asp>`_ (https://www.w3schools.com/html/default.asp)
+- **Tutorial Link**: `W3Schools HTML Tutorial <https://www.w3schools.com/html/default.asp>`_ (https://www.w3schools.com/html/default.asp)
+- **Objective**: Grasp the basics of webpage structure and learn to create simple pages.
+- **Duration**: Approximately 10-15 hours to cover the basics.
 
 CSS
 ---
 
-Learn CSS to style your HTML pages.
+After understanding HTML, the next step is CSS, which allows you to style and layout your web pages.
 
-- Learn CSS: `W3Schools CSS Tutorial <https://www.w3schools.com/css/default.asp>`_ (https://www.w3schools.com/css/default.asp)
+- **Tutorial Link**: `W3Schools CSS Tutorial <https://www.w3schools.com/css/default.asp>`_ (https://www.w3schools.com/css/default.asp)
+- **Objective**: Learn how to style HTML elements and understand the principles of responsive design.
+- **Duration**: Expect to spend about 15-20 hours for a good grasp of CSS fundamentals.
 
 JavaScript
 ----------
 
-JavaScript is essential for adding interactivity to web pages.
+To add interactivity and dynamic content to your web pages, JavaScript is essential.
 
-- Learn JavaScript: `W3Schools JavaScript Tutorial <https://www.w3schools.com/js/default.asp>`_ (https://www.w3schools.com/js/default.asp)
+- **Tutorial Link**: `W3Schools JavaScript Tutorial <https://www.w3schools.com/js/default.asp>`_ (https://www.w3schools.com/js/default.asp)
+- **Objective**: Acquire skills in DOM manipulation, event handling, and basic scripting.
+- **Duration**: Around 20-30 hours to become comfortable with JavaScript basics.
 
 W3.CSS
 ------
 
-W3.CSS is a modern CSS framework with built-in responsiveness.
+Familiarize yourself with W3.CSS, a simpler alternative to frameworks like Bootstrap and Foundation.
 
-- Learn W3.CSS: `W3Schools W3.CSS Tutorial <https://www.w3schools.com/w3css/default.asp>`_ (https://www.w3schools.com/w3css/default.asp)
+- **Tutorial Link**: `W3Schools W3.CSS Tutorial <https://www.w3schools.com/w3css/default.asp>`_ (https://www.w3schools.com/w3css/default.asp)
+- **Objective**: Understand how to use this lightweight, responsive CSS framework.
+- **Duration**: 5-10 hours should be sufficient for W3.CSS.
 
 Python
 ------
 
-Python is the primary programming language used in the forensicVM server.
+Python is a versatile language used in various aspects of the ForensicVM server project.
 
-- Learn Python: `W3Schools Python Tutorial <https://www.w3schools.com/python/default.asp>`_ (https://www.w3schools.com/python/default.asp)
+- **Tutorial Link**: `W3Schools Python Tutorial <https://www.w3schools.com/python/default.asp>`_ (https://www.w3schools.com/python/default.asp)
+- **Objective**: Master the basics of Python, focusing on its application in web development.
+- **Duration**: Dedicate about 30-40 hours to get a solid understanding of Python.
 
 Django
 ------
 
-Django is a high-level Python web framework that encourages rapid development.
+Django is a powerful framework for building web applications with Python.
 
-- Learn Django: `W3Schools Django Tutorial <https://www.w3schools.com/django/index.php>`_ (https://www.w3schools.com/django/index.php)
+- **Tutorial Link**: `W3Schools Django Tutorial <https://www.w3schools.com/django/index.php>`_ (https://www.w3schools.com/django/index.php)
+- **Objective**: Learn to develop scalable and maintainable web applications.
+- **Duration**: Spend approximately 40-50 hours to become proficient in Django.
 
 GIT
 ---
 
-Understanding GIT is crucial for version control and collaboration.
+Version control is critical in collaborative development environments, making GIT knowledge essential.
 
-- Learn GIT: `W3Schools GIT Tutorial <https://www.w3schools.com/git/default.asp>`_ (https://www.w3schools.com/git/default.asp)
+- **Tutorial Link**: `W3Schools GIT Tutorial <https://www.w3schools.com/git/default.asp>`_ (https://www.w3schools.com/git/default.asp)
+- **Objective**: Understand the basics of version control, branches, merges, and pull requests.
+- **Duration**: 15-20 hours should be enough to cover GIT essentials.
 
 Secondary Libraries
 -------------------
 
-These libraries are used for various advanced functionalities in the project.
+Enhance your skills with these libraries, which are vital for specific functionalities in the project.
 
 NUMPY
 #####
 
-NumPy is used for numerical operations in Python.
+NumPy offers powerful numerical computations in Python.
 
-- Learn NumPy: `W3Schools NumPy Tutorial <https://www.w3schools.com/python/numpy/default.asp>`_ (https://www.w3schools.com/python/numpy/default.asp)
+- **Tutorial Link**: `W3Schools NumPy Tutorial <https://www.w3schools.com/python/numpy/default.asp>`_ (https://www.w3schools.com/python/numpy/default.asp)
+- **Objective**: Learn about arrays, matrix operations, and numerical processing.
+- **Duration**: Allocate about 20 hours for a fundamental understanding of NumPy.
 
 Pandas
 ######
 
-Pandas is a library providing high-performance, easy-to-use data structures.
+Pandas is a library for data manipulation and analysis.
 
-- Learn Pandas: `W3Schools Pandas Tutorial <https://www.w3schools.com/python/pandas/default.asp>`_ (https://www.w3schools.com/python/pandas/default.asp)
+- **Tutorial Link**: `W3Schools Pandas Tutorial <https://www.w3schools.com/python/pandas/default.asp>`_ (https://www.w3schools.com/python/pandas/default.asp)
+- **Objective**: Get proficient in data cleaning, manipulation, and visualization.
+- **Duration**: Approximately 25-30 hours to grasp the basics of Pandas.
 
 SCIPY
 #####
 
-SciPy is used for scientific and technical computing.
+SciPy is integral for more complex scientific calculations in Python.
 
-- Learn SciPy: `W3Schools SciPy Tutorial <https://www.w3schools.com/python/scipy/index.php>`_ (https://www.w3schools.com/python/scipy/index.php)
+- **Tutorial Link**: `W3Schools SciPy Tutorial <https://www.w3schools.com/python/scipy/index.php>`_ (https://www.w3schools.com/python/scipy/index.php)
+- **Objective**: Understand how to implement scientific and technical computing.
+- **Duration**: Spend around 15-20 hours to get familiar with SciPy basics.
 
 Data Science
-#############
+############
 
-General data science concepts can be beneficial.
+A general understanding of data science can be advantageous for handling data-intensive tasks.
 
-- Learn Data Science: `W3Schools Data Science Tutorial <https://www.w3schools.com/datascience/default.asp>`_ (https://www.w3schools.com/datascience/default.asp)
-
+- **Tutorial Link**: `W3Schools Data Science Tutorial <https://www.w3schools.com/datascience/default.asp>`_ (https://www.w3schools.com/datascience/default.asp)
+- **Objective**: Acquire a foundational understanding of data science concepts and methodologies.
+- **Duration**: Invest 30-40 hours to cover the basics of data science.
 
 .. _getting-started:
 

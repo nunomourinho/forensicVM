@@ -66,49 +66,49 @@ HTML
 
 Start with HTML to understand the basics of web page structure.
 
-- `Learn HTML <https://www.w3schools.com/html/default.asp>`_
+- Learn HTML: `W3Schools HTML Tutorial <https://www.w3schools.com/html/default.asp>`_ (https://www.w3schools.com/html/default.asp)
 
 CSS
 ---
 
 Learn CSS to style your HTML pages.
 
-- `Learn CSS <https://www.w3schools.com/css/default.asp>`_
+- Learn CSS: `W3Schools CSS Tutorial <https://www.w3schools.com/css/default.asp>`_ (https://www.w3schools.com/css/default.asp)
 
 JavaScript
 ----------
 
 JavaScript is essential for adding interactivity to web pages.
 
-- `Learn JavaScript <https://www.w3schools.com/js/default.asp>`_
+- Learn JavaScript: `W3Schools JavaScript Tutorial <https://www.w3schools.com/js/default.asp>`_ (https://www.w3schools.com/js/default.asp)
 
 W3.CSS
 ------
 
 W3.CSS is a modern CSS framework with built-in responsiveness.
 
-- `Learn W3.CSS <https://www.w3schools.com/w3css/default.asp>`_
+- Learn W3.CSS: `W3Schools W3.CSS Tutorial <https://www.w3schools.com/w3css/default.asp>`_ (https://www.w3schools.com/w3css/default.asp)
 
 Python
 ------
 
 Python is the primary programming language used in the forensicVM server.
 
-- `Learn Python <https://www.w3schools.com/python/default.asp>`_
+- Learn Python: `W3Schools Python Tutorial <https://www.w3schools.com/python/default.asp>`_ (https://www.w3schools.com/python/default.asp)
 
 Django
 ------
 
 Django is a high-level Python web framework that encourages rapid development.
 
-- `Learn Django <https://www.w3schools.com/django/index.php>`_
+- Learn Django: `W3Schools Django Tutorial <https://www.w3schools.com/django/index.php>`_ (https://www.w3schools.com/django/index.php)
 
 GIT
 ---
 
 Understanding GIT is crucial for version control and collaboration.
 
-- `Learn GIT <https://www.w3schools.com/git/default.asp>`_
+- Learn GIT: `W3Schools GIT Tutorial <https://www.w3schools.com/git/default.asp>`_ (https://www.w3schools.com/git/default.asp)
 
 Secondary Libraries
 -------------------
@@ -120,28 +120,28 @@ NUMPY
 
 NumPy is used for numerical operations in Python.
 
-- `Learn NumPy <https://www.w3schools.com/python/numpy/default.asp>`_
+- Learn NumPy: `W3Schools NumPy Tutorial <https://www.w3schools.com/python/numpy/default.asp>`_ (https://www.w3schools.com/python/numpy/default.asp)
 
 Pandas
 ######
 
 Pandas is a library providing high-performance, easy-to-use data structures.
 
-- `Learn Pandas <https://www.w3schools.com/python/pandas/default.asp>`_
+- Learn Pandas: `W3Schools Pandas Tutorial <https://www.w3schools.com/python/pandas/default.asp>`_ (https://www.w3schools.com/python/pandas/default.asp)
 
 SCIPY
 #####
 
 SciPy is used for scientific and technical computing.
 
-- `Learn SciPy <https://www.w3schools.com/python/scipy/index.php>`_
+- Learn SciPy: `W3Schools SciPy Tutorial <https://www.w3schools.com/python/scipy/index.php>`_ (https://www.w3schools.com/python/scipy/index.php)
 
 Data Science
 #############
 
 General data science concepts can be beneficial.
 
-- `Learn Data Science <https://www.w3schools.com/datascience/default.asp>`_
+- Learn Data Science: `W3Schools Data Science Tutorial <https://www.w3schools.com/datascience/default.asp>`_ (https://www.w3schools.com/datascience/default.asp)
 
 
 .. _getting-started:

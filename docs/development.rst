@@ -40,6 +40,110 @@ This manual is tailored for:
 - **System Administrators**: Professionals interested in deploying, maintaining, or customizing the ForensicVM server.
 - **Digital Forensic Analysts**: Experts in digital forensics who wish to extend or modify the server to suit specialized forensic analysis needs.
 
+ForensicVM Server Contribution Learning Path
+********************************************
+
+Welcome to the ForensicVM Server Contribution Learning Path! This guide is designed to provide a comprehensive and structured approach for those interested in contributing to the ForensicVM server project. The learning path is carefully curated to cover all the essential technologies and frameworks that form the backbone of the project.
+
+The components of this learning path include W3.CSS, HTML, CSS, JavaScript, Python, Django, and Git, among others. Each of these plays a vital role in the development and maintenance of the forensicVM server. To ensure a high-quality and accessible learning experience, all resources and tutorials recommended in this path are sourced from W3Schools, a well-known and respected online learning platform for web development and programming.
+
+W3Schools offers clear, concise, and interactive tutorials that are perfect for beginners and experienced developers alike. By following this path, you will gain a solid foundation in each of these key areas:
+
+- **Git**: A distributed version control system for tracking changes in source code during software development.
+- **HTML**: The standard markup language for creating web pages.
+- **CSS**: The language used to style HTML documents.
+- **W3.CSS**: A modern CSS framework for faster and easier web development.
+- **Django**: A high-level Python web framework that encourages rapid development.
+- **JavaScript**: A programming language that enables interactive web pages.
+- **Python**: A versatile programming language used in a wide range of applications, including web development.
+
+Additionally, we include learning resources for secondary libraries such as NumPy, Pandas, SciPy, and general data science concepts. These are crucial for handling the advanced functionalities in the forensicVM server project.
+
+Embark on this learning journey with us, and equip yourself with the skills needed to contribute effectively to the forensicVM server project. Let's get started!
+
+HTML
+----
+
+Start with HTML to understand the basics of web page structure.
+
+- `Learn HTML <https://www.w3schools.com/html/default.asp>`_
+
+CSS
+---
+
+Learn CSS to style your HTML pages.
+
+- `Learn CSS <https://www.w3schools.com/css/default.asp>`_
+
+JavaScript
+----------
+
+JavaScript is essential for adding interactivity to web pages.
+
+- `Learn JavaScript <https://www.w3schools.com/js/default.asp>`_
+
+W3.CSS
+------
+
+W3.CSS is a modern CSS framework with built-in responsiveness.
+
+- `Learn W3.CSS <https://www.w3schools.com/w3css/default.asp>`_
+
+Python
+------
+
+Python is the primary programming language used in the forensicVM server.
+
+- `Learn Python <https://www.w3schools.com/python/default.asp>`_
+
+Django
+------
+
+Django is a high-level Python web framework that encourages rapid development.
+
+- `Learn Django <https://www.w3schools.com/django/index.php>`_
+
+GIT
+---
+
+Understanding GIT is crucial for version control and collaboration.
+
+- `Learn GIT <https://www.w3schools.com/git/default.asp>`_
+
+Secondary Libraries
+-------------------
+
+These libraries are used for various advanced functionalities in the project.
+
+NUMPY
+#####
+
+NumPy is used for numerical operations in Python.
+
+- `Learn NumPy <https://www.w3schools.com/python/numpy/default.asp>`_
+
+Pandas
+######
+
+Pandas is a library providing high-performance, easy-to-use data structures.
+
+- `Learn Pandas <https://www.w3schools.com/python/pandas/default.asp>`_
+
+SCIPY
+#####
+
+SciPy is used for scientific and technical computing.
+
+- `Learn SciPy <https://www.w3schools.com/python/scipy/index.php>`_
+
+Data Science
+#############
+
+General data science concepts can be beneficial.
+
+- `Learn Data Science <https://www.w3schools.com/datascience/default.asp>`_
+
+
 .. _getting-started:
 
 Getting Started

@@ -1,0 +1,29 @@
+sequenceDiagram
+    participant User
+    participant Script_run_or_convert as "run-or-convert.sh"
+    participant Script_forensic2v as "forensic2v.sh"
+    participant Windows_Share
+    participant VM_Environment as "VM Environment"
+    
+    User->>Script_run_or_convert: Execute with arguments
+    activate Script_run_or_convert
+    Script_run_or_convert->>Windows_Share: Mount share
+    activate Windows_Share
+    Windows_Share-->>Script_run_or_convert: Share mounted
+    deactivate Windows_Share
+    
+    Script_run_or_convert->>Script_forensic2v: Call with image path, UUID, copy method
+    activate Script_forensic2v
+    Script_forensic2v->>VM_Environment: Process forensic data
+    activate VM_Environment
+    VM_Environment-->>Script_forensic2v: Data processed
+    deactivate VM_Environment
+    
+    Script_forensic2v-->>Script_run_or_convert: Processing complete
+    deactivate Script_forensic2v
+    Script_run_or_convert->>Windows_Share: Unmount share
+    activate Windows_Share
+    Windows_Share-->>Script_run_or_convert: Share unmounted
+    deactivate Windows_Share
+    deactivate Script_run_or_convert
+    Script_run_or_convert-->>User: Execution complete

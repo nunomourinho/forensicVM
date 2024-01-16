@@ -1,0 +1,50 @@
+sequenceDiagram
+    participant User
+    participant Script as "forensic2v.sh"
+    participant Image_Format_Detection
+    participant Mount_Image
+    participant Image_Info_Extraction as "Extract Image Info"
+    participant Snapshot_Creation
+    participant Block_Device_Setup as "Setup Block Device"
+    participant Modify_Image
+    participant Cleanup
+    
+    User->>Script: Execute with forensic image and VM name
+    activate Script
+    Script->>Image_Format_Detection: Detect image format
+    activate Image_Format_Detection
+    Image_Format_Detection-->>Script: Format detected
+    deactivate Image_Format_Detection
+    
+    Script->>Mount_Image: Mount forensic image
+    activate Mount_Image
+    Mount_Image-->>Script: Image mounted
+    deactivate Mount_Image
+    
+    Script->>Image_Info_Extraction: Extract image information
+    activate Image_Info_Extraction
+    Image_Info_Extraction-->>Script: Info extracted
+    deactivate Image_Info_Extraction
+    
+    Script->>Snapshot_Creation: Create image snapshot
+    activate Snapshot_Creation
+    Snapshot_Creation-->>Script: Snapshot created
+    deactivate Snapshot_Creation
+    
+    Script->>Block_Device_Setup: Setup block device
+    activate Block_Device_Setup
+    Block_Device_Setup-->>Script: Device setup
+    deactivate Block_Device_Setup
+    
+    Script->>Modify_Image: Modify image (remove hibernate, add drivers)
+    activate Modify_Image
+    Modify_Image-->>Script: Image modified
+    deactivate Modify_Image
+    
+    Script->>Cleanup: Perform cleanup
+    activate Cleanup
+    Cleanup-->>Script: Cleanup complete
+    deactivate Cleanup
+    
+    Script-->>User: Execution complete
+    deactivate Script

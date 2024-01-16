@@ -9,6 +9,13 @@ The ``/ForensicVM`` directory in Debian 11 encompasses a structured organization
 -------
 This folder is the designated location for **bash scripts** and **external executable files**. Any shell script or binary that the ForensicVM project requires for its functioning is placed here.
 
+Inside the bin folder, there are two main scripts:
+
+``run-or-convert.sh``: This script is dedicated to either running a preexisting forensic image created by snapshotting the original forensic image, or converting a remote, reverse SSH Samba share-based image.
+
+``forensic.sh``: This script detects the format of the original forensic image, chooses the appropriate conversion tool, and then converts the forensic image into a format suitable for forensicVM.
+
+
 ``branding``
 ------------
 The **branding** directory holds the official branding elements for the ForensicVM project. This includes **logos** and their **source files**. It ensures easy access and uniformity in branding across the project.

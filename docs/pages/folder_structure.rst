@@ -13,14 +13,14 @@ Inside the bin folder, there are two main scripts:
 
 ``run-or-convert.sh``: This script is dedicated to either running a preexisting forensic image created by snapshotting the original forensic image, or converting a remote, reverse SSH Samba share-based image.
 
-.. image:: run-or-convert.sh.svg
+.. image:: run-or-convert.sh.jpg
    :alt: Run or convert a forensic image
    :width: 100%
    :align: center
 
 ``forensic.sh``: This script detects the format of the original forensic image, chooses the appropriate conversion tool, and then converts the forensic image into a format suitable for forensicVM.
 
-.. image:: forensic.sh.svg
+.. image:: forensic.sh.jpg
    :alt: Detects the forensic image format, chooses the appropriate conversion tool, and converts it to a forensicVM format.
    :width: 100%
    :align: center

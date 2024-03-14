@@ -80,7 +80,7 @@ The `forensicVM` software can be installed by executing the `install.sh` script 
 
    .. code-block:: bash
 
-      sudo ./setup/install.sh
+      bash ./setup/install.sh
 
    Note: The script may prompt for confirmation during the installation of various components.
 

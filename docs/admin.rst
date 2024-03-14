@@ -61,6 +61,14 @@ Installation Steps
 ******************
 The `forensicVM` software can be installed by executing the `install.sh` script located in the repository. This script automates the installation process, including the setup of necessary dependencies and configurations. Follow these steps to install `forensicVM`:
 
+0. **Install requirements**:
+   Use the following command:
+
+   .. code-block:: bash
+
+      apt install screen git mc wget -y
+
+
 1. **Clone the Repository**:
    Begin by cloning the `forensicVM` repository to your local machine. Use the following command:
 

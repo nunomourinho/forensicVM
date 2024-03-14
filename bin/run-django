@@ -13,6 +13,6 @@ echo $new_allowed_hosts
 # Replace the existing ALLOWED_HOSTS line in settings.py
 sed -i "s/^ALLOWED_HOSTS = .*$/$new_allowed_hosts/" /forensicVM/main/django-app/conf/settings.py
 
-source /forensicVM/main/django-app/env_linux/bin/activate
+#source /forensicVM/main/django-app/env_linux/bin/activate
 python3 /forensicVM/main/django-app/manage.py runserver 0.0.0.0:8000 
 deactivate

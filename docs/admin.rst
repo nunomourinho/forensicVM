@@ -135,8 +135,8 @@ The `forensicVM` software can be installed by executing the `install.sh` script 
 
      .. code-block:: bash
 
-        python manage.py makemigrations
-        python manage.py migrate
+        python3 manage.py makemigrations
+        python3 manage.py migrate
 
    **PostgreSQL**:
    - For PostgreSQL, ensure you have PostgreSQL server installed and running.
@@ -159,8 +159,8 @@ The `forensicVM` software can be installed by executing the `install.sh` script 
 
      .. code-block:: bash
 
-        python manage.py makemigrations
-        python manage.py migrate
+        python3 manage.py makemigrations
+        python3 manage.py migrate
 
    Remember to install the necessary Python packages for MySQL or PostgreSQL if you choose to use them (e.g., `mysqlclient` for MySQL, `psycopg2` for PostgreSQL).
 
@@ -204,7 +204,7 @@ After successfully installing the `forensicVM` server, the next crucial step is 
 
    .. code-block:: bash
 
-      source env_linux/bin/activate
+      #source env_linux/bin/activate
 
 3. **Create the Master Admin Account**:
    Use Django's `manage.py` script to create a new superuser account. This account will have full access to the Django admin interface:
@@ -220,7 +220,7 @@ After successfully installing the `forensicVM` server, the next crucial step is 
 
    .. code-block:: bash
 
-      python manage.py runserver
+      python3 manage.py runserver
 
    Navigate to `http://<serverip>:8000/admin` in your web browser and log in with the credentials you just created.
 

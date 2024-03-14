@@ -65,6 +65,9 @@ xargs -a /forensicVM/setup/installed_packages.txt apt install -y
 
 msg_green "Installing python requirements"
 cd /forensicVM/main/django-app
+rm -rf /forensicVM/main/django-app/env_linux
+python3 -m venv env_linux
+
 source /forensicVM/main/django-app/env_linux/bin/activate
 pip install -r requirements_without_versions.txt
 

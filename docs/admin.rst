@@ -111,8 +111,8 @@ The `forensicVM` software can be installed by executing the `install.sh` script 
 
      .. code-block:: bash
 
-        python manage.py makemigrations
-        python manage.py migrate
+        python3 manage.py makemigrations
+        python3 manage.py migrate
 
    **MySQL**:
    - For MySQL, ensure you have MySQL server installed and running.

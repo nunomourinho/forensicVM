@@ -18,6 +18,8 @@ if ! [ -x "$(command -v rsync)" ]; then
   msg_green "Installing rsync."
   apt update
   apt install -y rsync sudo mc screen git curl wget
+  apt install git-lfs -y
+  git lfs install
 fi
 
 cd /
@@ -34,10 +36,12 @@ if [ -d "$TEMP_DIR/.git" ]; then
     cd "$TEMP_DIR"
     git config pull.rebase false
     git pull
+    git lfs pull
     git submodule update --init --recursive
 else
     msg_green "Temporary directory $TEMP_DIR does not exist. Cloning repository."
     yes | git clone --recurse-submodules "$REPO_URL" "$TEMP_DIR"
+    git lfs pull
 fi
 
 # Sync files to the production directory, excluding settings.py
@@ -46,6 +50,7 @@ rsync -av --exclude '*/settings.py'--exclude '*/db.sqlite3' "$TEMP_DIR/" "$REPO_
 # Update submodules in the production directory
 cd "$REPO_DIR"
 git submodule update --init --recursive
+git lfs pull
 
 msg_green "Updatating and upgrading installed packages"
 

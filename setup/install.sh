@@ -17,7 +17,7 @@ fi
 if ! [ -x "$(command -v rsync)" ]; then
   msg_green "Installing rsync."
   apt update
-  apt install -y rsync
+  apt install -y rsync sudo mc screen git curl wget
 fi
 
 cd /
@@ -61,8 +61,9 @@ mkdir /forensicVM/mnt/tmp
 
 
 cd /forensicVM/setup
+xargs -a /forensicVM/setup/installed_packages.txt 'DEBIAN_FRONTEND=noninteractive apt install -y
 #xargs -a /forensicVM/setup/installed_packages.txt apt install -y
-xargs -a /forensicVM/setup/installed_packages.txt bash -c 'DEBIAN_FRONTEND=noninteractive apt-get install -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" $0'
+#xargs -a /forensicVM/setup/installed_packages.txt bash -c 'DEBIAN_FRONTEND=noninteractive apt-get install -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" $0'
 
 msg_green "Installing python requirements"
 cd /forensicVM/main/django-app

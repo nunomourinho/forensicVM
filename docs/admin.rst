@@ -66,7 +66,7 @@ The `forensicVM` software can be installed by executing the `install.sh` script 
 
    .. code-block:: bash
 
-      apt install screen git mc wget -y
+      apt install screen git mc wget curl -y
 
 
 1. **Clone the Repository**:

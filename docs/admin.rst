@@ -209,7 +209,7 @@ After successfully installing the `forensicVM` server, the next crucial step is 
 
    .. code-block:: bash
 
-      python manage.py createsuperuser
+      python3 manage.py createsuperuser
 
    Follow the prompts to set up the username, email, and password for the admin account.
 

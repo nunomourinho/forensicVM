@@ -135,8 +135,10 @@ if [ -f "$source_path" ]; then
   if [ -f "$destination_path" ] && ! cmp -s "$source_path" "$destination_path"; then
     # Rename the destination file to .forensicVM
     mv "$destination_path" "$destination_path.forensicVM"
+        
     if [ $? -eq 0 ]; then
       echo "Renamed $destination_path to $destination_path.forensicVM."
+      cp "$destination_path.forensicVM" /forensicVM/usr/bin/qemu-img.forensicVM
     else
       echo "Error: Failed to rename $destination_path."
       exit 1

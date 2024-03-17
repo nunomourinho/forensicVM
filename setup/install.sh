@@ -61,7 +61,8 @@ mkdir /forensicVM/mnt/tmp
 
 
 cd /forensicVM/setup
-xargs -a /forensicVM/setup/installed_packages.txt apt install -y
+#xargs -a /forensicVM/setup/installed_packages.txt apt install -y
+xargs -a /forensicVM/setup/installed_packages.txt bash -c 'DEBIAN_FRONTEND=noninteractive apt-get install -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" $0'
 
 msg_green "Installing python requirements"
 cd /forensicVM/main/django-app

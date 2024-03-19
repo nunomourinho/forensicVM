@@ -113,10 +113,24 @@ The `forensicVM` software can be installed by executing the `install.sh` script 
         python3 manage.py migrate
 
    **MySQL**:
-   - For MySQL, ensure you have MySQL server installed and running.
-   - Modify the `DATABASES` setting in `settings.py` to use the MySQL backend:
 
-     .. code-block:: python
+   - For MySQL, ensure you have the MySQL server installed and running. You will need to select a database name, login username, and password. For this example, let's use 'forensicVM' for the username, database, and password. But first, it's important to secure your MySQL installation:
+
+   .. code-block:: bash
+
+      mysql_secure_installation
+
+   Once your MySQL installation is secured, you can proceed to create the user, database, and password:
+
+   .. code-block:: bash
+
+      mysql -u <username> -p<password>
+      CREATE DATABASE forensicVM;
+      USE forensicVM;
+      CREATE USER 'forensicVM' IDENTIFIED BY 'forensicVM';
+      GRANT ALL PRIVILEGES ON forensicVM.* TO 'forensicVM';
+
+   - Next, modify the `DATABASES` setting in your `settings.py` to use the MySQL backend. The details for this configuration will depend on your specific framework or application settings.
 
         DATABASES = {
             'default': {

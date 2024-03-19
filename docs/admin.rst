@@ -133,6 +133,7 @@ The `forensicVM` software can be installed by executing the `install.sh` script 
    - Next, modify the `DATABASES` setting in your `/forensicVM/main/django-app/conf/settings.py` to use the MySQL backend. The details for this configuration will depend on your specific framework or application settings.
 
    .. code-block:: python
+
       DATABASES = {
             'default': {
                 'ENGINE': 'django.db.backends.mysql',

@@ -17,7 +17,7 @@ fi
 if ! [ -x "$(command -v rsync)" ]; then
   msg_green "Installing rsync."
   apt update
-  apt install -y rsync sudo mc screen git curl wget
+  apt install -y rsync sudo mc screen git curl wget mariadb-client mariadb-server libmariadb-dev
   apt install git-lfs -y
   git lfs install
 fi

@@ -181,7 +181,7 @@ For PostgreSQL, ensure you have the PostgreSQL server installed and running. You
      CREATE USER forensicvm WITH ENCRYPTED PASSWORD 'forensicVM';
      GRANT ALL PRIVILEGES ON DATABASE forensicvm TO forensicvm;
 
-  Type `\q` to quit the PostgreSQL interactive terminal.
+  Type `\\q` to quit the PostgreSQL interactive terminal.
 
 - **Modify the DATABASES setting in your Django `settings.py`**:
 

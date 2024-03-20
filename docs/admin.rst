@@ -152,31 +152,75 @@ The `forensicVM` software can be installed by executing the `install.sh` script 
         python3 manage.py makemigrations
         python3 manage.py migrate
 
-   **PostgreSQL**:
-   - For PostgreSQL, ensure you have PostgreSQL server installed and running.
-   - Modify the `DATABASES` setting in `settings.py` to use the PostgreSQL backend:
+**PostgreSQL**:
 
-     .. code-block:: python
+For PostgreSQL, ensure you have the PostgreSQL server installed and running. You will need to select a database name, login username, and password. For this example, let’s use ‘forensicVM’ for the username, database, and password. Here’s how to get everything set up:
 
-        DATABASES = {
-            'default': {
-                'ENGINE': 'django.db.backends.postgresql',
-                'NAME': 'your_database_name',
-                'USER': 'your_postgresql_username',
-                'PASSWORD': 'your_postgresql_password',
-                'HOST': 'localhost',   # Or an IP Address that your DB is hosted on
-                'PORT': '5432',
-            }
-        }
+- **Install PostgreSQL**:
+  
+  Depending on your operating system, you can install PostgreSQL using the package manager. On Ubuntu, for example, you can use:
 
-   - After configuring, run the migrations:
+  .. code-block:: bash
 
-     .. code-block:: bash
+     sudo apt-get update
+     sudo apt-get install postgresql postgresql-contrib
 
-        python3 manage.py makemigrations
-        python3 manage.py migrate
+- **Secure your PostgreSQL installation**:
 
-   Remember to install the necessary Python packages for MySQL or PostgreSQL if you choose to use them (e.g., `mysqlclient` for MySQL, `psycopg2` for PostgreSQL).
+  PostgreSQL does not have a specific secure installation script like MySQL's `mysql_secure_installation`. However, you should ensure that your PostgreSQL installation is not accessible by unauthorized users. By default, PostgreSQL uses 'peer' authentication for local connections, and you should ensure that the PostgreSQL user passwords are strong.
+
+- **Create the database and user**:
+
+  Switch to the `postgres` user, start the PostgreSQL interactive terminal, and create your database and user:
+
+  .. code-block:: bash
+
+     sudo -i -u postgres
+     psql
+     CREATE DATABASE forensicvm;
+     CREATE USER forensicvm WITH ENCRYPTED PASSWORD 'forensicVM';
+     GRANT ALL PRIVILEGES ON DATABASE forensicvm TO forensicvm;
+
+  Type `\q` to quit the PostgreSQL interactive terminal.
+
+- **Modify the DATABASES setting in your Django `settings.py`**:
+
+  Next, you need to modify the `DATABASES` setting in your `/forensicVM/main/django-app/conf/settings.py` to use the PostgreSQL backend. Here is an example configuration:
+
+  .. code-block:: python
+
+     DATABASES = {
+         'default': {
+             'ENGINE': 'django.db.backends.postgresql',
+             'NAME': 'forensicvm',
+             'USER': 'forensicvm',
+             'PASSWORD': 'forensicVM',
+             'HOST': 'localhost',
+             'PORT': '5432',
+         }
+     }
+
+- **Install psycopg2**:
+
+  You’ll need the `psycopg2` package, which is a PostgreSQL adapter for Python. You can install it using pip:
+
+  .. code-block:: bash
+
+     pip install psycopg2
+
+  Or if you are using a virtual environment (which is recommended), make sure to activate your virtual environment first.
+
+- **Run the migrations**:
+
+  After configuring your database settings, run the migrations to create the necessary database tables:
+
+  .. code-block:: bash
+
+     python manage.py makemigrations
+     python manage.py migrate
+
+This completes the setup for using PostgreSQL with a Django application. Ensure you replace placeholders with your actual database name, user, and password.
+
 
 
 5. **Verify Installation**:

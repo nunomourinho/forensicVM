@@ -215,7 +215,7 @@ For PostgreSQL, ensure you have the PostgreSQL server installed and running. You
 
   .. code-block:: bash
 
-     pip install psycopg2
+     pip3 install psycopg2
 
   Or if you are using a virtual environment (which is recommended), make sure to activate your virtual environment first.
 
@@ -225,8 +225,8 @@ For PostgreSQL, ensure you have the PostgreSQL server installed and running. You
 
   .. code-block:: bash
 
-     python manage.py makemigrations
-     python manage.py migrate
+     python3 manage.py makemigrations
+     python3 manage.py migrate
 
 This completes the setup for using PostgreSQL with a Django application. Ensure you replace placeholders with your actual database name, user, and password.
 

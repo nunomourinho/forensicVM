@@ -182,6 +182,15 @@ For PostgreSQL, ensure you have the PostgreSQL server installed and running. You
      GRANT ALL PRIVILEGES ON DATABASE forensicvm TO forensicvm;
 
   Type `\\q` to quit the PostgreSQL interactive terminal.
+  Type exit to exit the sudo enviroment
+
+  .. code-block:: bash
+
+     sudo -u postgres psql template1
+     ALTER USER postgres with encrypted password 'forensicvm';
+
+  Type `\\q` to quit the PostgreSQL interactive terminal.
+  Type exit to exit the sudo enviroment
 
 - **Modify the DATABASES setting in your Django `settings.py`**:
 

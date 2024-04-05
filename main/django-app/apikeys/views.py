@@ -4736,7 +4736,8 @@ class ForensicImageVMStatus(APIView):
 
 
                     qemu_cmd = output.decode("utf-8").strip()
-                    vnc_port = re.search(r'-display vnc=0.0.0.0:(\d+)', qemu_cmd)
+                    #vnc_port = re.search(r'-display vnc=0.0.0.0:(\d+)', qemu_cmd)
+                    vnc_port = re.search(r'-display vnc=\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}:(\d+)', qemu_cmd)
                     websocket_port = re.search(r',websocket=(\d+)', qemu_cmd)
                     qmp_file = re.search(r'-qmp unix:([^,]+)', qemu_cmd)
 

@@ -27,5 +27,6 @@ Development Roadmap
 - [ ] Import multiple images (create an option for joining)
 - [ ] Advanced configuration file editing
 - [ ] Server migration (migrate machines between servers)
-- [ ] Code texting with google actions
+- [ ] Code validation with google actions
+- [ ] Instalation support for other debian/ubuntu distros with code validation with google actions
 

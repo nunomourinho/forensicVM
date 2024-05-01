@@ -13,6 +13,7 @@ Research Areas
   - Image reconstruction (remove malware and make the image bootable again)
   - etc...
 - AI automation
+- Fast Differencial analysys - Show the diferences
 - Easy installation
 - Security Bypassing
 - Iot Platforms - Suport for qemu-arm and others
@@ -21,6 +22,7 @@ Research Areas
 Development Roadmap
 --------------------
 - [ ] Get cached Windows Hello hashes or passwords
+- [ ] Get cached domain credentials
 - [ ] Pin bruteforce (by AI screen analysis, and fast snapshot rollback)
 - [ ] Auto user login (copy hash to autologin?)
 - [ ] Transform the forensicVM client Python simple GUI functions into web functions

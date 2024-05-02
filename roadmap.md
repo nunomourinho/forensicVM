@@ -21,7 +21,7 @@ Research Areas
 
 Development Roadmap
 --------------------
-- [ ] Get cached Windows Hello hashes or passwords
+- [ ] Get cached Windows Hello hashes or passwords (https://book.hacktricks.xyz/v/portugues-ht/windows-hardening/windows-local-privilege-escalation#cached-credentials)
 - [ ] Get cached domain credentials
 - [ ] Pin bruteforce (by AI screen analysis, and fast snapshot rollback)
 - [ ] Auto user login (copy hash to autologin?)

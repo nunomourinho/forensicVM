@@ -44,7 +44,8 @@ Requirements
 
 Before proceeding with the installation of `forensicVM`, it's important to understand the system requirements and dependencies. The `forensicVM` installation process is designed to be straightforward, with the `install.sh` script handling the installation of all necessary dependencies.
 
-- **Operating System**: A Debian-based Linux distribution is recommended, with Debian 11 being the preferred choice for optimal compatibility and performance.
+- **Operating System**: A Debian-based Linux distribution is recommended, with `Debian 11 <https://cdimage.debian.org/mirror/cdimage/archive/11.9.0/amd64/iso-cd/debian-11.9.0-amd64-netinst.iso>`_
+ being the preferred choice for optimal compatibility and performance.
 - **Privileges**: You will need sufficient privileges (typically root access) to execute scripts and install packages on your system.
 
 The `install.sh` script, located in the `setup` directory of the `forensicVM` repository, automates the installation process. It installs all the required dependencies listed in both the `requirements.txt` and `installed_packages.txt` files. These dependencies include a range of Python packages and additional system libraries essential for the server's functionality.

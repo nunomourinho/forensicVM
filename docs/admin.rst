@@ -97,7 +97,7 @@ The `forensicVM` software can be installed by executing the `install.sh` script 
 
    .. code-block:: bash
 
-      cd /forensicvm/main/django-app      
+      cd /forensicVM/main/django-app      
 
    **SQLite (Default)**:
    - SQLite is the default database and requires no additional configuration. However, if there is an existing `db.sqlite3` file (example database), it should be deleted to start fresh:
